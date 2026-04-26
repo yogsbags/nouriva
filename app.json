@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "FoodScannerApp",
-    "slug": "FoodScannerApp",
+    "name": "Nouriva AI",
+    "slug": "NourivaAI",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -10,21 +10,91 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0D3B26"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "in.productverse.nourivaai",
+      "buildNumber": "12",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFaceIDUsageDescription": "Allow Nouriva AI to use Face ID to protect your account on this device.",
+        "NSHealthShareUsageDescription": "Nouriva AI reads steps, heart rate, sleep, and weight from Apple Health to contextualize how meals fit your day.",
+        "NSHealthUpdateUsageDescription": "Nouriva AI does not write data to Apple Health."
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
+      "package": "in.productverse.nourivaai",
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0D3B26"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "react-native-health",
+        {
+          "healthSharePermission": "Nouriva AI reads steps, heart rate, sleep, and weight from Apple Health to contextualize how meals fit your day.",
+          "healthUpdatePermission": "Nouriva AI does not write data to Apple Health."
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Nouriva AI to access your photos for your profile picture.",
+          "cameraPermission": "Allow Nouriva AI to use your camera for a profile photo."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Nouriva AI to use Face ID to protect your account on this device."
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "enableProguardInReleaseBuilds": true
+          },
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.452919317535-08plcntnpk9l29b5v8u683dcbo6dvihb"
+        }
+      ],
+      "./plugins/withFirebaseFix.js"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8bcbaad3-ca11-49be-b328-124c79d8d1d5"
+      }
+    },
+    "owner": "yogsb"
   }
 }
