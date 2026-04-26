@@ -75,7 +75,8 @@
             "minSdkVersion": 26,
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
-            "enableProguardInReleaseBuilds": true
+            "enableProguardInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": true
           },
           "ios": {
             "useFrameworks": "static"
@@ -92,9 +93,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "eb725ac1-6eff-4845-a573-a410bd689cda"
+        "projectId": "8bcbaad3-ca11-49be-b328-124c79d8d1d5"
       }
     },
-    "owner": "yogsbag"
+    "owner": "yogsb"
   }
 }

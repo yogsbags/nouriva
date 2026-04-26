@@ -38,13 +38,32 @@ type IosHealthNative = {
  */
 function getIosHealthNativeOrNull(): IosHealthNative | null {
   if (Platform.OS !== 'ios') return null;
+
+  // Try the react-native-health JS wrapper first (works on Old Architecture)
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const m = require('react-native-health') as Partial<IosHealthNative>;
     if (m && typeof m.initHealthKit === 'function') return m as IosHealthNative;
   } catch {
-    return null;
+    // fall through to direct NativeModules access
   }
+
+  // Fallback: access NativeModules.AppleHealthKit directly.
+  // On New Architecture (TurboModules interop), the react-native-health JS wrapper
+  // only exports Constants but the native module IS registered and accessible directly.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NativeModules } = require('react-native') as { NativeModules: Record<string, unknown> };
+    const kit = NativeModules['AppleHealthKit'] as Partial<IosHealthNative> | undefined;
+    if (kit && typeof kit.initHealthKit === 'function') {
+      console.log('[Health] Using NativeModules.AppleHealthKit directly (New Arch path)');
+      return kit as IosHealthNative;
+    }
+    console.warn('[Health] NativeModules.AppleHealthKit found but initHealthKit missing:', Object.keys(kit ?? {}));
+  } catch (e) {
+    console.warn('[Health] NativeModules direct access failed:', e);
+  }
+
   return null;
 }
 
@@ -85,6 +104,22 @@ export async function getHealthDebugInfo(): Promise<string> {
     lines.push('initHealthKit fn: ' + (typeof m?.initHealthKit === 'function' ? 'YES ✓' : 'NO ✗ (' + typeof m?.initHealthKit + ')'));
   } catch (e) {
     lines.push('require(rn-health) threw: ' + String(e));
+  }
+
+  // 2b. Check NativeModules.AppleHealthKit directly (New Arch path)
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { NativeModules } = require('react-native') as { NativeModules: Record<string, unknown> };
+    const kit = NativeModules['AppleHealthKit'] as Record<string, unknown> | undefined;
+    if (kit) {
+      const kitKeys = Object.keys(kit);
+      lines.push('NM.AppleHealthKit keys: ' + (kitKeys.length ? kitKeys.slice(0, 6).join(', ') + (kitKeys.length > 6 ? '…' : '') : 'EMPTY'));
+      lines.push('NM.AHK.initHealthKit: ' + (typeof kit.initHealthKit === 'function' ? 'YES ✓' : 'NO ✗ (' + typeof kit.initHealthKit + ')'));
+    } else {
+      lines.push('NM.AppleHealthKit: undefined');
+    }
+  } catch (e) {
+    lines.push('NM direct access error: ' + String(e));
   }
 
   // 3. Try calling initHealthKit and capture the exact error
