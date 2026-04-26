@@ -1,22 +1,81 @@
 {
-  "name": "foodscannerapp",
+  "name": "nourivaai",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "eas:build:ios": "bash scripts/eas-with-env.sh build --platform ios --profile production --non-interactive --no-wait",
+    "eas:build:ios:setup": "bash scripts/eas-with-env.sh build --platform ios --profile production",
+    "eas:submit:ios": "bash scripts/eas-with-env.sh submit --platform ios --profile production",
+    "eas:build:android:apk": "bash scripts/eas-with-env.sh build --platform android --profile android-apk",
+    "eas:build:android:aab": "bash scripts/eas-with-env.sh build --platform android --profile android-aab --no-wait",
+    "eas:build:android:aab:local": "bash scripts/eas-with-env.sh build --platform android --profile android-aab --local",
+    "eas:submit:android:internal": "bash scripts/eas-with-env.sh submit --platform android --profile internal"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-firebase/analytics": "^24.0.0",
+    "@react-native-firebase/app": "^24.0.0",
+    "@react-native-firebase/crashlytics": "^24.0.0",
+    "@react-native-google-signin/google-signin": "^16.1.2",
+    "@react-navigation/bottom-tabs": "^7.15.9",
+    "@react-navigation/native": "^7.2.2",
+    "@react-navigation/native-stack": "^7.14.11",
+    "@supabase/supabase-js": "^2.103.3",
     "expo": "~54.0.33",
+    "expo-build-properties": "~1.0.10",
+    "expo-camera": "~17.0.10",
+    "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.20",
+    "expo-document-picker": "~14.0.8",
+    "expo-file-system": "~19.0.21",
+    "expo-haptics": "~15.0.8",
+    "expo-image-manipulator": "~14.0.8",
+    "expo-image-picker": "~17.0.10",
+    "expo-linking": "~8.0.11",
+    "expo-local-authentication": "~17.0.8",
+    "expo-notifications": "~0.32.16",
+    "expo-print": "~15.0.8",
+    "expo-secure-store": "~15.0.8",
+    "expo-sharing": "~14.0.8",
     "expo-status-bar": "~3.0.9",
+    "lucide-react-native": "^1.8.0",
+    "phosphor-react-native": "^3.0.6",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "react-native-health": "^1.19.0",
+    "react-native-health-connect": "^3.5.0",
+    "react-native-iap": "^15.2.0",
+    "react-native-nitro-modules": "^0.35.4",
+    "react-native-purchases": "^10.0.1",
+    "react-native-purchases-ui": "^10.0.1",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
+    "react-native-url-polyfill": "^3.0.0",
+    "react-native-view-shot": "4.0.3",
+    "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "babel-preset-expo": "~54.0.10",
     "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "@expo/fingerprint": "0.15.4"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-health"
+        ]
+      }
+    }
   },
   "private": true
 }

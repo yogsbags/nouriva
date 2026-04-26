@@ -94,6 +94,22 @@ def ${HELPER_NAME}(installer)
       config.build_settings['OTHER_CFLAGS'] = flags
     end
   end
+
+  # Add -ObjC to the app target so Objective-C static libraries (e.g. react-native-health)
+  # register their native modules properly and are not stripped by the linker.
+  installer.aggregate_targets.each do |aggregate_target|
+    aggregate_target.user_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        ldflags = config.build_settings['OTHER_LDFLAGS'] || '$(inherited)'
+        ldflags = [ldflags] if ldflags.is_a?(String)
+        unless ldflags.include?('-ObjC')
+          ldflags << '-ObjC'
+          config.build_settings['OTHER_LDFLAGS'] = ldflags
+        end
+      end
+    end
+    aggregate_target.user_project.save
+  end
 end
 `;
 }

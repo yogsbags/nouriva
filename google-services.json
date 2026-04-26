@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "311592013058",
+    "project_id": "nouriva-ai",
+    "storage_bucket": "nouriva-ai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:311592013058:android:e4d3c2fc43282a2809461b",
+        "android_client_info": {
+          "package_name": "in.productverse.nourivaai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUslfPPLo3zoOMAUciAX9YyX7zTDQ-bZ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
