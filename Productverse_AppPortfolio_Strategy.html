@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Productverse · Camera-Scan AI App Portfolio Strategy</title>
+<style>
+  :root {
+    --indigo: #3730a3;
+    --indigo-light: #4f46e5;
+    --indigo-pale: #eef2ff;
+    --green: #10b981;
+    --green-pale: #d1fae5;
+    --amber: #f59e0b;
+    --amber-pale: #fef3c7;
+    --rose: #f43f5e;
+    --rose-pale: #ffe4e6;
+    --slate: #0f172a;
+    --slate-mid: #334155;
+    --slate-light: #64748b;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--slate); }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #1d4ed8 100%);
+    color: white;
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .header h1 { font-size: 36px; font-weight: 800; line-height: 1.1; margin-bottom: 12px; }
+  .header h1 span { color: #6ee7b7; }
+  .header p { font-size: 16px; opacity: 0.85; max-width: 600px; line-height: 1.6; }
+  .header-meta {
+    display: flex; gap: 32px; margin-top: 28px;
+  }
+  .header-stat { text-align: center; }
+  .header-stat .num { font-size: 28px; font-weight: 800; color: #6ee7b7; }
+  .header-stat .lbl { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+  /* Container */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* Sections */
+  .section { padding: 48px 0; }
+  .section-title {
+    font-size: 22px; font-weight: 800; color: var(--slate);
+    display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+  }
+  .section-title .icon { font-size: 24px; }
+  .section-subtitle { color: var(--slate-light); font-size: 15px; margin-bottom: 32px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* Architecture Box */
+  .arch-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .arch-header {
+    background: linear-gradient(90deg, var(--indigo) 0%, var(--indigo-light) 100%);
+    color: white;
+    padding: 20px 28px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .arch-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .arch-col {
+    padding: 28px;
+    border-right: 1px solid var(--border);
+  }
+  .arch-col:last-child { border-right: none; }
+  .arch-col h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--indigo); margin-bottom: 16px; }
+  .arch-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .arch-item:last-child { border-bottom: none; }
+  .arch-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-top: 6px; flex-shrink: 0; }
+  .arch-item .dot.amber { background: var(--amber); }
+  .arch-item .dot.rose { background: var(--rose); }
+  .arch-item-text { }
+  .arch-item-text strong { font-size: 14px; display: block; }
+  .arch-item-text span { font-size: 12px; color: var(--slate-light); }
+
+  .code-block {
+    background: #1e1b4b;
+    color: #a5f3fc;
+    border-radius: 12px;
+    padding: 24px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  .code-block .comment { color: #6b7280; }
+  .code-block .key { color: #fbbf24; }
+  .code-block .val { color: #86efac; }
+  .code-block .type { color: #c084fc; }
+
+  /* App Cards */
+  .apps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 20px;
+  }
+  .app-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .app-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .app-card.tier-1 { border-left: 4px solid var(--green); }
+  .app-card.tier-2 { border-left: 4px solid var(--indigo-light); }
+  .app-card.tier-3 { border-left: 4px solid var(--amber); }
+
+  .card-header {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-emoji { font-size: 36px; line-height: 1; }
+  .card-meta { flex: 1; }
+  .card-meta h3 { font-size: 17px; font-weight: 800; color: var(--slate); }
+  .card-meta .app-id { font-size: 11px; color: var(--slate-light); font-family: monospace; margin-top: 2px; }
+  .card-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .badge {
+    font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .badge.priority-1 { background: var(--green-pale); color: #065f46; }
+  .badge.priority-2 { background: var(--indigo-pale); color: var(--indigo); }
+  .badge.priority-3 { background: var(--amber-pale); color: #92400e; }
+  .badge.revenue { background: #fce7f3; color: #9d174d; }
+  .badge.tam { background: #f0f9ff; color: #0369a1; }
+
+  .priority-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 900;
+    flex-shrink: 0;
+  }
+  .priority-num.t1 { background: var(--green-pale); color: #065f46; }
+  .priority-num.t2 { background: var(--indigo-pale); color: var(--indigo); }
+  .priority-num.t3 { background: var(--amber-pale); color: #92400e; }
+
+  .card-body { padding: 16px 20px; }
+  .card-body p { font-size: 13.5px; color: var(--slate-mid); line-height: 1.6; margin-bottom: 12px; }
+
+  .card-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .stat-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-box .s-val { font-size: 14px; font-weight: 800; color: var(--slate); }
+  .stat-box .s-lbl { font-size: 10px; color: var(--slate-light); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+  .prompt-snippet {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: var(--slate-mid);
+    font-family: monospace;
+    line-height: 1.6;
+    border-left: 3px solid var(--indigo-light);
+    margin-bottom: 12px;
+  }
+
+  .delta-list { margin: 0; padding: 0; list-style: none; }
+  .delta-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 12.5px; color: var(--slate-mid); padding: 3px 0;
+  }
+  .delta-list li::before { content: '→'; color: var(--indigo-light); font-weight: 700; flex-shrink: 0; }
+  .delta-list li.green::before { content: '→'; color: var(--green); }
+  .delta-list li.amber::before { content: '⚠'; color: var(--amber); }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 32px; }
+  .timeline::before {
+    content: '';
+    position: absolute; left: 12px; top: 8px; bottom: 8px;
+    width: 2px; background: linear-gradient(to bottom, var(--green), var(--indigo-light), var(--amber));
+    border-radius: 2px;
+  }
+  .timeline-item { position: relative; margin-bottom: 28px; }
+  .timeline-item::before {
+    content: '';
+    position: absolute; left: -26px; top: 6px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: white; border: 3px solid var(--indigo-light);
+  }
+  .timeline-item.green::before { border-color: var(--green); }
+  .timeline-item.amber::before { border-color: var(--amber); }
+  .timeline-item h4 { font-size: 15px; font-weight: 800; color: var(--slate); margin-bottom: 4px; }
+  .timeline-item .time { font-size: 12px; font-weight: 700; color: var(--indigo); background: var(--indigo-pale); padding: 2px 8px; border-radius: 10px; display: inline-block; margin-bottom: 8px; }
+  .timeline-item .time.green { color: #065f46; background: var(--green-pale); }
+  .timeline-item .time.amber { color: #92400e; background: var(--amber-pale); }
+  .timeline-item p { font-size: 13px; color: var(--slate-mid); line-height: 1.5; }
+  .timeline-apps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .timeline-app-tag {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px;
+    font-size: 12px; font-weight: 600; color: var(--slate);
+  }
+
+  /* Revenue Table */
+  .rev-table { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; }
+  .rev-table th {
+    background: var(--indigo);
+    color: white;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .rev-table td { padding: 12px 16px; font-size: 13.5px; border-bottom: 1px solid var(--border); background: white; }
+  .rev-table tr:hover td { background: var(--indigo-pale); }
+  .rev-table tr:last-child td { border-bottom: none; }
+  .rev-bar {
+    height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--green), var(--indigo-light));
+  }
+
+  /* White-label steps */
+  .steps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .step-card {
+    background: white; border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--indigo), var(--indigo-light));
+    color: white; font-size: 18px; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .step-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .step-card p { font-size: 12.5px; color: var(--slate-light); line-height: 1.5; }
+  .step-time { font-size: 11px; font-weight: 700; color: var(--green); margin-top: 10px; }
+
+  /* Footer */
+  .footer {
+    background: var(--slate);
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    padding: 24px;
+    font-size: 13px;
+    margin-top: 40px;
+  }
+  .footer strong { color: white; }
+
+  @media (max-width: 700px) {
+    .apps-grid { grid-template-columns: 1fr; }
+    .arch-grid { grid-template-columns: 1fr; }
+    .card-stats { grid-template-columns: 1fr 1fr; }
+    .header h1 { font-size: 26px; }
+    .header-meta { flex-wrap: wrap; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<div class="header">
+  <div class="container">
+    <div class="header-badge">🚀 Productverse · Scan AI Portfolio</div>
+    <h1>12 Camera-Scan AI Apps.<br><span>One Framework. Infinite Revenue.</span></h1>
+    <p>Built on the Nouriva AI engine — swap the prompt, theme, and schema. Ship a new app in under a week. Build a $1M ARR portfolio in 12 months.</p>
+    <div class="header-meta">
+      <div class="header-stat">
+        <div class="num">12</div>
+        <div class="lbl">App Ideas</div>
+      </div>
+      <div class="header-stat">
+        <div class="num">~5 days</div>
+        <div class="lbl">Per App (after template)</div>
+      </div>
+      <div class="header-stat">
+        <div class="num">~80%</div>
+        <div class="lbl">Code Reuse</div>
+      </div>
+      <div class="header-stat">
+        <div class="num">$1M+</div>
+        <div class="lbl">Combined ARR Potential</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ ARCHITECTURE ═══════════════════════════════ -->
+<div class="container">
+<div class="section">
+  <div class="section-title"><span class="icon">🏗</span> White-Label Architecture</div>
+  <div class="section-subtitle">Every app is Nouriva AI with a different config file. The core engine never changes.</div>
+
+  <div class="arch-box">
+    <div class="arch-header">📦 Productverse Scan AI — Monorepo Structure</div>
+    <div class="arch-grid">
+      <div class="arch-col">
+        <h4>✅ Shared (Never Touch)</h4>
+        <div class="arch-item">
+          <div class="dot"></div>
+          <div class="arch-item-text">
+            <strong>Camera + AI Engine</strong>
+            <span>expo-camera → Gemini Flash 2.0 → JSON parse</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot"></div>
+          <div class="arch-item-text">
+            <strong>Auth &amp; Biometrics</strong>
+            <span>Supabase Auth + Face ID / Touch ID gate</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot"></div>
+          <div class="arch-item-text">
+            <strong>Paywall / IAP</strong>
+            <span>RevenueCat + react-native-iap, all plans</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot"></div>
+          <div class="arch-item-text">
+            <strong>History + Profile</strong>
+            <span>Supabase food_logs → scan_logs table (generic)</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot"></div>
+          <div class="arch-item-text">
+            <strong>Weekly AI Report</strong>
+            <span>HTML email generation, share sheet</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot"></div>
+          <div class="arch-item-text">
+            <strong>Onboarding Flow</strong>
+            <span>Contextual questions → SecureStore injection</span>
+          </div>
+        </div>
+      </div>
+      <div class="arch-col">
+        <h4>🔧 Per-App Config (appConfig.ts)</h4>
+        <div class="arch-item">
+          <div class="dot amber"></div>
+          <div class="arch-item-text">
+            <strong>App Identity</strong>
+            <span>name, bundleId, slug, colors, logo, tagline</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot amber"></div>
+          <div class="arch-item-text">
+            <strong>Gemini Prompt</strong>
+            <span>System prompt, output JSON schema, model choice</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot amber"></div>
+          <div class="arch-item-text">
+            <strong>Results Schema</strong>
+            <span>Custom sections, score labels, alert types</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot amber"></div>
+          <div class="arch-item-text">
+            <strong>Onboarding Questions</strong>
+            <span>Domain-specific context collection</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot amber"></div>
+          <div class="arch-item-text">
+            <strong>IAP Product IDs</strong>
+            <span>App-specific RevenueCat entitlements</span>
+          </div>
+        </div>
+        <div class="arch-item">
+          <div class="dot amber"></div>
+          <div class="arch-item-text">
+            <strong>Store Metadata</strong>
+            <span>App Store / Play screenshots, description, keywords</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+<span class="comment">// src/config/appConfig.ts — swap this file per app, touch nothing else</span>
+<span class="key">export const</span> <span class="val">APP_CONFIG</span> = {
+  <span class="key">name</span>: <span class="val">"MediScan AI"</span>,
+  <span class="key">bundleId</span>: <span class="val">"in.productverse.mediscanai"</span>,
+  <span class="key">tagline</span>: <span class="val">"Know Your Meds. Instantly."</span>,
+  <span class="key">primaryColor</span>: <span class="val">"#0ea5e9"</span>,
+  <span class="key">accentColor</span>: <span class="val">"#f43f5e"</span>,
+  <span class="key">scanPrompt</span>: <span class="val">`You are a clinical pharmacist AI. Analyze the scanned medication...`</span>,
+  <span class="key">resultSchema</span>: <span class="val">MedSchema</span>,          <span class="comment">// TypeScript interface</span>
+  <span class="key">onboardingQuestions</span>: <span class="val">MedOnboarding</span>,   <span class="comment">// condition selector + allergies</span>
+  <span class="key">revenueCatEntitlement</span>: <span class="val">"mediscan_pro"</span>,
+  <span class="key">supabaseTable</span>: <span class="val">"scan_logs"</span>,
+  <span class="key">scanMode</span>: <span class="val">"label"</span>                    <span class="comment">// "label" | "visual" | "document"</span>
+};
+  </div>
+
+  <div style="margin-top: 24px;">
+    <div class="section-title" style="font-size: 17px;"><span class="icon">⚡</span> How to Spin Up a New App in 5 Days</div>
+    <div class="steps-grid" style="margin-top: 16px;">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h4>Clone &amp; Configure</h4>
+        <p>Copy Nouriva AI repo, update appConfig.ts with new identity, colors, and bundle ID</p>
+        <div class="step-time">⏱ Day 1 — 4 hours</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h4>Write the Gemini Prompt</h4>
+        <p>Craft the system prompt + JSON output schema for the new domain. Test with 20 real scans.</p>
+        <div class="step-time">⏱ Day 1-2 — 6 hours</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h4>Build Results Screen</h4>
+        <p>Create domain-specific ResultsScreen sections using the shared Card components. New UI only.</p>
+        <div class="step-time">⏱ Day 2-3 — 8 hours</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h4>Design &amp; ASO</h4>
+        <p>Generate logo on Marqq, create App Store screenshots, write keyword-optimised listing copy</p>
+        <div class="step-time">⏱ Day 3-4 — 6 hours</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <h4>EAS Build &amp; Submit</h4>
+        <p>eas build + eas submit. Both stores. RevenueCat product setup. Launch!</p>
+        <div class="step-time">⏱ Day 4-5 — 4 hours</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<hr class="divider">
+
+<!-- ═══════════════════════════════ TIER 1 APPS ═══════════════════════════════ -->
+<div class="container">
+<div class="section">
+  <div class="section-title"><span class="icon">🟢</span> Tier 1 — Build First (Highest ROI)</div>
+  <div class="section-subtitle">Massive markets, direct adjacency to Nouriva AI, premium subscription willingness. Ship within 30 days.</div>
+  <div class="apps-grid">
+
+    <!-- MEDICINE SCANNER -->
+    <div class="app-card tier-1">
+      <div class="card-header">
+        <div class="app-emoji">💊</div>
+        <div class="card-meta">
+          <h3>MediScan AI</h3>
+          <div class="app-id">in.productverse.mediscanai</div>
+          <div class="card-badges">
+            <span class="badge priority-1">#1 Priority</span>
+            <span class="badge revenue">$14.99/mo</span>
+            <span class="badge tam">TAM $8B+</span>
+          </div>
+        </div>
+        <div class="priority-num t1">1</div>
+      </div>
+      <div class="card-body">
+        <p>Scan any pill, blister pack, or medicine box. Instantly get: drug interactions, side effects, contraindications for your conditions, dosage guidance, alternatives. <strong>Safety-critical = users pay premium without hesitation.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$14.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">$99/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~95%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze this medication image. Return: drugName, activeIngredients, dosageInfo, interactions (with user's conditions), contraindications, sideEffects[severity], alternatives, alerts[CRITICAL/WARNING]</div>
+        <ul class="delta-list">
+          <li class="green">Identical to Nouriva AI — just swap the prompt + schema</li>
+          <li class="green">Users will pay $14.99/mo (safety = high WTP)</li>
+          <li class="green">Clinical context system already built — inject allergies + conditions</li>
+          <li class="amber">Add disclaimer: "Not a substitute for medical advice" (already in Nouriva)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SUPPLEMENTS SCANNER -->
+    <div class="app-card tier-1">
+      <div class="card-header">
+        <div class="app-emoji">🧴</div>
+        <div class="card-meta">
+          <h3>SuppleScan AI</h3>
+          <div class="app-id">in.productverse.supplescanai</div>
+          <div class="card-badges">
+            <span class="badge priority-1">#2 Priority</span>
+            <span class="badge revenue">$9.99/mo</span>
+            <span class="badge tam">TAM $5B+</span>
+          </div>
+        </div>
+        <div class="priority-num t1">2</div>
+      </div>
+      <div class="card-body">
+        <p>Scan supplement labels (protein powders, vitamins, pre-workouts). Get: bioavailability score, ingredient quality rating, hidden additives, interactions with meds/conditions, value-for-money score. <strong>Gym/wellness market is exploding.</strong></p>
+        <div class="card-stats">
+          <div class="s-val" style="padding:6px; font-size:14px; font-weight:800;">$9.99</div>
+          <div class="stat-box"><div class="s-val">$59/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~90%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze supplement label. Return: productName, servingSize, ingredients[name, amount, quality:"A-F", bioavailability], proprietary_blends_flag, interactionsWithMeds, vitalityScore, verdict</div>
+        <ul class="delta-list">
+          <li class="green">Directly extends Nouriva AI food analysis logic</li>
+          <li class="green">Target: gym-goers, biohackers, health-conscious (huge on Instagram/TikTok)</li>
+          <li class="green">Add "Grade" card — proprietary blend warning is huge viral feature</li>
+          <li>Partner with supplement review YouTubers for explosive launch</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SKINCARE SCANNER -->
+    <div class="app-card tier-1">
+      <div class="card-header">
+        <div class="app-emoji">✨</div>
+        <div class="card-meta">
+          <h3>DermaScan AI</h3>
+          <div class="app-id">in.productverse.dermascanai</div>
+          <div class="card-badges">
+            <span class="badge priority-1">#3 Priority</span>
+            <span class="badge revenue">$9.99/mo</span>
+            <span class="badge tam">TAM $200B</span>
+          </div>
+        </div>
+        <div class="priority-num t1">3</div>
+      </div>
+      <div class="card-body">
+        <p>Scan skincare product labels. Identify: comedogenic ingredients, irritants for your skin type, potentially harmful chemicals (parabens, sulfates), product efficacy score, and personalized alternatives. <strong>The INCI ingredient anxiety market is enormous.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$9.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">$59/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~85%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze skincare ingredient list. Return: productType, ingredients[name, function, concern:"none/mild/moderate/severe", comedogenicRating], overallSafetyScore, skinTypeCompatibility[oily/dry/combo/sensitive], highlights, redFlags</div>
+        <ul class="delta-list">
+          <li class="green">Massive TikTok virality — "ingredient checker" content explodes on #skincare</li>
+          <li class="green">Onboarding: skin type + concerns + known sensitivities</li>
+          <li>Differentiate with INCI database cross-reference</li>
+          <li>Partner with r/SkincareAddiction (12M members) for launch</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PET SCANNER -->
+    <div class="app-card tier-1">
+      <div class="card-header">
+        <div class="app-emoji">🐾</div>
+        <div class="card-meta">
+          <h3>PawScan AI</h3>
+          <div class="app-id">in.productverse.pawscanai</div>
+          <div class="card-badges">
+            <span class="badge priority-1">#4 Priority</span>
+            <span class="badge revenue">$7.99/mo</span>
+            <span class="badge tam">TAM $3B+</span>
+          </div>
+        </div>
+        <div class="priority-num t1">4</div>
+      </div>
+      <div class="card-body">
+        <p>Scan pet food labels OR photograph your pet (skin, eyes, coat, posture) for health signals. Get: ingredient quality for breed/age, toxic ingredients warning, symptom triage, vet urgency score. <strong>Pet owners are the most emotionally + financially invested users you'll ever get.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$7.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">$49/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~80%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Dual mode: (1) Pet food label → ingredients safety for species/breed/age. (2) Pet photo → visual health triage: coat, eyes, posture, visible symptoms. Return vetUrgency:"routine/soon/urgent/emergency"</div>
+        <ul class="delta-list">
+          <li class="green">Two scan modes = 2x engagement, 2x use cases</li>
+          <li class="green">Onboarding: pet species, breed, age, existing conditions</li>
+          <li class="green">Viral: "I scanned my dog's food and found THIS" TikTok formula</li>
+          <li>Add "Emergency vet locator" CTA for critical alerts (affiliate potential)</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<hr class="divider">
+
+<!-- ═══════════════════════════════ TIER 2 APPS ═══════════════════════════════ -->
+<div class="container">
+<div class="section">
+  <div class="section-title"><span class="icon">🔵</span> Tier 2 — Build After 2 Successful Launches</div>
+  <div class="section-subtitle">Strong markets with slightly more custom UI work needed. Launch apps 5–8 in months 2–4.</div>
+  <div class="apps-grid">
+
+    <!-- AUTO DOCTOR -->
+    <div class="app-card tier-2">
+      <div class="card-header">
+        <div class="app-emoji">🚗</div>
+        <div class="card-meta">
+          <h3>AutoScan AI — Auto Doctor</h3>
+          <div class="app-id">in.productverse.autoscanai</div>
+          <div class="card-badges">
+            <span class="badge priority-2">#5 Priority</span>
+            <span class="badge revenue">$7.99/mo</span>
+            <span class="badge tam">TAM $10B+</span>
+          </div>
+        </div>
+        <div class="priority-num t2">5</div>
+      </div>
+      <div class="card-body">
+        <p>Scan tires, engine bay, brake pads, bodywork damage, dashboard warning lights. Get: condition assessment, urgency score, repair cost estimate, safety rating. DIY fix guide OR nearest service center CTA. <strong>Huge TAM — every car owner is your customer.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$7.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">$49/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~75%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze automotive image (tires/engine/body/lights). Return: componentIdentified, conditionScore:"1-10", safetyRisk:"low/moderate/high/critical", estimatedRepairCost, urgency, diyFixPossible, recommendedAction</div>
+        <ul class="delta-list">
+          <li class="green">Scan modes: tires, engine, dashboard lights, body damage</li>
+          <li class="green">Onboarding: car make/model/year/mileage for accuracy</li>
+          <li>Add affiliate links to AutoZone/Amazon for parts (revenue upside)</li>
+          <li class="amber">Slightly harder prompt engineering — test extensively</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- HOUSEHOLD CHEMICAL SCANNER -->
+    <div class="app-card tier-2">
+      <div class="card-header">
+        <div class="app-emoji">⚗️</div>
+        <div class="card-meta">
+          <h3>SafeScan AI</h3>
+          <div class="app-id">in.productverse.safescanai</div>
+          <div class="card-badges">
+            <span class="badge priority-2">#6 Priority</span>
+            <span class="badge revenue">$5.99/mo</span>
+            <span class="badge tam">TAM $2B+</span>
+          </div>
+        </div>
+        <div class="priority-num t2">6</div>
+      </div>
+      <div class="card-body">
+        <p>Scan household cleaners, chemicals, pesticides. Identify: toxic ingredients, mixing dangers (what NOT to combine), child/pet safety, ventilation requirements, eco-friendliness score, safer alternatives. <strong>Safety + family protection = strong motivation to pay.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$5.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">$39/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~90%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze household chemical product. Return: productCategory, hazardousIngredients[name, risk, EWG_grade], dangerousCombinations, childSafetyRisk, petSafetyRisk, ventilationRequired, ecoScore, saferAlternatives</div>
+        <ul class="delta-list">
+          <li class="green">Near-identical to food scanner — label scan → structured analysis</li>
+          <li class="green">Viral hook: "Mixing bleach + vinegar can kill you" content</li>
+          <li>EWG database cross-reference adds credibility</li>
+          <li>Target: parents with young children + eco-conscious households</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- LEAF DISEASE SCANNER -->
+    <div class="app-card tier-2">
+      <div class="card-header">
+        <div class="app-emoji">🌿</div>
+        <div class="card-meta">
+          <h3>LeafScan AI — Plant Doctor</h3>
+          <div class="app-id">in.productverse.leafscanai</div>
+          <div class="card-badges">
+            <span class="badge priority-2">#7 Priority</span>
+            <span class="badge revenue">$4.99/mo</span>
+            <span class="badge tam">TAM $1B+</span>
+          </div>
+        </div>
+        <div class="priority-num t2">7</div>
+      </div>
+      <div class="card-body">
+        <p>Photograph leaves, stems, or full plants. Identify: plant species, disease type, pest infestation, nutrient deficiency, treatment plan, watering/sunlight advice. <strong>350M+ plant hobbyists globally. Small but passionate and willing to pay.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$4.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">$29/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~80%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze plant/leaf image. Return: plantSpecies, healthStatus:"healthy/stressed/diseased/dying", diagnosedIssue, causativeAgent, severityScore, treatmentPlan[organic, chemical], preventionTips, idealConditions</div>
+        <ul class="delta-list">
+          <li class="green">Also covers agricultural use (farmers scan crops)</li>
+          <li class="green">Seasonal virality: spring/summer gardening surge</li>
+          <li>Target r/plantclinic, r/houseplants (10M+ combined), gardening Facebook groups</li>
+          <li class="amber">Consider freemium (5 free scans/month) to drive downloads</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ORAL HEALTH SCANNER -->
+    <div class="app-card tier-2">
+      <div class="card-header">
+        <div class="app-emoji">🦷</div>
+        <div class="card-meta">
+          <h3>OralScan AI</h3>
+          <div class="app-id">in.productverse.oralscanai</div>
+          <div class="card-badges">
+            <span class="badge priority-2">#8 Priority</span>
+            <span class="badge revenue">$6.99/mo</span>
+            <span class="badge tam">TAM $4B+</span>
+          </div>
+        </div>
+        <div class="priority-num t2">8</div>
+      </div>
+      <div class="card-body">
+        <p>Photograph teeth/gums. Identify: plaque buildup, gum recession signs, discoloration causes, cavity risk indicators, gum health score, recommended dental actions. <strong>Dental anxiety is universal — 50% of adults avoid dentist due to cost/fear.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$6.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">$44/yr</div><div class="s-lbl">Annual</div></div>
+          <div class="stat-box"><div class="s-val">~75%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze intraoral photograph. Return: gumHealthScore, plaqueLevel, visibleConcerns[issue, severity, location], urgencyToSeeDentist:"routine/soon/urgent", homeCareTips, disclaimer</div>
+        <ul class="delta-list">
+          <li class="green">Strong "pre-dentist check" use case — reduces anxiety</li>
+          <li>Requires good front camera + flashlight guidance UI</li>
+          <li class="amber">Image quality can vary — add "how to take a good photo" onboarding</li>
+          <li>Partnership opportunity: Teledentistry platforms, dental insurance</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<hr class="divider">
+
+<!-- ═══════════════════════════════ TIER 3 APPS ═══════════════════════════════ -->
+<div class="container">
+<div class="section">
+  <div class="section-title"><span class="icon">🟡</span> Tier 3 — Phase 3 (More Complex / Niche)</div>
+  <div class="section-subtitle">Good ideas but require more integration work, niche markets, or complex prompting. Build after Tier 1+2 are earning.</div>
+  <div class="apps-grid">
+
+    <!-- RECEIPT SCANNER -->
+    <div class="app-card tier-3">
+      <div class="card-header">
+        <div class="app-emoji">🧾</div>
+        <div class="card-meta">
+          <h3>TaxScan AI — Receipt Analyzer</h3>
+          <div class="app-id">in.productverse.taxscanai</div>
+          <div class="card-badges">
+            <span class="badge priority-3">#9 Priority</span>
+            <span class="badge revenue">$6.99/mo</span>
+            <span class="badge tam">SMB Market</span>
+          </div>
+        </div>
+        <div class="priority-num t3">9</div>
+      </div>
+      <div class="card-body">
+        <p>Scan receipts, bills, invoices. Auto-categorize for tax deductions: business expense, meal, travel, home office, equipment. Export CSV for accountant. Calculate estimated tax savings. <strong>Freelancers + SMBs are desperate for this.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$6.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">Seasonal</div><div class="s-lbl">Peak: Feb-Mar</div></div>
+          <div class="stat-box"><div class="s-val">~70%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze receipt image. Return: merchant, amount, date, taxCategory:"business_meal/travel/equipment/home_office/other", deductiblePercentage, gstHSN (India), notes, confidence</div>
+        <ul class="delta-list">
+          <li class="green">Scan mode = document, not food — straightforward Gemini task</li>
+          <li>Add GST/HSN detection for India market (big differentiator)</li>
+          <li>Add export to Google Sheets / CSV (requires small extra work)</li>
+          <li class="amber">Seasonal peak — needs sustained marketing outside tax season</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- HOME INSPECTION -->
+    <div class="app-card tier-3">
+      <div class="card-header">
+        <div class="app-emoji">🏠</div>
+        <div class="card-meta">
+          <h3>HomeScan AI — Home Inspector</h3>
+          <div class="app-id">in.productverse.homescanai</div>
+          <div class="card-badges">
+            <span class="badge priority-3">#10 Priority</span>
+            <span class="badge revenue">$8.99/mo</span>
+            <span class="badge tam">Real Estate Adjacent</span>
+          </div>
+        </div>
+        <div class="priority-num t3">10</div>
+      </div>
+      <div class="card-body">
+        <p>Scan walls, ceilings, pipes, electrical panels, structural elements. Get: damage assessment, safety rating, moisture/mold risk, repair urgency, cost estimate. Connect to local repair services. From your handwritten note: "scan wall/rust → safety rating → connect to plumbers."</p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$8.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">Lead Gen</div><div class="s-lbl">Revenue Model</div></div>
+          <div class="stat-box"><div class="s-val">~65%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze home surface/component image. Return: element, condition, damageType, safetyRisk, moistureIndicators, estimatedRepairCost, urgency:"routine/within30days/urgent", serviceType needed</div>
+        <ul class="delta-list">
+          <li class="green">Dual revenue: subscription + repair service lead generation (affiliate)</li>
+          <li>Integrate with Justdial/UrbanClap API (India) or HomeAdvisor (US)</li>
+          <li class="amber">More complex — needs marketplace backend for repair leads</li>
+          <li class="amber">Build after you have engineering bandwidth for API integrations</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CAS CREDIT CARD STATEMENT -->
+    <div class="app-card tier-3">
+      <div class="card-header">
+        <div class="app-emoji">💳</div>
+        <div class="card-meta">
+          <h3>CAS — Credit &amp; Statement AI</h3>
+          <div class="app-id">in.productverse.casai</div>
+          <div class="card-badges">
+            <span class="badge priority-3">#11 Priority</span>
+            <span class="badge revenue">$7.99/mo</span>
+            <span class="badge tam">Fintech Adjacent</span>
+          </div>
+        </div>
+        <div class="priority-num t3">11</div>
+      </div>
+      <div class="card-body">
+        <p>Scan credit card statements, bank statements. Identify: hidden charges, subscription traps, spending patterns, savings opportunities, rewards optimization, financial health score. <strong>Positioned as a personal finance AI, not a bank app.</strong></p>
+        <div class="card-stats">
+          <div class="stat-box"><div class="s-val">$7.99</div><div class="s-lbl">Monthly</div></div>
+          <div class="stat-box"><div class="s-val">High LTV</div><div class="s-lbl">Stickiness</div></div>
+          <div class="stat-box"><div class="s-val">~70%</div><div class="s-lbl">Code Reuse</div></div>
+        </div>
+        <div class="prompt-snippet">Analyze bank/credit card statement. Return: monthSummary, categoryBreakdown, recurringCharges, suspiciousCharges, savingsOpportunities, creditUtilizationAdvice, financialHealthScore, actionItems</div>
+        <ul class="delta-list">
+          <li class="green">No open banking needed — camera scan only, zero data risk</li>
+          <li>Privacy-first positioning: "Never stores your data"</li>
+          <li class="amber">Users are sensitive about financial data — strong privacy messaging required</li>
+          <li class="amber">App Store review may flag financial category — prepare documentation</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- PETCARE (CONSOLIDATED) -->
+    <div class="app-card tier-3">
+      <div class="card-header">
+        <div class="app-emoji">🐕</div>
+        <div class="card-meta">
+          <h3>Note: Merge with PawScan AI</h3>
+          <div class="app-id">in.productverse.pawscanai</div>
+          <div class="card-badges">
+            <span class="badge priority-3">Merge ↑</span>
+            <span class="badge tam">See #4</span>
+          </div>
+        </div>
+        <div class="priority-num t3">↑</div>
+      </div>
+      <div class="card-body">
+        <p>Your "Petcare Scanner" and "Pet Food + Pet Diseases" ideas are the same market. <strong>Recommendation: merge into PawScan AI</strong> (#4) as a single, comprehensive pet health app with multiple scan modes rather than splitting the user base.</p>
+        <ul class="delta-list">
+          <li class="green">PawScan AI covers: pet food label scan + pet visual health triage</li>
+          <li class="green">One app with 2 modes = higher engagement + fewer support issues</li>
+          <li>Two separate apps would cannibalize each other's reviews and downloads</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+<hr class="divider">
+
+<!-- ═══════════════════════════════ REVENUE TABLE ═══════════════════════════════ -->
+<div class="container">
+<div class="section">
+  <div class="section-title"><span class="icon">📈</span> Portfolio Revenue Model</div>
+  <div class="section-subtitle">Conservative projections at 500 paying subscribers per app. Scale from there.</div>
+
+  <div style="overflow-x: auto; border-radius: 12px; border: 1px solid var(--border);">
+  <table class="rev-table">
+    <thead>
+      <tr>
+        <th>App</th>
+        <th>Price/mo</th>
+        <th>Target Subs (Mo 6)</th>
+        <th>Monthly ARR</th>
+        <th>Annual ARR</th>
+        <th>Market</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>💊 MediScan AI</td>
+        <td>$14.99</td>
+        <td>1,000</td>
+        <td>$14,990</td>
+        <td><strong>$179,880</strong></td>
+        <td><div class="rev-bar" style="width:95%"></div></td>
+      </tr>
+      <tr>
+        <td>🥗 Nouriva AI <em>(live)</em></td>
+        <td>$9.99</td>
+        <td>1,500</td>
+        <td>$14,985</td>
+        <td><strong>$179,820</strong></td>
+        <td><div class="rev-bar" style="width:90%"></div></td>
+      </tr>
+      <tr>
+        <td>✨ DermaScan AI</td>
+        <td>$9.99</td>
+        <td>1,200</td>
+        <td>$11,988</td>
+        <td><strong>$143,856</strong></td>
+        <td><div class="rev-bar" style="width:88%"></div></td>
+      </tr>
+      <tr>
+        <td>🧴 SuppleScan AI</td>
+        <td>$9.99</td>
+        <td>800</td>
+        <td>$7,992</td>
+        <td><strong>$95,904</strong></td>
+        <td><div class="rev-bar" style="width:70%"></div></td>
+      </tr>
+      <tr>
+        <td>🐾 PawScan AI</td>
+        <td>$7.99</td>
+        <td>800</td>
+        <td>$6,392</td>
+        <td><strong>$76,704</strong></td>
+        <td><div class="rev-bar" style="width:65%"></div></td>
+      </tr>
+      <tr>
+        <td>🚗 AutoScan AI</td>
+        <td>$7.99</td>
+        <td>600</td>
+        <td>$4,794</td>
+        <td><strong>$57,528</strong></td>
+        <td><div class="rev-bar" style="width:55%"></div></td>
+      </tr>
+      <tr>
+        <td>⚗️ SafeScan AI</td>
+        <td>$5.99</td>
+        <td>500</td>
+        <td>$2,995</td>
+        <td><strong>$35,940</strong></td>
+        <td><div class="rev-bar" style="width:40%"></div></td>
+      </tr>
+      <tr>
+        <td>🌿 LeafScan AI</td>
+        <td>$4.99</td>
+        <td>600</td>
+        <td>$2,994</td>
+        <td><strong>$35,928</strong></td>
+        <td><div class="rev-bar" style="width:38%"></div></td>
+      </tr>
+      <tr>
+        <td>🦷 OralScan AI</td>
+        <td>$6.99</td>
+        <td>400</td>
+        <td>$2,796</td>
+        <td><strong>$33,552</strong></td>
+        <td><div class="rev-bar" style="width:35%"></div></td>
+      </tr>
+      <tr>
+        <td>🧾 TaxScan AI</td>
+        <td>$6.99</td>
+        <td>400</td>
+        <td>$2,796</td>
+        <td><strong>$33,552</strong></td>
+        <td><div class="rev-bar" style="width:35%"></div></td>
+      </tr>
+      <tr style="background: var(--indigo-pale);">
+        <td><strong>🏦 PORTFOLIO TOTAL</strong></td>
+        <td>—</td>
+        <td><strong>7,800 subs</strong></td>
+        <td><strong>$72,722</strong></td>
+        <td><strong style="color: var(--indigo);">$872,664</strong></td>
+        <td><div class="rev-bar" style="width:100%"></div></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p style="font-size: 12px; color: var(--slate-light); margin-top: 12px;">* Conservative estimates at 500–1,500 paid subscribers per app by month 6. Store fees (30%) + Gemini API costs (~$0.15/scan) not deducted. At 2x these numbers = ~$1.7M ARR.</p>
+</div>
+</div>
+<hr class="divider">
+
+<!-- ═══════════════════════════════ TIMELINE ═══════════════════════════════ -->
+<div class="container">
+<div class="section">
+  <div class="section-title"><span class="icon">📅</span> 12-Month Build + Launch Timeline</div>
+  <div class="section-subtitle">Solo founder pace. Each app takes ~5 working days once the template is hardened.</div>
+
+  <div class="timeline">
+    <div class="timeline-item green">
+      <div class="time green">Month 1 — NOW</div>
+      <h4>Launch Nouriva AI + Harden the Template</h4>
+      <p>Ship Nouriva AI on both stores. While it grows, extract all shared code into reusable modules. Create the appConfig.ts pattern. This is the hardest step — do it once, properly.</p>
+      <div class="timeline-apps">
+        <span class="timeline-app-tag">🥗 Nouriva AI — LIVE</span>
+        <span class="timeline-app-tag">🏗 Template hardening</span>
+      </div>
+    </div>
+
+    <div class="timeline-item green">
+      <div class="time green">Month 1–2</div>
+      <h4>💊 MediScan AI + 🧴 SuppleScan AI</h4>
+      <p>Identical tech stack — just different Gemini prompts + results schemas. Ship both in one sprint. MediScan is your revenue king. SuppleScan is your viral TikTok app. Cross-promote them.</p>
+      <div class="timeline-apps">
+        <span class="timeline-app-tag">💊 MediScan AI</span>
+        <span class="timeline-app-tag">🧴 SuppleScan AI</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Month 2–3</div>
+      <h4>✨ DermaScan AI + 🐾 PawScan AI</h4>
+      <p>DermaScan taps the massive beauty market with TikTok virality. PawScan is an emotional purchase — pet owners have some of the highest LTV of any consumer segment.</p>
+      <div class="timeline-apps">
+        <span class="timeline-app-tag">✨ DermaScan AI</span>
+        <span class="timeline-app-tag">🐾 PawScan AI</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Month 3–4</div>
+      <h4>🚗 AutoScan AI + ⚗️ SafeScan AI</h4>
+      <p>AutoScan is a unique, defensible position. SafeScan is the easiest build in the whole portfolio — household labels are structurally identical to food labels.</p>
+      <div class="timeline-apps">
+        <span class="timeline-app-tag">🚗 AutoScan AI</span>
+        <span class="timeline-app-tag">⚗️ SafeScan AI</span>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="time">Month 4–5</div>
+      <h4>🌿 LeafScan AI + 🦷 OralScan AI</h4>
+      <p>Smaller, passionate markets. LeafScan gets seasonal spring press. OralScan positions as a dental pre-check companion. Both are fast builds on the hardened template.</p>
+      <div class="timeline-apps">
+        <span class="timeline-app-tag">🌿 LeafScan AI</span>
+        <span class="timeline-app-tag">🦷 OralScan AI</span>
+      </div>
+    </div>
+
+    <div class="timeline-item amber">
+      <div class="time amber">Month 5–7</div>
+      <h4>🧾 TaxScan AI + 🏠 HomeScan AI + 💳 CAS AI</h4>
+      <p>The more complex Tier 3 apps requiring integrations (receipt export, repair marketplace leads, financial UI). Build with the cash flow from earlier apps. Consider hiring a contractor for these.</p>
+      <div class="timeline-apps">
+        <span class="timeline-app-tag">🧾 TaxScan AI</span>
+        <span class="timeline-app-tag">🏠 HomeScan AI</span>
+        <span class="timeline-app-tag">💳 CAS AI</span>
+      </div>
+    </div>
+
+    <div class="timeline-item amber">
+      <div class="time amber">Month 8–12</div>
+      <h4>Optimize, Bundle &amp; Explore "Productverse Pro"</h4>
+      <p>By now you have 10+ apps in the stores. Consider a "Productverse Pro" bundle subscription (all apps, one price). Explore B2B licensing (pharmacies, gyms, vets using your engine). Begin international expansion (EU, SEA).</p>
+      <div class="timeline-apps">
+        <span class="timeline-app-tag">📦 Productverse Bundle</span>
+        <span class="timeline-app-tag">🌏 International</span>
+        <span class="timeline-app-tag">🏢 B2B Licensing</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <strong>Productverse</strong> · Camera-Scan AI Portfolio Strategy · Generated by Nouriva AI Framework · productverse.in
+</div>
+
+</body>
+</html>

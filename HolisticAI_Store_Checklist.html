@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Holistic AI — App Store Publishing Checklist</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; background: #f5f5f7; color: #1d1d1f; }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #6e6e73; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 17px; font-weight: 600; margin: 32px 0 12px; display: flex; align-items: center; gap: 8px; }
+  .apple { color: #1d1d1f; }
+  .google { color: #1a73e8; }
+  .critical { color: #ff3b30; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 8px; }
+  th { background: #f5f5f7; text-align: left; padding: 10px 14px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #6e6e73; border-bottom: 1px solid #e5e5ea; }
+  td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #f2f2f7; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { width: 36px; text-align: center; }
+  td:nth-child(2) { width: 38%; font-weight: 500; }
+  td:nth-child(3) { color: #3a3a3c; }
+  input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: #007aff; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-left: 6px; }
+  .tag-fix { background: #fff0f0; color: #ff3b30; }
+  .tag-health { background: #f0f7ff; color: #007aff; }
+  .tag-iap { background: #f5f0ff; color: #7c3aed; }
+  .tag-legal { background: #fff7e6; color: #d97706; }
+  .progress-bar { background: #e5e5ea; border-radius: 8px; height: 8px; margin-bottom: 28px; }
+  .progress-fill { background: linear-gradient(90deg, #007aff, #34c759); height: 100%; border-radius: 8px; width: 0%; transition: width 0.3s; }
+  .progress-label { font-size: 12px; color: #6e6e73; margin-bottom: 6px; }
+  .section-note { font-size: 12px; color: #6e6e73; margin: -6px 0 10px; padding: 8px 12px; background: #fff9e6; border-left: 3px solid #ffcc00; border-radius: 0 6px 6px 0; }
+</style>
+</head>
+<body>
+
+<h1>Holistic AI — App Store Publishing Checklist</h1>
+<p class="subtitle">App: Holistic AI &nbsp;|&nbsp; Version: 1.0.0 &nbsp;|&nbsp; Website: <a href="https://productverse.in">productverse.in</a></p>
+
+<div class="progress-label" id="progressLabel">0 of 52 items complete</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="critical">⚠️ Critical Fixes (Do First)</h2>
+<p class="section-note">These are blockers — the app cannot be submitted without fixing them.</p>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Fix iOS Bundle ID <span class="tag tag-fix">BLOCKER</span></td><td>Change <code>com.anonymous.FoodScannerApp</code> → something like <code>in.productverse.holisticai</code> in app.json</td></tr>
+  <tr><td><input type="checkbox"></td><td>Set Android Package Name <span class="tag tag-fix">BLOCKER</span></td><td>Add <code>"package": "in.productverse.holisticai"</code> under <code>"android"</code> in app.json</td></tr>
+  <tr><td><input type="checkbox"></td><td>Set iOS Build Number</td><td>Add <code>"buildNumber": "1"</code> under <code>"ios"</code> in app.json</td></tr>
+  <tr><td><input type="checkbox"></td><td>Set Android Version Code</td><td>Add <code>"versionCode": 1</code> under <code>"android"</code> in app.json</td></tr>
+  <tr><td><input type="checkbox"></td><td>Remove EAS anonymous slug</td><td>Slug is currently <code>HolisticAI</code> — register it on your Expo account or update for production build</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="apple">🍎 Apple App Store</h2>
+
+<h2 style="font-size:14px; color:#555; margin-top:0;">Account & Legal</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Apple Developer Account</td><td>Active paid account ($99/yr) at developer.apple.com</td></tr>
+  <tr><td><input type="checkbox"></td><td>Sign Paid Apps Agreement <span class="tag tag-iap">IAP</span></td><td>Required in App Store Connect → Agreements to enable In-App Purchases</td></tr>
+  <tr><td><input type="checkbox"></td><td>Banking & Tax Info <span class="tag tag-iap">IAP</span></td><td>Fill in banking, tax and contact info in App Store Connect for IAP payouts</td></tr>
+  <tr><td><input type="checkbox"></td><td>Privacy Policy URL <span class="tag tag-legal">LEGAL</span></td><td>Add live URL from productverse.in (e.g. https://productverse.in/privacy) — required for health apps</td></tr>
+  <tr><td><input type="checkbox"></td><td>Terms of Service URL <span class="tag tag-legal">LEGAL</span></td><td>Add ToS URL, e.g. https://productverse.in/terms</td></tr>
+  <tr><td><input type="checkbox"></td><td>Medical Disclaimer <span class="tag tag-legal">LEGAL</span></td><td>Add clear "Not a substitute for medical advice" disclaimer in app description and onboarding</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">App Store Connect — App Setup</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Create App in App Store Connect</td><td>New App → iOS → enter bundle ID <code>in.productverse.holisticai</code></td></tr>
+  <tr><td><input type="checkbox"></td><td>App Name</td><td>"Holistic AI" — check it's not taken on the store</td></tr>
+  <tr><td><input type="checkbox"></td><td>Subtitle (30 chars)</td><td>e.g. "AI Food & Health Scanner"</td></tr>
+  <tr><td><input type="checkbox"></td><td>Description (4000 chars)</td><td>Include key features, personalization, AI food analysis, lab report insights</td></tr>
+  <tr><td><input type="checkbox"></td><td>Keywords (100 chars)</td><td>food scanner, nutrition AI, health tracker, meal analyzer, lab report</td></tr>
+  <tr><td><input type="checkbox"></td><td>Promotional Text (170 chars)</td><td>Optional — can be updated without a new submission</td></tr>
+  <tr><td><input type="checkbox"></td><td>Support URL</td><td>e.g. https://productverse.in/support</td></tr>
+  <tr><td><input type="checkbox"></td><td>Marketing URL</td><td>e.g. https://productverse.in</td></tr>
+  <tr><td><input type="checkbox"></td><td>Category</td><td>Primary: Health & Fitness — Secondary: Food & Drink or Medical</td></tr>
+  <tr><td><input type="checkbox"></td><td>Age Rating</td><td>Complete questionnaire — likely 4+ or 12+ depending on medical content framing</td></tr>
+  <tr><td><input type="checkbox"></td><td>Content Rights</td><td>Confirm you own all content or have rights</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Screenshots & Assets</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>iPhone 6.9" Screenshots</td><td>Min 3, max 10 — size: 1320×2868 px (iPhone 16 Pro Max) — REQUIRED</td></tr>
+  <tr><td><input type="checkbox"></td><td>iPhone 6.5" Screenshots</td><td>1284×2778 px (iPhone 14 Plus) — required if not using 6.9"</td></tr>
+  <tr><td><input type="checkbox"></td><td>iPad 13" Screenshots</td><td>2064×2752 px — required since <code>supportsTablet: true</code></td></tr>
+  <tr><td><input type="checkbox"></td><td>App Icon (1024×1024)</td><td>PNG, no alpha, no rounded corners — Apple applies mask automatically</td></tr>
+  <tr><td><input type="checkbox"></td><td>App Preview Video (optional)</td><td>15–30 sec MP4, shows real app UI — highly recommended for health apps</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Permissions & Entitlements</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>HealthKit Entitlement <span class="tag tag-health">HEALTH</span></td><td>Enable HealthKit in Xcode Capabilities — required for NSHealthShareUsageDescription</td></tr>
+  <tr><td><input type="checkbox"></td><td>HealthKit Health Records (if used) <span class="tag tag-health">HEALTH</span></td><td>Extra entitlement needed if reading clinical records — submit request to Apple</td></tr>
+  <tr><td><input type="checkbox"></td><td>Camera Permission</td><td>Already configured — verify description is clear and user-friendly</td></tr>
+  <tr><td><input type="checkbox"></td><td>Face ID Permission</td><td>Already configured in app.json — verify message is accurate</td></tr>
+  <tr><td><input type="checkbox"></td><td>Photo Library Permission</td><td>Already configured — verify reads "profile picture" scope is accurate</td></tr>
+  <tr><td><input type="checkbox"></td><td>Push Notifications (if used)</td><td>expo-notifications is included — register for remote notifications if sending them</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">In-App Purchases</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Create IAP Products <span class="tag tag-iap">IAP</span></td><td>Add subscription/one-time products in App Store Connect → In-App Purchases</td></tr>
+  <tr><td><input type="checkbox"></td><td>Configure Product IDs <span class="tag tag-iap">IAP</span></td><td>Match product IDs in code with those created in App Store Connect</td></tr>
+  <tr><td><input type="checkbox"></td><td>Subscription Group (if subscriptions) <span class="tag tag-iap">IAP</span></td><td>Create a subscription group and add localized display name</td></tr>
+  <tr><td><input type="checkbox"></td><td>Restore Purchases Button</td><td>Required by Apple — must be visible in the paywall/upgrade screen</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Privacy & Data</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>App Privacy — Data Types</td><td>Declare in App Store Connect: Health & Fitness data, User ID, Usage Data, Photos</td></tr>
+  <tr><td><input type="checkbox"></td><td>App Privacy — Tracking</td><td>If no 3rd-party ad tracking, select "We do not track users"</td></tr>
+  <tr><td><input type="checkbox"></td><td>ATT Framework (if tracking)</td><td>If using analytics/ads that track across apps, add NSUserTrackingUsageDescription</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Build & Submit</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Build with EAS or Xcode</td><td>Run <code>eas build --platform ios --profile production</code> or archive in Xcode</td></tr>
+  <tr><td><input type="checkbox"></td><td>Upload build via EAS / Transporter</td><td>Use <code>eas submit -p ios</code> or Apple Transporter app</td></tr>
+  <tr><td><input type="checkbox"></td><td>Select build in App Store Connect</td><td>Under the version, attach the uploaded build</td></tr>
+  <tr><td><input type="checkbox"></td><td>Review Notes for Apple</td><td>Add demo account credentials + note about HealthKit usage for reviewer</td></tr>
+  <tr><td><input type="checkbox"></td><td>Submit for Review</td><td>First review typically 1–3 days; health apps may get extra scrutiny</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="google" style="margin-top:40px;">🤖 Google Play Store</h2>
+
+<h2 style="font-size:14px; color:#555;">Account & Legal</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Google Play Developer Account</td><td>One-time $25 registration at play.google.com/console</td></tr>
+  <tr><td><input type="checkbox"></td><td>Identity Verification</td><td>Google now requires D-U-N-S or government ID for personal accounts</td></tr>
+  <tr><td><input type="checkbox"></td><td>Privacy Policy URL <span class="tag tag-legal">LEGAL</span></td><td>https://productverse.in/privacy — mandatory for apps with health data</td></tr>
+  <tr><td><input type="checkbox"></td><td>Medical Disclaimer <span class="tag tag-legal">LEGAL</span></td><td>Must appear clearly — Google is strict about medical/health claims</td></tr>
+  <tr><td><input type="checkbox"></td><td>Payments Profile <span class="tag tag-iap">IAP</span></td><td>Set up Google Payments Merchant account for in-app billing</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Play Console — App Setup</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Create App in Play Console</td><td>New app → Android → Free or Paid → set package name <code>in.productverse.holisticai</code></td></tr>
+  <tr><td><input type="checkbox"></td><td>App Name (50 chars)</td><td>"Holistic AI"</td></tr>
+  <tr><td><input type="checkbox"></td><td>Short Description (80 chars)</td><td>Shown on store listing — write a compelling one-liner</td></tr>
+  <tr><td><input type="checkbox"></td><td>Full Description (4000 chars)</td><td>Same as App Store description — adapt tone for Google Play</td></tr>
+  <tr><td><input type="checkbox"></td><td>Category</td><td>Health & Fitness</td></tr>
+  <tr><td><input type="checkbox"></td><td>Tags</td><td>Up to 5 tags: Nutrition, AI, Health Tracker, Food Scanner, Wellness</td></tr>
+  <tr><td><input type="checkbox"></td><td>Contact Email</td><td>Must be a real, monitored address</td></tr>
+  <tr><td><input type="checkbox"></td><td>Support URL</td><td>https://productverse.in/support</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Screenshots & Assets</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Phone Screenshots</td><td>Min 2, max 8 — JPEG/PNG, 16:9 or 9:16, min 320px on shortest side</td></tr>
+  <tr><td><input type="checkbox"></td><td>Tablet Screenshots (7" & 10")</td><td>Optional but strongly recommended — shows in tablet search results</td></tr>
+  <tr><td><input type="checkbox"></td><td>Feature Graphic</td><td>1024×500 px — shown at top of store listing — required</td></tr>
+  <tr><td><input type="checkbox"></td><td>Hi-res App Icon</td><td>512×512 px PNG with alpha — separate from adaptive icon in app.json</td></tr>
+  <tr><td><input type="checkbox"></td><td>Promo Video (optional)</td><td>YouTube URL — 30–120 sec walkthrough of the app</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Permissions & Health Data</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Health Connect Declaration <span class="tag tag-health">HEALTH</span></td><td>Apps using Health Connect must complete Google's Health Connect permissions declaration form</td></tr>
+  <tr><td><input type="checkbox"></td><td>Health Connect Privacy Policy <span class="tag tag-health">HEALTH</span></td><td>Must explicitly list all Health Connect data types read/written</td></tr>
+  <tr><td><input type="checkbox"></td><td>Camera Permission justification</td><td>Declare why camera is needed in Data Safety section</td></tr>
+  <tr><td><input type="checkbox"></td><td>Sensitive Permissions Review</td><td>Camera + biometric + health data = likely manual review; allow extra time</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Data Safety Section</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Data Collection disclosure</td><td>Declare: Health info, Photos/videos, Personal info (email/user ID)</td></tr>
+  <tr><td><input type="checkbox"></td><td>Data Sharing disclosure</td><td>Declare if any data shared with Gemini API / Supabase / 3rd parties</td></tr>
+  <tr><td><input type="checkbox"></td><td>Security practices</td><td>Check: data encrypted in transit, user can request deletion</td></tr>
+  <tr><td><input type="checkbox"></td><td>Data deletion option</td><td>Must provide in-app or web way to delete account/data — link in Data Safety</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">In-App Purchases</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Create Products in Play Console <span class="tag tag-iap">IAP</span></td><td>Monetisation → Products → Subscriptions or In-app products</td></tr>
+  <tr><td><input type="checkbox"></td><td>Match Product IDs in code <span class="tag tag-iap">IAP</span></td><td>Sync product IDs with react-native-iap configuration</td></tr>
+  <tr><td><input type="checkbox"></td><td>Google Play Billing Library</td><td>Confirm react-native-iap version supports Play Billing Library v6+</td></tr>
+</table>
+
+<h2 style="font-size:14px; color:#555;">Build & Release</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Generate Keystore</td><td>Create a release keystore or use Google Play App Signing (recommended)</td></tr>
+  <tr><td><input type="checkbox"></td><td>Build AAB (not APK)</td><td>Run <code>eas build --platform android --profile production</code> — Play Store requires AAB</td></tr>
+  <tr><td><input type="checkbox"></td><td>Target SDK 35 ✓</td><td>Already set in app.json — compliant with Play Store 2024 requirement</td></tr>
+  <tr><td><input type="checkbox"></td><td>Min SDK 26 ✓</td><td>Already set — covers Android 8.0+</td></tr>
+  <tr><td><input type="checkbox"></td><td>Content Rating Questionnaire</td><td>Complete in Play Console — likely "Everyone" or "Teen" rating</td></tr>
+  <tr><td><input type="checkbox"></td><td>Upload AAB to Internal Testing first</td><td>Test on real device before promoting to production</td></tr>
+  <tr><td><input type="checkbox"></td><td>Promote to Production</td><td>Roll out 10% → 50% → 100% or full rollout</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 style="margin-top:40px;">🌐 Both Stores</h2>
+<table>
+  <tr><th></th><th>Item</th><th>Details</th></tr>
+  <tr><td><input type="checkbox"></td><td>Privacy Policy live on website <span class="tag tag-legal">LEGAL</span></td><td>https://productverse.in/privacy — must cover Gemini API data, Supabase storage, health data</td></tr>
+  <tr><td><input type="checkbox"></td><td>Terms of Service live on website <span class="tag tag-legal">LEGAL</span></td><td>https://productverse.in/terms</td></tr>
+  <tr><td><input type="checkbox"></td><td>Test IAP end-to-end in sandbox</td><td>Use Apple Sandbox accounts & Google Play license testers before submitting</td></tr>
+  <tr><td><input type="checkbox"></td><td>Test on physical devices</td><td>Camera, Face ID, HealthKit, Health Connect — all require real hardware</td></tr>
+  <tr><td><input type="checkbox"></td><td>Crash-free rate ≥ 99%</td><td>Both stores penalize apps with high crash rates</td></tr>
+  <tr><td><input type="checkbox"></td><td>Deep link / universal link (optional)</td><td>Set up if you want web → app linking from productverse.in</td></tr>
+</table>
+
+<script>
+  function updateProgress() {
+    const boxes = document.querySelectorAll('input[type=checkbox]');
+    const checked = document.querySelectorAll('input[type=checkbox]:checked').length;
+    const total = boxes.length;
+    const pct = Math.round((checked / total) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = checked + ' of ' + total + ' items complete (' + pct + '%)';
+  }
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => cb.addEventListener('change', updateProgress));
+  updateProgress();
+</script>
+</body>
+</html>

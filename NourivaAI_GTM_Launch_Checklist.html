@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nouriva AI — GTM Launch Checklist</title>
+<style>
+  :root {
+    --indigo: #4F46E5;
+    --indigo-dark: #3730A3;
+    --indigo-light: #EEF2FF;
+    --green: #10B981;
+    --green-light: #D1FAE5;
+    --amber: #F59E0B;
+    --amber-light: #FEF3C7;
+    --red: #EF4444;
+    --red-light: #FEE2E2;
+    --purple: #8B5CF6;
+    --purple-light: #EDE9FE;
+    --pink: #EC4899;
+    --pink-light: #FCE7F3;
+    --text: #1e293b;
+    --text-2: #475569;
+    --text-3: #94a3b8;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+    --white: #ffffff;
+    --surface: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Inter', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--indigo-dark) 0%, var(--indigo) 60%, #7C3AED 100%);
+    padding: 40px 32px 32px;
+    color: white;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .logo-badge {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 900; color: #10B981;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    flex-shrink: 0;
+    font-family: 'Georgia', serif;
+  }
+  .header h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+  .header .subtitle { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+  .header-meta {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .meta-pill {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    height: 8px;
+    margin: 20px 0 6px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10B981, #34D399);
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 12px;
+    opacity: 0.75;
+    font-weight: 600;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 960px; margin: 0 auto; padding: 28px 24px 60px; }
+
+  /* PHASE LEGEND */
+  .phase-legend {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 24px;
+    background: white;
+    border-radius: 14px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+  }
+  .phase-legend-title {
+    width: 100%;
+    font-size: 11px; font-weight: 800; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-bottom: 8px;
+  }
+  .legend-pill {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+  }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* SECTION */
+  .section { margin-bottom: 28px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .section-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .section-title { font-size: 17px; font-weight: 800; color: var(--text); }
+  .section-desc { font-size: 12px; color: var(--text-3); font-weight: 500; margin-top: 1px; }
+  .section-count {
+    margin-left: auto;
+    font-size: 12px; font-weight: 700;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  /* CHECKLIST */
+  .checklist {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    user-select: none;
+  }
+  .item:last-child { border-bottom: none; }
+  .item:hover { background: var(--bg); }
+  .item.done { opacity: 0.55; }
+  .item.done .item-title { text-decoration: line-through; color: var(--text-3); }
+
+  .checkbox {
+    width: 20px; height: 20px; border-radius: 6px;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+  .item.done .checkbox {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .checkbox svg { display: none; }
+  .item.done .checkbox svg { display: block; }
+
+  .item-body { flex: 1; }
+  .item-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .item-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.4; }
+  .item-desc { font-size: 12px; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
+
+  /* TAGS */
+  .tag {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .tag-viral { background: var(--purple-light); color: var(--purple); }
+  .tag-money { background: var(--green-light); color: #065F46; }
+  .tag-asap { background: var(--red-light); color: var(--red); }
+  .tag-india { background: #FFF7ED; color: #C2410C; }
+  .tag-global { background: #EFF6FF; color: #1D4ED8; }
+  .tag-free { background: var(--green-light); color: #065F46; }
+  .tag-paid { background: var(--amber-light); color: #92400E; }
+  .tag-day0 { background: var(--pink-light); color: var(--pink); }
+
+  /* DAY BADGE */
+  .day-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 20px;
+    border-radius: 4px;
+    font-size: 9px; font-weight: 900;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    background: var(--indigo-light);
+    color: var(--indigo);
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+
+  /* SUMMARY STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-value { font-size: 26px; font-weight: 900; color: var(--indigo); }
+  .stat-label { font-size: 11px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* TIMELINE HEADER */
+  .timeline-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--indigo); color: white;
+    border-radius: 20px; padding: 4px 14px;
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 0.3px;
+    margin-bottom: 16px;
+  }
+  .timeline-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #10B981; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    color: var(--text-3);
+    font-size: 11px;
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .header { padding: 24px 16px; }
+    .container { padding: 20px 14px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-badge">N</div>
+    <div>
+      <div class="header h1" style="font-size:24px;font-weight:900;">Nouriva AI</div>
+      <div class="subtitle">Go-To-Market Launch Checklist — Viral + Monetizable in Week 1</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-pill">🇮🇳 India-first</div>
+    <div class="meta-pill">🌍 Global Day 1</div>
+    <div class="meta-pill">💰 Week 1 Revenue</div>
+    <div class="meta-pill">🚀 Viral Growth</div>
+    <div class="meta-pill">📱 iOS + Android</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+  <div class="progress-label" id="progressLabel">0 of 68 tasks complete</div>
+</div>
+
+<div class="container">
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="statTotal">68</div>
+      <div class="stat-label">Total Tasks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--red);" id="statAsap">12</div>
+      <div class="stat-label">Do First</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--purple);" id="statViral">18</div>
+      <div class="stat-label">Viral Levers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--green);" id="statMoney">14</div>
+      <div class="stat-label">Revenue Tasks</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="phase-legend">
+    <div class="phase-legend-title">Tags</div>
+    <div class="legend-pill" style="background:var(--red-light);"><div class="legend-dot" style="background:var(--red);"></div><span style="color:var(--red);font-size:11px;font-weight:700;">ASAP</span></div>
+    <div class="legend-pill" style="background:var(--purple-light);"><div class="legend-dot" style="background:var(--purple);"></div><span style="color:var(--purple);font-size:11px;font-weight:700;">VIRAL</span></div>
+    <div class="legend-pill" style="background:var(--green-light);"><div class="legend-dot" style="background:var(--green);"></div><span style="color:#065F46;font-size:11px;font-weight:700;">REVENUE</span></div>
+    <div class="legend-pill" style="background:var(--pink-light);"><div class="legend-dot" style="background:var(--pink);"></div><span style="color:var(--pink);font-size:11px;font-weight:700;">DAY 0</span></div>
+    <div class="legend-pill" style="background:#FFF7ED;"><div class="legend-dot" style="background:#C2410C;"></div><span style="color:#C2410C;font-size:11px;font-weight:700;">INDIA</span></div>
+    <div class="legend-pill" style="background:#EFF6FF;"><div class="legend-dot" style="background:#1D4ED8;"></div><span style="color:#1D4ED8;font-size:11px;font-weight:700;">GLOBAL</span></div>
+  </div>
+
+  <!-- ===== PHASE 0: PRE-LAUNCH FOUNDATION ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>T-7 DAYS — Pre-Launch Foundation</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:#FFF7ED;">🏗️</div>
+      <div>
+        <div class="section-title">Digital Presence Setup</div>
+        <div class="section-desc">Everything must exist before you launch — you only get one first impression</div>
+      </div>
+      <div class="section-count" id="count-0"></div>
+    </div>
+    <div class="checklist" id="section-0">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Set up productverse.in/nouriva landing page</span><span class="tag tag-asap">ASAP</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Hero with app preview video, 3 bullet benefits, email waitlist signup (Mailchimp/ConvertKit free tier), download buttons (iOS + Android). This is your viral link to share everywhere.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Create @NourivaAI on Instagram, Twitter/X, TikTok, LinkedIn</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">Same handle across all platforms. Post 3 teaser posts before launch day. Bio: "Scan your food. Know your body. AI-powered nutrition. 🍎" + link to landing page.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Record a 60-second demo video of the app scanning food</span><span class="tag tag-asap">ASAP</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Film yourself scanning a biryani, pizza, or chai — show the vitality score + organ impact in real time. This is your #1 viral asset. Post as Reel/TikTok/Short. Shoot on iPhone in good light.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Set up Google Analytics 4 + Mixpanel on landing page and app</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">Track: installs, trial starts, subscription conversions, scan completions, share events. You need data from Day 1 to double down on what's working.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Create a Product Hunt "upcoming" page</span><span class="tag tag-viral">VIRAL</span><span class="day-badge">T-5</span></div>
+          <div class="item-desc">Go to producthunt.com/posts/new → mark as "upcoming". Collect followers before launch. Aim for 100+ followers before launch day — they get notified when you go live.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Join and post in relevant Indian communities (pre-warm)</span><span class="tag tag-india">INDIA</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">WhatsApp groups (fitness, keto, PCOS, diabetes), Facebook groups (Indian Health & Fitness, Keto India), Reddit r/India r/IndianFitness. Engage genuinely 3-4 days before posting about the app.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Prepare 10 shareable "results" screenshots for social proof</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Scan common Indian foods (dal makhani, samosa, chai, dosa, maggi) and screenshot the results. These are your most viral content pieces — "I scanned my lunch and this happened 😱"</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Build a "TestFlight/Beta" invite list of 50 power users</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Reach out to fitness enthusiasts, health bloggers, PCOS/diabetes communities. Early users = first reviews + word of mouth. Ask for honest feedback in exchange for 3 months Pro free.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHASE 1: APP STORE OPTIMIZATION ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>T-5 DAYS — App Store Optimization (ASO)</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--indigo-light);">🔍</div>
+      <div>
+        <div class="section-title">App Store Discoverability</div>
+        <div class="section-desc">ASO is free organic traffic — nail this before submit</div>
+      </div>
+      <div class="section-count" id="count-1"></div>
+    </div>
+    <div class="checklist" id="section-1">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Write keyword-optimized App Store title & subtitle</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">Title: "Nouriva AI: Food & Nutrition" — Subtitle: "Scan meals, track health, lose weight". Keywords to hit: food scanner, calorie tracker, nutrition app, meal analyzer, health AI, diet tracker.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Write a powerful App Store description (first 3 lines are critical)</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">First 255 chars shown without "More". Open with the hook: "Point your camera at any meal and get instant organ-level health insights powered by AI. No manual logging. No calorie counting. Just scan." Pack keywords naturally.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Create 5 App Store screenshots (portrait, 6.5" iPhone)</span><span class="tag tag-asap">ASAP</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Screenshots sell the app. Use Canva or Figma. Screens: 1) Scanner UI 2) Vitality score reveal 3) Organ impact panel 4) Lab report scan 5) Weekly report. Each with a headline caption. Use indigo brand colors.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Create a 30-second App Preview video for App Store</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Autoplay in search results = massive CTR boost. Show: scan food → score reveals → organ breakdown → share card. No voiceover needed — use your brand green/indigo captions. Record at 1080×1920.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Set up correct app category and secondary category</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">Primary: Health & Fitness. Secondary: Medical (for the lab report feature). Both stores. This affects which charts you appear in and what Apple may feature you under.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Localize listing for India (Hindi keywords in keyword field)</span><span class="tag tag-india">INDIA</span></div>
+          <div class="item-desc">Apple: Add Hindi transliterated keywords in the keyword field (खाना, स्वास्थ्य, कैलोरी). Google Play: Add Hindi description. Huge unlock for tier-2/tier-3 India discoverability.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHASE 2: INFLUENCER + PRESS ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>T-4 DAYS — Influencer & Press Seeding</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--purple-light);">📣</div>
+      <div>
+        <div class="section-title">Media & Influencer Outreach</div>
+        <div class="section-desc">Get coverage ready to publish the moment you go live</div>
+      </div>
+      <div class="section-count" id="count-2"></div>
+    </div>
+    <div class="checklist" id="section-2">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Identify 20 micro-influencers (10K–200K) in health/fitness/nutrition</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-india">INDIA</span></div>
+          <div class="item-desc">Target: Indian nutritionists on Instagram, PCOS warriors, fitness YouTubers, diabetes management accounts. DM with a personal note + TestFlight link. Offer 6 months Pro free. Micro > macro for authenticity.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Pitch 5 global tech/health media outlets with exclusive angle</span><span class="tag tag-global">GLOBAL</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Outlets: TechCrunch, Product Hunt Blog, The Hustle, Morning Brew Health, Healthline. Angle: "India's first AI that shows you which organs are affected by each meal you eat." The organ-level insight is your differentiator.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Pitch Indian tech/startup press</span><span class="tag tag-india">INDIA</span></div>
+          <div class="item-desc">YourStory, Inc42, The Ken, Entrackr, Economic Times Startup, Mint Lounge. Email: yogesh@productverse.co.in with subject "Exclusive: AI app from India that shows organ-level food impact — launch exclusive"</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Write and schedule a personal "founder story" LinkedIn post</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Post on launch day. Tell the why: what problem you faced personally with food and health, why you built this. End with "Link to download in comments." Founder stories go viral on LinkedIn.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Post in r/IndiaFitness, r/diabetes, r/PCOS, r/keto (pre-seed)</span><span class="tag tag-india">INDIA</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Post as a user genuinely asking/sharing: "I built an app to see how each meal affects my organs — would love feedback from this community". Redditors hate ads, love founders who engage authentically.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Create a "launch kit" for influencers (1-pager + assets)</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Share: app description, 3 talking points, scan results screenshots, referral link (with UTM for tracking), suggested caption. Make it zero-effort to post. The easier you make it, the more they'll do it.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHASE 3: MONETIZATION SETUP ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>T-3 DAYS — Monetization Infrastructure</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--green-light);">💰</div>
+      <div>
+        <div class="section-title">Revenue Ready Before Launch</div>
+        <div class="section-desc">Every hour of delay post-launch = money left on the table</div>
+      </div>
+      <div class="section-count" id="count-3"></div>
+    </div>
+    <div class="checklist" id="section-3">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Test end-to-end subscription purchase on both stores (sandbox)</span><span class="tag tag-asap">ASAP</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Use Apple Sandbox + Google Play test accounts. Confirm: trial starts, upgrade flow, restore purchases, cancellation, and that Pro features unlock instantly. Test on real device — not simulator.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Verify pricing across 5+ key markets</span><span class="tag tag-money">REVENUE</span><span class="tag tag-global">GLOBAL</span></div>
+          <div class="item-desc">India: ₹449/mo, ₹2,499/yr. US: $12.99/mo, $59.99/yr. UK: £9.99/mo. UAE: AED 45/mo. Use Apple's and Google's price tiers to set appropriate local prices. India pricing = 3x more downloads.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Set up RevenueCat for subscription analytics + webhooks</span><span class="tag tag-money">REVENUE</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">RevenueCat (free tier) gives you real-time MRR, trial conversion rates, churn, LTV by country — across both iOS and Android in one dashboard. Critical for week-1 decisions. revenuecatapp.com</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Design a launch-week discount offer (limited time)</span><span class="tag tag-money">REVENUE</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Use App Store promotional pricing: "Launch Week Only — 50% off Annual Plan". Creates urgency. Set a 7-day timer. Promote heavily on all channels. FOMO drives conversion.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Configure paywall A/B test (annual vs monthly first)</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Show annual plan first (higher LTV). Test: Plan A = annual highlighted, Plan B = monthly highlighted. Use RevenueCat Experiments or just ship one and track. Annual-first typically converts 30% better on LTV.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Ensure free tier is compelling but clearly limited</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Free: 3 scans/day, basic macros only. Pro: Unlimited scans, organ insights, glucose data, lab upload, weekly report. The free tier must be good enough to hook people but leave them wanting more.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Add UPI payment support context (Indian App Store pricing)</span><span class="tag tag-india">INDIA</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Both Apple and Google handle UPI/RuPay via their billing. Your job is to set competitive INR pricing. Check competitors: HealthifyMe Pro (~₹899/mo), MyFitnessPal Premium (~₹699/mo). Price Nouriva AI below them.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHASE 4: LAUNCH DAY ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>DAY 0 — Launch Day Blitz</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--pink-light);">🚀</div>
+      <div>
+        <div class="section-title">Launch Day — Execute Everything at Once</div>
+        <div class="section-desc">Coordinate all channels to fire within a 2-hour window for maximum momentum</div>
+      </div>
+      <div class="section-count" id="count-4"></div>
+    </div>
+    <div class="checklist" id="section-4">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Post on Product Hunt at 12:01 AM PST (US audience prime time)</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-global">GLOBAL</span></div>
+          <div class="item-desc">Product Hunt resets at midnight PST. Post right at 12:01 AM. Title: "Nouriva AI — Scan food, see which organs it affects in real time". Post the scanner demo GIF. Reply to every comment within the hour.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Post "Show HN: I built an AI that shows organ impact of every meal" on Hacker News</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-global">GLOBAL</span></div>
+          <div class="item-desc">Post between 9-10 AM EST (HN peak traffic). Be in the comments all day. HN can send 10K+ visitors in 24 hours if it hits the front page. Frame it technically — mention Gemini AI, the clinical prompt design, Supabase.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Post the demo Reel on Instagram, TikTok, YouTube Shorts simultaneously</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Same 60-second video, all 3 platforms. Caption: "I scanned my lunch and got shocked 😱 Which organ do you think got hit hardest? 👇 Link in bio to try free." Use hooks in first 3 seconds — algorithms reward watch-through rate.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Send the launch email to your waitlist</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Subject: "It's live — + 50% off for the next 48 hours 🎉". Keep it short: 1 GIF, 1 hero CTA button, 3 bullets on what Pro gives them. Email converts 3-5x better than social for paid conversions.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Share personal founder post on LinkedIn + Twitter/X</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">"After 6 months of building, Nouriva AI is live on the App Store. Here's why I built it..." Tell the personal story. End with a question to generate comments. Comments = more reach on both platforms.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Blast in Indian WhatsApp/Telegram communities</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-india">INDIA</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">All the health, fitness, keto, diabetes, PCOS, startup WhatsApp groups you're in. Keep message short: "Finally launched my AI food scanner. Would mean a lot if you'd try it 🙏 [link]". Personal = authentic.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Activate all seeded influencers to post simultaneously</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Message every beta influencer: "We're live! Today is the day — would love for you to share if you found it helpful 🙏 Here's the launch kit again [link]". Coordinate timing: 10 AM IST = Indian prime time.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Post in r/SideProject, r/startups, r/Entrepreneur on Reddit</span><span class="tag tag-day0">DAY 0</span><span class="tag tag-global">GLOBAL</span></div>
+          <div class="item-desc">"Launched my AI food scanner today — took 6 months. Would love your feedback." Honest, vulnerable posts do well. Include a GIF of the app in action. Read subreddit rules before posting.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHASE 5: VIRAL GROWTH WEEK 1 ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>DAYS 1-7 — Viral Growth Mechanics</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--purple-light);">🌊</div>
+      <div>
+        <div class="section-title">In-App Viral Loops + Growth Hacks</div>
+        <div class="section-desc">Build growth machines that work while you sleep</div>
+      </div>
+      <div class="section-count" id="count-5"></div>
+    </div>
+    <div class="checklist" id="section-5">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Verify the Share Card is beautiful and branded on every scan result</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">Every scan result has a share button (already built). The share card must look stunning — vitality score, food name, top 2 organ impacts, "Scanned with Nouriva AI" watermark. This is your #1 free distribution channel.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Add "Invite a friend, get 1 week Pro free" referral system</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Each user gets a unique referral link. Friend installs → referrer gets 7 days free Pro, friend gets 3-day trial extended. This alone can create viral K-factor > 1. Use Branch.io or RevenueCat Referrals.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Run a "Scan your favourite Indian food" challenge on social</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-india">INDIA</span></div>
+          <div class="item-desc">Challenge: "Scan your meal and share your score with #NourivaScore". Seed it with 10 influencers posting their results. Repost every entry from @NourivaAI. UGC challenges = free viral content engine. Prize: 3 months Pro.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Ask the first 100 users for a 5-star App Store review</span><span class="tag tag-asap">ASAP</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Trigger in-app review prompt after 3rd successful scan (using SKStoreReviewAPI). Also manually reach out to beta users via email: "Would you leave a review? It takes 30 seconds and means the world." First 10 reviews = credibility.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Post "shocking scan results" content daily (Days 1-7)</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Every day: post 1 viral-worthy scan result. "I scanned McDonald's fries and my liver score was..." / "Dahi vs yoghurt — the difference shocked me". Curiosity gap content = high saves + shares. Schedule in advance.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Start a "Nutritionist vs AI" collab series with a dietitian</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-india">INDIA</span></div>
+          <div class="item-desc">Partner with a registered dietitian/nutritionist on Instagram. They scan meals, comment on the AI's analysis vs their professional opinion. Cross-post. Their audience + your audience = combined reach. Do 3 videos in week 1.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Submit to app directories and newsletters</span><span class="tag tag-global">GLOBAL</span><span class="tag tag-free">FREE</span></div>
+          <div class="item-desc">Submit to: AppAdvice, AppGrooves, AlternativeTo, There's An App For That newsletter, iOS Dev Weekly, Indie Hackers newsletter, startups.fyi, AppSumo (if ready for LTD), BetaList. Free backlinks + traffic.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Apply for Apple App Store "New Apps We Love" editorial feature</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-global">GLOBAL</span></div>
+          <div class="item-desc">Email appstorepromotion@apple.com. Subject: "Editorial consideration: Nouriva AI — first AI food scanner with organ-level health insights". Include: app store link, demo video, what makes it unique. Features = 100K+ downloads.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHASE 6: PAID ACQUISITION ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>DAYS 3-7 — Paid Acquisition (Once Organic is Proven)</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--amber-light);">🎯</div>
+      <div>
+        <div class="section-title">Paid Ads — Pour Fuel on the Organic Fire</div>
+        <div class="section-desc">Only spend money once you know organic is converting. Then scale fast.</div>
+      </div>
+      <div class="section-count" id="count-6"></div>
+    </div>
+    <div class="checklist" id="section-6">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Launch Meta Ads (Instagram/Facebook) — ₹500/day budget to start</span><span class="tag tag-paid">PAID</span><span class="tag tag-india">INDIA</span></div>
+          <div class="item-desc">Audience: India, 22-45, interest in: nutrition, fitness, health, diabetes, weight loss. Creative: the 60-sec demo video. Goal: App Installs (not traffic). Test 3 ad creatives. Double budget on the winner.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Run Apple Search Ads on high-intent keywords</span><span class="tag tag-paid">PAID</span><span class="tag tag-global">GLOBAL</span></div>
+          <div class="item-desc">Bid on: "food scanner", "nutrition app", "calorie tracker", "meal analyzer". Start with ₹1,000/day. Apple Search Ads reach users actively searching the App Store — highest intent traffic possible. CPI = ₹50-150 typically.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Test TikTok/Instagram Reels paid promotion on best organic video</span><span class="tag tag-paid">PAID</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">Take your best-performing organic Reel, boost it with ₹300-500/day. Promote to lookalike audience of your followers. This is the cheapest viral amplification — native content + paid reach.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Set up Google App Campaigns (UAC)</span><span class="tag tag-paid">PAID</span><span class="tag tag-global">GLOBAL</span></div>
+          <div class="item-desc">Google App Campaigns auto-optimize across Google Search, YouTube, Display, and Play Store. Feed it 4-5 creative assets (images + short video). Target CPI goal = 2x your revenue per install. Start at ₹500/day.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PHASE 7: WEEK 1 RETENTION & REVENUE ===== -->
+  <div class="section">
+    <div class="timeline-pill"><div class="dot"></div>DAYS 1-7 — Retention + Week 1 Revenue Lock</div>
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--green-light);">📈</div>
+      <div>
+        <div class="section-title">Converting Free → Paid This Week</div>
+        <div class="section-desc">Retention is the multiplier — a leaky bucket kills any viral growth</div>
+      </div>
+      <div class="section-count" id="count-7"></div>
+    </div>
+    <div class="checklist" id="section-7">
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Set up push notification drip for new users (Days 1, 3, 7)</span><span class="tag tag-money">REVENUE</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">Day 1: "Scan your breakfast and see what it does to your body ☀️". Day 3: "Your 3-day trial of Pro ends in 24 hrs — upgrade to keep your organ insights". Day 7: "You've scanned 5 meals — unlock your weekly health report 📊".</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Respond to every App Store review in the first week</span><span class="tag tag-viral">VIRAL</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Every 1-star review responded to thoughtfully = converts to 3-4 stars 40% of the time. Every 5-star response = shown to prospective users. Apple and Google both reward review response rates with better algorithm placement.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">DM your first 50 users personally to get feedback</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">"Hi! I'm Yogesh, founder of Nouriva AI. Saw you downloaded — would love to know what you think, takes 2 mins?" This is founder-led sales. These people become your biggest evangelists if they feel personally seen.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Track daily active users, trial starts, and conversions in RevenueCat</span><span class="tag tag-money">REVENUE</span></div>
+          <div class="item-desc">Check these every morning of week 1: install count, trial start rate (target >30%), trial→paid conversion (target >20%), Day 1 retention (target >40%), Day 7 retention (target >20%). These numbers tell you what to fix.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Ship a hotfix within 48 hours if you find a critical bug from real users</span><span class="tag tag-asap">ASAP</span></div>
+          <div class="item-desc">Real users find bugs beta testers miss. Monitor crash reports in Xcode Organizer / Google Firebase Crashlytics. A crashed app on Day 2 = bad reviews. Set up Sentry or Firebase Crashlytics before launch.</div>
+        </div>
+      </div>
+
+      <div class="item" onclick="toggle(this)">
+        <div class="checkbox"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="item-body">
+          <div class="item-header"><span class="item-title">Share Day 7 metrics publicly on LinkedIn/Twitter — "Week 1 in numbers"</span><span class="tag tag-viral">VIRAL</span></div>
+          <div class="item-desc">"7 days since we launched Nouriva AI. Here's what happened: X downloads, ₹Y revenue, Z countries, top scan = biryani 😂". Founder transparency posts go viral. It also attracts investors, press, and more users.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    Generated for Nouriva AI by Productverse · yogesh@productverse.co.in · April 2026<br />
+    This checklist is a living document — update and iterate as you learn what works.
+  </footer>
+</div>
+
+<script>
+  function toggle(item) {
+    item.classList.toggle('done');
+    updateAll();
+  }
+
+  function updateAll() {
+    const allItems = document.querySelectorAll('.item');
+    const doneItems = document.querySelectorAll('.item.done');
+    const total = allItems.length;
+    const done = doneItems.length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = done + ' of ' + total + ' tasks complete (' + pct + '%)';
+
+    // Update section counts
+    const sections = document.querySelectorAll('.checklist');
+    sections.forEach((sec, i) => {
+      const secTotal = sec.querySelectorAll('.item').length;
+      const secDone = sec.querySelectorAll('.item.done').length;
+      const el = document.getElementById('count-' + i);
+      if (el) el.textContent = secDone + '/' + secTotal + ' done';
+    });
+  }
+
+  // Count tags for stats
+  function countTags() {
+    const asap = document.querySelectorAll('.tag-asap').length;
+    const viral = document.querySelectorAll('.tag-viral').length;
+    const money = document.querySelectorAll('.tag-money').length;
+    const total = document.querySelectorAll('.item').length;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statAsap').textContent = asap;
+    document.getElementById('statViral').textContent = viral;
+    document.getElementById('statMoney').textContent = money;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    countTags();
+    updateAll();
+  });
+</script>
+</body>
+</html>
