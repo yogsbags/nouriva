@@ -23,6 +23,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as Haptics from 'expo-haptics';
 import * as Linking from 'expo-linking';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import Svg, { Path } from 'react-native-svg';
 import { EnvelopeIcon as Envelope, LockSimpleIcon as LockSimple, ArrowRightIcon as ArrowRight, SparkleIcon as Sparkle, ShieldIcon as Shield } from 'phosphor-react-native';
 
@@ -56,6 +57,7 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [biometricBusy, setBiometricBusy] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -113,14 +115,17 @@ export default function AuthScreen() {
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-      if (!response.data?.idToken) throw new Error('No ID token returned from Google.');
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      await GoogleSignin.signIn();
+      const { idToken } = await GoogleSignin.getTokens();
+      if (!idToken) throw new Error('No ID token returned from Google.');
+
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
-        token: response.data.idToken,
+        token: idToken,
       });
       if (error) throw error;
+
       if (data.session) {
         await saveBiometricLoginSnapshot(data.session);
         await refreshBiometricLoginAvailability();
@@ -132,6 +137,34 @@ export default function AuthScreen() {
       Alert.alert('Google Sign-In Error', error.message);
     } finally {
       setGoogleLoading(false);
+    }
+  }
+
+  async function handleAppleSignIn() {
+    setAppleLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (!credential.identityToken) throw new Error('No identity token returned from Apple.');
+      const { data, error } = await supabase.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
+      if (error) throw error;
+      if (data.session) {
+        await saveBiometricLoginSnapshot(data.session);
+        await refreshBiometricLoginAvailability();
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } catch (error: any) {
+      if (error.code === 'ERR_REQUEST_CANCELED') return;
+      Alert.alert('Apple Sign-In Error', error.message);
+    } finally {
+      setAppleLoading(false);
     }
   }
 
@@ -306,7 +339,7 @@ export default function AuthScreen() {
           <TouchableOpacity
             style={[styles.googleButton, googleLoading && styles.authButtonLoading]}
             onPress={handleGoogleSignIn}
-            disabled={loading || biometricBusy || googleLoading}
+            disabled={loading || biometricBusy || googleLoading || appleLoading}
             activeOpacity={0.85}
           >
             {googleLoading ? (
@@ -318,6 +351,16 @@ export default function AuthScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {Platform.OS === 'ios' && (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={16}
+              style={styles.appleButton}
+              onPress={handleAppleSignIn}
+            />
+          )}
 
           {!isSignUp && biometricLoginAvailable ? (
             <TouchableOpacity
@@ -578,6 +621,11 @@ function makeStyles(C: AppColors) {
       color: C.textPrimary,
       fontSize: 15,
       fontWeight: '600',
+    },
+    appleButton: {
+      height: 52,
+      marginTop: 14,
+      width: '100%',
     },
     forgotBtn: { alignItems: 'flex-end', marginTop: 10, paddingVertical: 4 },
     forgotText: { fontSize: 13, color: C.primary, fontWeight: '600' },

@@ -190,7 +190,7 @@ export default function ScannerScreen({ navigation }: any) {
           We need camera permission to scan your meals and unlock full meal analysis.
         </Text>
         <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
-          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+          <Text style={styles.permissionButtonText}>Continue</Text>
         </TouchableOpacity>
       </View>
       </ScreenEnterAnimation>

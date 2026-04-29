@@ -9,18 +9,36 @@ const ANDROID_API_KEY = 'goog_HBLkBgTamZlEzkgFQVuVXuIErtZ';
 const ENTITLEMENT_ID = 'Nouriva AI Pro';
 
 /**
+ * Ensure RC is configured — safe to call multiple times.
+ * Configures without a userId if none is available (anonymous).
+ */
+async function ensureConfigured(userId?: string): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+  try {
+    const already = await Purchases.isConfigured();
+    if (already) return true;
+  } catch {
+    // isConfigured can throw if native module isn't ready; fall through to configure
+  }
+  try {
+    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    const apiKey = Platform.OS === 'ios' ? IOS_API_KEY : ANDROID_API_KEY;
+    Purchases.configure({ apiKey, appUserID: userId });
+    return true;
+  } catch (e) {
+    console.error('[RevenueCat] configure() failed:', e);
+    return false;
+  }
+}
+
+/**
  * Initialize RevenueCat SDK
  */
 export async function initializeRevenueCat(userId?: string) {
   if (Platform.OS === 'web') return;
 
-  Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
-  
-  if (Platform.OS === 'ios') {
-    Purchases.configure({ apiKey: IOS_API_KEY, appUserID: userId });
-  } else if (Platform.OS === 'android') {
-    Purchases.configure({ apiKey: ANDROID_API_KEY, appUserID: userId });
-  }
+  const configured = await ensureConfigured(userId);
+  if (!configured) return;
 
   // Initial sync of entitlement status
   try {
@@ -81,6 +99,8 @@ export async function syncProStatus(customerInfo: CustomerInfo) {
  * Returns true if the user successfully subscribed
  */
 export async function presentPaywall(): Promise<boolean> {
+  const configured = await ensureConfigured();
+  if (!configured) return false;
   try {
     const result = await RevenueCatUI.presentPaywall({
       displayCloseButton: true,
@@ -101,6 +121,8 @@ export async function presentPaywall(): Promise<boolean> {
  * from the default offering. This bypasses RevenueCat's paywall UI entirely.
  */
 export async function purchasePlan(plan: 'annual' | 'monthly'): Promise<boolean> {
+  const configured = await ensureConfigured();
+  if (!configured) throw new Error('RevenueCat could not be initialized. Please try again.');
   const offerings = await Purchases.getOfferings();
   const current = offerings.current;
   if (!current) {
@@ -131,6 +153,8 @@ export async function purchasePlan(plan: 'annual' | 'monthly'): Promise<boolean>
  * Present the RevenueCat Customer Center for subscription management
  */
 export async function presentCustomerCenter() {
+  const configured = await ensureConfigured();
+  if (!configured) return;
   try {
     await RevenueCatUI.presentCustomerCenter();
   } catch (e) {
@@ -150,6 +174,8 @@ export async function presentCustomerCenter() {
  * Manual purchase for a specific package (if not using Paywalls)
  */
 export async function purchasePackage(pkg: PurchasesPackage) {
+  const configured = await ensureConfigured();
+  if (!configured) return false;
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     return await syncProStatus(customerInfo);
@@ -165,6 +191,8 @@ export async function purchasePackage(pkg: PurchasesPackage) {
  * Restore purchases
  */
 export async function restorePurchases(): Promise<boolean> {
+  const configured = await ensureConfigured();
+  if (!configured) return false;
   try {
     const customerInfo = await Purchases.restorePurchases();
     return await syncProStatus(customerInfo);
@@ -178,6 +206,8 @@ export async function restorePurchases(): Promise<boolean> {
  * Get available offerings
  */
 export async function getOfferings() {
+  const configured = await ensureConfigured();
+  if (!configured) return null;
   try {
     return await Purchases.getOfferings();
   } catch (e) {

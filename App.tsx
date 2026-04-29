@@ -80,7 +80,12 @@ function AppInner() {
         }
         const session = sessionError ? null : initialSession;
         if (session?.user?.id) {
-          void initializeRevenueCat(session.user.id);
+          // Await RC so that syncProStatus writes the accurate isPro value to
+          // SecureStore BEFORE we read it below. Fire-and-forget caused a race
+          // where a stale 'true' from a previous test session would skip the paywall.
+          await initializeRevenueCat(session.user.id).catch((e) =>
+            console.warn('[RC] init failed, using cached isPro', e)
+          );
           void identifyUser(session.user.id, session.user.email);
           const [flags, proVal] = await Promise.all([
             loadOnboardingFlagsForUserId(session.user.id),
@@ -140,6 +145,10 @@ function AppInner() {
         return;
       }
       if (!session.user?.id) return;
+      // Sync RC so isPro is accurate, then read all flags together.
+      await initializeRevenueCat(session.user.id).catch((e) =>
+        console.warn('[RC] auth-change init failed, using cached isPro', e)
+      );
       const [flags, bioPref, proPref, hasHardware, isEnrolled] = await Promise.all([
         loadOnboardingFlagsForUserId(session.user.id),
         SecureStore.getItemAsync('biometricsEnabled'),

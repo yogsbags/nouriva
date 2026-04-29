@@ -1,0 +1,902 @@
+Environment variables with visibility "Plain text" and "Sensitive" loaded from the "production" environment on EAS: EXPO_PUBLIC_APP_SHARE_URL, EXPO_PUBLIC_CONTACT_FORM_URL, EXPO_PUBLIC_GEMINI_API_KEY, EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID, EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, EXPO_PUBLIC_IAP_SUBSCRIPTION_ANNUAL_ID, EXPO_PUBLIC_IAP_SUBSCRIPTION_MONTHLY_ID, EXPO_PUBLIC_IAP_SUBSCRIPTION_TRIAL_DURATION, EXPO_PUBLIC_IAP_SUBSCRIPTION_TRIAL_DURATION_UNIT, EXPO_PUBLIC_IAP_SUBSCRIPTION_TRIAL_ID, EXPO_PUBLIC_PRIVACY_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY, EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPPORT_EMAIL, EXPO_PUBLIC_TERMS_URL.
+
+✔ Using remote iOS credentials (Expo server)
+
+Distribution Certificate is not validated for non-interactive builds.
+Skipping Provisioning Profile validation on Apple Servers because we aren't authenticated.
+
+Project Credentials Configuration
+
+Project                   @yogsb/NourivaAI
+Bundle Identifier         in.productverse.nourivaai
+                          
+App Store Configuration   
+                          
+Distribution Certificate  
+Serial Number             1DF45D3F4E386C33C9246F49F0755409
+Expiration Date           Sun, 25 Apr 2027 10:12:14 GMT+0530
+Apple Team                59T58N567J (Yogesh Bagle (Individual))
+Updated                   1 day ago
+                          
+Provisioning Profile      
+Developer Portal ID       57DHTUD95W
+Status                    active
+Expiration                Sun, 25 Apr 2027 10:12:14 GMT+0530
+Apple Team                59T58N567J (Yogesh Bagle (Individual))
+Updated                   1 day ago
+                          
+All credentials are ready to build @yogsb/NourivaAI (in.productverse.nourivaai)
+
+⠋ Computing project fingerprint⠙ Computing project fingerprint⠹ Computing project fingerprint⠸ Computing project fingerprint⠼ Computing project fingerprint⠴ Computing project fingerprint⠦ Computing project fingerprint⠧ Computing project fingerprint⠇ Computing project fingerprint⠏ Computing project fingerprint⠋ Computing project fingerprint⠙ Computing project fingerprint⠹ Computing project fingerprint⠸ Computing project fingerprint⠼ Computing project fingerprint⠴ Computing project fingerprint⠦ Computing project fingerprint✔ Computed project fingerprint
+[SETUP_WORKINGDIR] Preparing workingdir /var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00
+[START_BUILD] Starting build
+  "job": {
+    "type": "managed",
+    "platform": "ios",
+    "projectArchive": {
+      "type": "PATH",
+      "path": "/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-cli-nodejs/3293f197-11e1-4527-99fc-3270bf7c49b5.tar.gz"
+    },
+    "projectRootDirectory": ".",
+    "builderEnvironment": {
+      "env": {}
+    },
+    "cache": {
+      "disabled": false,
+      "paths": [],
+      "clear": false
+    },
+    "updates": {},
+    "scheme": "NourivaAI",
+    "environment": "production",
+    "username": "yogsb",
+    "experimental": {},
+    "mode": "build",
+    "triggeredBy": "EAS_CLI",
+    "appId": "8bcbaad3-ca11-49be-b328-124c79d8d1d5",
+    "initiatingUserId": "083a6049-07e8-4a18-ae1e-3d4ae3d528cb"
+  }
+Local build, skipping project archive refresh
+[READ_EAS_JSON] Using eas.json:
+[READ_EAS_JSON] {
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "android-apk": {
+      "distribution": "internal",
+      "environment": "production",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "android-aab": {
+      "distribution": "internal",
+      "environment": "production",
+      "android": {
+        "buildType": "app-bundle"
+      }
+    },
+    "production": {
+      "environment": "production"
+    }
+  },
+  "submit": {
+    "internal": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    },
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "production"
+      },
+      "ios": {
+        "appleId": "yogesh@productverse.co.in",
+        "ascAppId": "6763718713",
+        "ascApiKeyPath": "./AuthKey_LSVW36Y7DX.p8",
+        "ascApiKeyIssuerId": "14d492d2-a9bd-4fca-9708-2aa940e1e73b",
+        "ascApiKeyId": "LSVW36Y7DX"
+      }
+    }
+  }
+}
+
+[READ_PACKAGE_JSON] Using package.json:
+[READ_PACKAGE_JSON] {
+  "name": "nourivaai",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "eas:build:ios": "bash scripts/eas-with-env.sh build --platform ios --profile production --non-interactive --no-wait",
+    "eas:build:ios:setup": "bash scripts/eas-with-env.sh build --platform ios --profile production",
+    "eas:submit:ios": "bash scripts/eas-with-env.sh submit --platform ios --profile production",
+    "eas:build:android:apk": "bash scripts/eas-with-env.sh build --platform android --profile android-apk",
+    "eas:build:android:aab": "bash scripts/eas-with-env.sh build --platform android --profile android-aab --no-wait",
+    "eas:build:android:aab:local": "bash scripts/eas-with-env.sh build --platform android --profile android-aab --local",
+    "eas:submit:android:internal": "bash scripts/eas-with-env.sh submit --platform android --profile internal"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-firebase/analytics": "^24.0.0",
+    "@react-native-firebase/app": "^24.0.0",
+    "@react-native-firebase/crashlytics": "^24.0.0",
+    "@react-native-google-signin/google-signin": "^16.1.2",
+    "@react-navigation/bottom-tabs": "^7.15.9",
+    "@react-navigation/native": "^7.2.2",
+    "@react-navigation/native-stack": "^7.14.11",
+    "@supabase/supabase-js": "^2.103.3",
+    "expo": "~54.0.33",
+    "expo-build-properties": "~1.0.10",
+    "expo-camera": "~17.0.10",
+    "expo-constants": "~18.0.13",
+    "expo-dev-client": "~6.0.20",
+    "expo-document-picker": "~14.0.8",
+    "expo-file-system": "~19.0.21",
+    "expo-haptics": "~15.0.8",
+    "expo-image-manipulator": "~14.0.8",
+    "expo-image-picker": "~17.0.10",
+    "expo-linking": "~8.0.11",
+    "expo-local-authentication": "~17.0.8",
+    "expo-notifications": "~0.32.16",
+    "expo-print": "~15.0.8",
+    "expo-secure-store": "~15.0.8",
+    "expo-sharing": "~14.0.8",
+    "expo-status-bar": "~3.0.9",
+    "lucide-react-native": "^1.8.0",
+    "phosphor-react-native": "^3.0.6",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-health": "^1.19.0",
+    "react-native-health-connect": "^3.5.0",
+    "react-native-iap": "^15.2.0",
+    "react-native-nitro-modules": "^0.35.4",
+    "react-native-purchases": "^10.0.1",
+    "react-native-purchases-ui": "^10.0.1",
+    "react-native-reanimated": "~4.1.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-svg": "15.12.1",
+    "react-native-url-polyfill": "^3.0.0",
+    "react-native-view-shot": "4.0.3",
+    "react-native-worklets": "0.5.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "babel-preset-expo": "~54.0.10",
+    "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "@expo/fingerprint": "0.15.4"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-health"
+        ]
+      }
+    }
+  },
+  "private": true
+}
+[INSTALL_DEPENDENCIES] Running "npm ci --include=dev" in /var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build directory
+[INSTALL_DEPENDENCIES] npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+[INSTALL_DEPENDENCIES] npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+[INSTALL_DEPENDENCIES] npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+[INSTALL_DEPENDENCIES] npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+[INSTALL_DEPENDENCIES] npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+[INSTALL_DEPENDENCIES] npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+[INSTALL_DEPENDENCIES] npm warn deprecated glob@7.1.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+[INSTALL_DEPENDENCIES] npm warn deprecated @xmldom/xmldom@0.7.13: this version has critical issues, please update to the latest version
+[INSTALL_DEPENDENCIES] added 964 packages, and audited 965 packages in 14s
+[INSTALL_DEPENDENCIES] 92 packages are looking for funding
+[INSTALL_DEPENDENCIES]   run `npm fund` for details
+[INSTALL_DEPENDENCIES] 21 vulnerabilities (17 moderate, 4 high)
+[INSTALL_DEPENDENCIES] 
+[INSTALL_DEPENDENCIES] To address issues that do not require attention, run:
+[INSTALL_DEPENDENCIES]   npm audit fix
+[INSTALL_DEPENDENCIES] 
+[INSTALL_DEPENDENCIES] To address all issues (including breaking changes), run:
+[INSTALL_DEPENDENCIES]   npm audit fix --force
+[INSTALL_DEPENDENCIES] 
+[INSTALL_DEPENDENCIES] Run `npm audit` for details.
+The NODE_ENV environment variable is required but was not specified. Ensure the project is bundled with Expo CLI or NODE_ENV is set.
+Proceeding without mode-specific .env
+[READ_APP_CONFIG] Using app configuration:
+[READ_APP_CONFIG] {
+  "name": "Nouriva AI",
+  "slug": "NourivaAI",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "icon": "./assets/icon.png",
+  "userInterfaceStyle": "light",
+  "newArchEnabled": true,
+  "splash": {
+    "image": "./assets/splash-icon.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#0D3B26"
+  },
+  "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "in.productverse.nourivaai",
+    "buildNumber": "12",
+    "infoPlist": {
+      "ITSAppUsesNonExemptEncryption": false,
+      "NSFaceIDUsageDescription": "Allow Nouriva AI to use Face ID to protect your account on this device.",
+      "NSHealthShareUsageDescription": "Nouriva AI reads steps, heart rate, sleep, and weight from Apple Health to contextualize how meals fit your day.",
+      "NSHealthUpdateUsageDescription": "Nouriva AI does not write data to Apple Health."
+    },
+    "googleServicesFile": "./GoogleService-Info.plist"
+  },
+  "android": {
+    "package": "in.productverse.nourivaai",
+    "versionCode": 6,
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/adaptive-icon.png",
+      "backgroundColor": "#0D3B26"
+    },
+    "edgeToEdgeEnabled": true,
+    "predictiveBackGestureEnabled": false,
+    "permissions": [
+      "android.permission.RECORD_AUDIO",
+      "android.permission.USE_BIOMETRIC",
+      "android.permission.USE_FINGERPRINT"
+    ],
+    "googleServicesFile": "./google-services.json"
+  },
+  "web": {
+    "favicon": "./assets/favicon.png"
+  },
+  "plugins": [
+    [
+      "react-native-health",
+      {
+        "healthSharePermission": "Nouriva AI reads steps, heart rate, sleep, and weight from Apple Health to contextualize how meals fit your day.",
+        "healthUpdatePermission": "Nouriva AI does not write data to Apple Health."
+      }
+    ],
+    "@react-native-firebase/app",
+    "@react-native-firebase/crashlytics",
+    "expo-secure-store",
+    [
+      "expo-image-picker",
+      {
+        "photosPermission": "Allow Nouriva AI to access your photos for your profile picture.",
+        "cameraPermission": "Allow Nouriva AI to use your camera for a profile photo."
+      }
+    ],
+    [
+      "expo-local-authentication",
+      {
+        "faceIDPermission": "Allow Nouriva AI to use Face ID to protect your account on this device."
+      }
+    ],
+    "react-native-health-connect",
+    [
+      "expo-build-properties",
+      {
+        "android": {
+          "minSdkVersion": 26,
+          "compileSdkVersion": 35,
+          "targetSdkVersion": 35,
+          "enableProguardInReleaseBuilds": true,
+          "enableMinifyInReleaseBuilds": true
+        },
+        "ios": {
+          "useFrameworks": "static"
+        }
+      }
+    ],
+    [
+      "@react-native-google-signin/google-signin",
+      {
+        "iosUrlScheme": "com.googleusercontent.apps.452919317535-08plcntnpk9l29b5v8u683dcbo6dvihb"
+      }
+    ],
+    "./plugins/withFirebaseFix.js"
+  ],
+  "extra": {
+    "eas": {
+      "projectId": "8bcbaad3-ca11-49be-b328-124c79d8d1d5"
+    }
+  },
+  "owner": "yogsb",
+  "sdkVersion": "54.0.0",
+  "platforms": [
+    "ios",
+    "android"
+  ]
+}
+[RUN_EXPO_DOCTOR] Running "expo doctor"
+[RUN_EXPO_DOCTOR] Running 17 checks on your project...
+[RUN_EXPO_DOCTOR] 17/17 checks passed. No issues detected!
+[PREPARE_CREDENTIALS] Preparing credentials
+[PREPARE_CREDENTIALS] Creating keychain
+[PREPARE_CREDENTIALS] Preparing credentials for target 'NourivaAI'
+[PREPARE_CREDENTIALS] Getting distribution certificate fingerprint and common name
+[PREPARE_CREDENTIALS] Fingerprint = "413A0C49095AD0F992052EBFC8A1E26EF6F71A68", common name = iPhone Distribution: Yogesh Bagle (59T58N567J)
+[PREPARE_CREDENTIALS] Writing distribution certificate to /var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/17bcdf16-24d6-49b7-93aa-eae8add24bd3.p12
+[PREPARE_CREDENTIALS] Importing distribution certificate into the keychain
+[PREPARE_CREDENTIALS] Initializing provisioning profile
+[PREPARE_CREDENTIALS] Validating whether the distribution certificate has been imported successfully
+[PREPARE_CREDENTIALS] Verifying whether the distribution certificate and provisioning profile match
+[PREBUILD] - Creating native directory (./ios)
+[PREBUILD] ✔ Created native directory
+[PREBUILD] - Updating package.json
+[PREBUILD] ✔ Updated package.json | no changes
+[PREBUILD] - Running prebuild
+[PREBUILD] withFirebaseFix: patched RNFirebase import order in node_modules/@react-native-firebase/crashlytics/ios/RNFBCrashlytics/RNFBCrashlyticsModule.m
+[PREBUILD] - Running prebuild
+[PREBUILD] withFirebaseFix: patched RNFirebase import order in node_modules/@react-native-firebase/analytics/ios/RNFBAnalytics/RNFBAnalyticsModule.m
+[PREBUILD] - Running prebuild
+[PREBUILD] withFirebaseFix: patched RNFirebase import order in node_modules/@react-native-firebase/app/ios/RNFBApp/RNFBUtilsModule.m
+[PREBUILD] - Running prebuild
+[PREBUILD] withFirebaseFix: patched Podfile for RNFirebase static frameworks
+[PREBUILD] - Running prebuild
+[PREBUILD] ✔ Finished prebuild
+[PREBUILD] Running "npm install --include=dev" in /var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build directory
+[PREBUILD] up to date, audited 965 packages in 1s
+[PREBUILD] 92 packages are looking for funding
+[PREBUILD]   run `npm fund` for details
+[PREBUILD] 21 vulnerabilities (17 moderate, 4 high)
+[PREBUILD] 
+[PREBUILD] To address issues that do not require attention, run:
+[PREBUILD]   npm audit fix
+[PREBUILD] 
+[PREBUILD] To address all issues (including breaking changes), run:
+[PREBUILD]   npm audit fix --force
+[PREBUILD] 
+[PREBUILD] Run `npm audit` for details.
+[RESTORE_CACHE] Local builds do not support restoring cache
+[INSTALL_PODS] Using Expo modules
+[INSTALL_PODS] [Expo] Enabling modular headers for pod ExpoModulesCore
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-Core
+[INSTALL_PODS] [Expo] Enabling modular headers for pod GoogleSignIn
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-RCTAppDelegate
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-RCTFabric
+[INSTALL_PODS] [Expo] Enabling modular headers for pod ReactAppDependencyProvider
+[INSTALL_PODS] [Expo] Enabling modular headers for pod ReactCodegen
+[INSTALL_PODS] [Expo] Enabling modular headers for pod RCTRequired
+[INSTALL_PODS] [Expo] Enabling modular headers for pod RCTTypeSafety
+[INSTALL_PODS] [Expo] Enabling modular headers for pod ReactCommon
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-NativeModulesApple
+[INSTALL_PODS] [Expo] Enabling modular headers for pod Yoga
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-Fabric
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-graphics
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-utils
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-featureflags
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-debug
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-ImageManager
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-rendererdebug
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-jsi
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-renderercss
+[INSTALL_PODS] [Expo] Enabling modular headers for pod hermes-engine
+[INSTALL_PODS] [Expo] Enabling modular headers for pod glog
+[INSTALL_PODS] [Expo] Enabling modular headers for pod boost
+[INSTALL_PODS] [Expo] Enabling modular headers for pod DoubleConversion
+[INSTALL_PODS] [Expo] Enabling modular headers for pod fast_float
+[INSTALL_PODS] [Expo] Enabling modular headers for pod fmt
+[INSTALL_PODS] [Expo] Enabling modular headers for pod RCT-Folly
+[INSTALL_PODS] [Expo] Enabling modular headers for pod SocketRocket
+[INSTALL_PODS] [Expo] Enabling modular headers for pod ZXingObjC
+[INSTALL_PODS] [Expo] Enabling modular headers for pod expo-dev-menu-interface
+[INSTALL_PODS] [Expo] Enabling modular headers for pod EXManifests
+[INSTALL_PODS] [Expo] Enabling modular headers for pod EXUpdatesInterface
+[INSTALL_PODS] [Expo] Enabling modular headers for pod expo-dev-menu
+[INSTALL_PODS] [Expo] Enabling modular headers for pod React-jsinspector
+[INSTALL_PODS] [Expo] Enabling modular headers for pod expo-dev-launcher
+[INSTALL_PODS] [Expo] Enabling modular headers for pod EXImageLoader
+[INSTALL_PODS] [Expo] Enabling modular headers for pod SDWebImageWebPCoder
+[INSTALL_PODS] RNFBAnalytics: Using FirebaseAnalytics/IdentitySupport with Ad Ids. May require App Tracking Transparency. Not allowed for Kids apps.
+[INSTALL_PODS] RNFBAnalytics: You may set variable `$RNFirebaseAnalyticsWithoutAdIdSupport=true` in Podfile to use analytics without ad ids.
+[INSTALL_PODS] RNFBAnalytics: Using overridden static_framework value of 'true'
+[INSTALL_PODS] RNFBApp: Using overridden static_framework value of 'true'
+[INSTALL_PODS] RNFBCrashlytics: Using overridden static_framework value of 'true'
+[INSTALL_PODS] [NitroModules] 🔥 NitroIap is boosted by nitro!
+[INSTALL_PODS] [NitroModules] 🔥 Your app is boosted by nitro modules!
+[INSTALL_PODS] [NitroModules] Found react-native 0.81.5 (81) in /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native!
+[INSTALL_PODS] Found 17 modules for target `NourivaAI`
+[INSTALL_PODS] link_native_modules! {ios_packages: [{configurations: [], name: "@react-native-async-storage/async-storage", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-async-storage/async-storage", path: "../node_modules/@react-native-async-storage/async-storage", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-async-storage/async-storage/RNCAsyncStorage.podspec", script_phases: []}, {configurations: [], name: "@react-native-firebase/analytics", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-firebase/analytics", path: "../node_modules/@react-native-firebase/analytics", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-firebase/analytics/RNFBAnalytics.podspec", script_phases: []}, {configurations: [], name: "@react-native-firebase/app", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-firebase/app", path: "../node_modules/@react-native-firebase/app", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-firebase/app/RNFBApp.podspec", script_phases: [{"name" => "[RNFB] Core Configuration", "path" => "./ios_config.sh", "execution_position" => "after_compile", "input_files" => ["$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)"]}]}, {configurations: [], name: "@react-native-firebase/crashlytics", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-firebase/crashlytics", path: "../node_modules/@react-native-firebase/crashlytics", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-firebase/crashlytics/RNFBCrashlytics.podspec", script_phases: [{"name" => "[RNFB] Crashlytics Configuration", "path" => "./ios_config.sh", "execution_position" => "after_compile", "input_files" => ["${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}", "$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)"]}]}, {configurations: [], name: "@react-native-google-signin/google-signin", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-google-signin/google-signin", path: "../node_modules/@react-native-google-signin/google-signin", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/@react-native-google-signin/google-signin/RNGoogleSignin.podspec", script_phases: []}, {configurations: [], name: "expo", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/expo", path: "../node_modules/expo", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/expo/Expo.podspec", script_phases: []}, {configurations: [], name: "react-native-health", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-health", path: "../node_modules/react-native-health", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-health/RNAppleHealthKit.podspec", script_phases: []}, {configurations: [], name: "react-native-iap", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-iap", path: "../node_modules/react-native-iap", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-iap/NitroIap.podspec", script_phases: []}, {configurations: [], name: "react-native-nitro-modules", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-nitro-modules", path: "../node_modules/react-native-nitro-modules", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-nitro-modules/NitroModules.podspec", script_phases: []}, {configurations: [], name: "react-native-purchases", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-purchases", path: "../node_modules/react-native-purchases", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-purchases/RNPurchases.podspec", script_phases: []}, {configurations: [], name: "react-native-purchases-ui", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-purchases-ui", path: "../node_modules/react-native-purchases-ui", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-purchases-ui/RNPaywalls.podspec", script_phases: []}, {configurations: [], name: "react-native-reanimated", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-reanimated", path: "../node_modules/react-native-reanimated", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-reanimated/RNReanimated.podspec", script_phases: []}, {configurations: [], name: "react-native-safe-area-context", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-safe-area-context", path: "../node_modules/react-native-safe-area-context", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-safe-area-context/react-native-safe-area-context.podspec", script_phases: []}, {configurations: [], name: "react-native-screens", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-screens", path: "../node_modules/react-native-screens", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-screens/RNScreens.podspec", script_phases: []}, {configurations: [], name: "react-native-svg", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-svg", path: "../node_modules/react-native-svg", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-svg/RNSVG.podspec", script_phases: []}, {configurations: [], name: "react-native-view-shot", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-view-shot", path: "../node_modules/react-native-view-shot", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-view-shot/react-native-view-shot.podspec", script_phases: []}, {configurations: [], name: "react-native-worklets", root: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-worklets", path: "../node_modules/react-native-worklets", podspec_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native-worklets/RNWorklets.podspec", script_phases: []}], ios_project_root_path: "/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios", react_native_path: "../node_modules/react-native"}
+[INSTALL_PODS] RNFBAnalytics: Using FirebaseAnalytics/IdentitySupport with Ad Ids. May require App Tracking Transparency. Not allowed for Kids apps.
+[INSTALL_PODS] RNFBAnalytics: You may set variable `$RNFirebaseAnalyticsWithoutAdIdSupport=true` in Podfile to use analytics without ad ids.
+[INSTALL_PODS] RNFBAnalytics: Using overridden static_framework value of 'true'
+[INSTALL_PODS] RNFBApp: Using overridden static_framework value of 'true'
+[INSTALL_PODS] Adding a custom script phase for Pod RNFBApp: [RNFB] Core Configuration
+[INSTALL_PODS] RNFBCrashlytics: Using overridden static_framework value of 'true'
+[INSTALL_PODS] Adding a custom script phase for Pod RNFBCrashlytics: [RNFB] Crashlytics Configuration
+[INSTALL_PODS] [NitroModules] 🔥 NitroIap is boosted by nitro!
+[INSTALL_PODS] [NitroModules] 🔥 Your app is boosted by nitro modules!
+[INSTALL_PODS] [NitroModules] Found react-native 0.81.5 (81) in /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native!
+[INSTALL_PODS] Auto-linking React Native modules for target `NourivaAI`: NitroIap, NitroModules, RNAppleHealthKit, RNCAsyncStorage, RNFBAnalytics, RNFBApp, RNFBCrashlytics, RNGoogleSignin, RNPaywalls, RNPurchases, RNReanimated, RNSVG, RNScreens, RNWorklets, react-native-safe-area-context, and react-native-view-shot
+[INSTALL_PODS] Framework build type is static framework
+[INSTALL_PODS] [ReactNativeDependencies] Setting up ReactNativeDependencies...
+[INSTALL_PODS] [ReactNativeDependencies] Building from source: false
+[INSTALL_PODS] [ReactNativeDependencies] Using release tarball
+[INSTALL_PODS] [ReactNativeDependencies] Using tarball from URL: https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.81.5/react-native-artifacts-0.81.5-reactnative-dependencies-debug.tar.gz
+[INSTALL_PODS] % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+[INSTALL_PODS]                                  Dl
+[INSTALL_PODS] oad  Upload   Total   Spent    Left  Speed
+[INSTALL_PODS]   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[INSTALL_PODS] 21 18.3M   21 4000k    0     0  13.1M      0  0:00:01 --:--:--  0:00:01 13.1M
+[INSTALL_PODS] 100 18.3M  100 18.3M    0     0  20.0M
+[INSTALL_PODS] 0 --:--:-- --:--:-- --:--:-- 20.0M
+[INSTALL_PODS] % Total    % Received % Xferd  Average Speed   Time    Time
+[INSTALL_PODS] Time  Current
+[INSTALL_PODS]                                  Dload  Upload   Total   Spent    Left  Speed
+[INSTALL_PODS]   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[INSTALL_PODS] 97  9.9M   97 9978k    0     0  27.5M      0 --:--:-- --:--:-- --:--:-- 27.5M
+[INSTALL_PODS] 100  9.9M  100  9.9M    0     0  27.4M      0 --
+[INSTALL_PODS] :--:-- --:--:-- --:--:-- 27.4M
+[INSTALL_PODS] [ReactNativeDependencies] Source: {http: "https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.81.5/react-native-artifacts-0.81.5-reactnative-dependencies-debug.tar.gz"}
+[INSTALL_PODS] [ReactNativeCore] Setting up ReactNativeCore...
+[INSTALL_PODS] [ReactNativeCore] Building from source: false
+[INSTALL_PODS] [ReactNativeCore] Using tarball from URL: https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.81.5/react-native-artifacts-0.81.5-reactnative-core-debug.tar.gz
+[INSTALL_PODS] % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+[INSTALL_PODS]                                  Dload  Upload   Total   Spent    Left  Speed
+[INSTALL_PODS]   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[INSTALL_PODS] 39 78.5M   39 31.0M    0     0  34.6M      0  0:
+[INSTALL_PODS] 00:02 --:--:--  0:00:02 34.6M
+[INSTALL_PODS] 71 78.5M   71 56.0M    0     0  29.
+[INSTALL_PODS] 5M      0  0:00:02  0:00:01  0:00:01 29.5M
+[INSTALL_PODS] 93 78.5M   93 73.0M    0     0  25.2M      0  0:00:
+[INSTALL_PODS] 03  0:00:02  0:00:01 25.2M
+[INSTALL_PODS] 100 78.5M  100 78.5M    0     0  24.5M      0  0:00:03  0:00:03 --:--:-- 24.5M
+[INSTALL_PODS] % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+[INSTALL_PODS]                                  Dload
+[INSTALL_PODS] Upload   Total   Spent    Left  Speed
+[INSTALL_PODS]   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[INSTALL_PODS] 48 26.3M   48 12.6M    0     0  18.6M      0  0:00:01 --:-
+[INSTALL_PODS] -:--  0:00:01 18.6M
+[INSTALL_PODS] 100 26.3M  100 26.3M    0     0  18.3M      0  0:00:01  0:00:01 --:--:-- 18.3M
+[INSTALL_PODS] [ReactNativeCore] Source: {http: "https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.81.5/react-native-artifacts-0.81.5-reactnative-core-debug.tar.gz"}
+[INSTALL_PODS] Configuring the target with the New Architecture
+[INSTALL_PODS] [ReactNativeCore] Using React Native Core and React Native Dependencies prebuilt versions.
+[INSTALL_PODS] [36m[1m[Codegen][0m Analyzing /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/package.json[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in the app.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mThe "codegenConfig" field is not defined in package.json. Assuming there is nothing to generate at the app level.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for codegen-enabled libraries in react-native.config.js[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found @react-native-async-storage/async-storage[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found @react-native-google-signin/google-signin[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found react-native-nitro-modules[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found react-native-reanimated[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found react-native-safe-area-context[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found react-native-screens[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found react-native-svg[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found react-native-view-shot[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Found react-native-worklets[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing rnasyncstorage[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnasyncstorage[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing RNGoogleSignInCGen[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios for RNGoogleSignInCGen[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing NitroModulesSpec[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing rnreanimated[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnreanimated[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing safeareacontext[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for safeareacontext[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing rnscreens[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios, tvos, visionos for rnscreens[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing rnsvg[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnsvg[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing rnviewshot[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios for rnviewshot[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Processing rnworklets[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mSearching for podspec in the project dependencies.[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Supported Apple platforms: ios, macos, tvos, visionos for rnworklets[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for rnasyncstorage - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for RNGoogleSignInCGen - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for NitroModulesSpec - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for rnreanimated - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for safeareacontext - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for rnscreens - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for rnsvg - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for rnviewshot - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating Native Code for rnworklets - ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifacts: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating RCTThirdPartyComponentsProvider.h[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifact: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/RCTThirdPartyComponentsProvider.h[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating RCTThirdPartyComponentsProvider.mm[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifact: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/RCTThirdPartyComponentsProvider.mm[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating RCTModulesProvider.h[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifact: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/RCTModuleProviders.h[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating RCTModuleProviders.mm[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifact: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/RCTModuleProviders.mm[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generating RCTAppDependencyProvider[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifact: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/RCTAppDependencyProvider.h[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated artifact: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/RCTAppDependencyProvider.mm[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated podspec: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/ReactAppDependencyProvider.podspec[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m Generated podspec: /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/build/generated/ios/ReactCodegen.podspec[0m
+[INSTALL_PODS] [36m[1m[Codegen][0m [33mDone.[0m
+[INSTALL_PODS] Analyzing dependencies
+[INSTALL_PODS] [NitroModules] 🔥 NitroIap is boosted by nitro!
+[INSTALL_PODS] [NitroModules] 🔥 Your app is boosted by nitro modules!
+[INSTALL_PODS] [NitroModules] Found react-native 0.81.5 (81) in /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/node_modules/react-native!
+[INSTALL_PODS] RNFBAnalytics: Using FirebaseAnalytics/IdentitySupport with Ad Ids. May require App Tracking Transparency. Not allowed for Kids apps.
+[INSTALL_PODS] RNFBAnalytics: You may set variable `$RNFirebaseAnalyticsWithoutAdIdSupport=true` in Podfile to use analytics without ad ids.
+[INSTALL_PODS] RNFBAnalytics: Using overridden static_framework value of 'true'
+[INSTALL_PODS] RNFBApp: Using overridden static_framework value of 'true'
+[INSTALL_PODS] RNFBCrashlytics: Using overridden static_framework value of 'true'
+[INSTALL_PODS] Fetching podspec for `React-Core-prebuilt` from `../node_modules/react-native/React-Core-prebuilt.podspec`
+[INSTALL_PODS] [ReactNativeCore] Using tarball from URL: https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.81.5/react-native-artifacts-0.81.5-reactnative-core-debug.tar.gz
+[INSTALL_PODS] Fetching podspec for `ReactNativeDependencies` from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`
+[INSTALL_PODS] [ReactNativeDependencies] Using release tarball
+[INSTALL_PODS] [ReactNativeDependencies] Using tarball from URL: https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.81.5/react-native-artifacts-0.81.5-reactnative-dependencies-debug.tar.gz
+[INSTALL_PODS] Fetching podspec for `hermes-engine` from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`
+[INSTALL_PODS] [Hermes] Using release tarball from URL: https://repo1.maven.org/maven2/com/facebook/react/react-native-artifacts/0.81.5/react-native-artifacts-0.81.5-hermes-ios-debug.tar.gz
+[INSTALL_PODS] % Total    % Received % Xferd  Average Speed   Time    Time     Time
+[INSTALL_PODS] Current
+[INSTALL_PODS]                                  Dload  Upload   Total   Spent    Left  Speed
+[INSTALL_PODS]   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[INSTALL_PODS] 76 29.0M   76 22.0M    0     0  26.0M      0  0:00:01 --:--:--  0:00:01 26.0M
+[INSTALL_PODS] 100 29.0M  100 29.0M    0     0  27.8M      0  0:00:01  0:00:01 --:--:-
+[INSTALL_PODS] - 27.8M
+[INSTALL_PODS] % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+[INSTALL_PODS] Dload  Upload   Total   Spent    Left  Speed
+[INSTALL_PODS]   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+[INSTALL_PODS] 100 20.3M  100 20.3M    0     0  40.5M      0 --
+[INSTALL_PODS] :--:-- --:--:-- --:--:-- 40.6M
+[INSTALL_PODS] Downloading dependencies
+[INSTALL_PODS] Installing AppAuth (2.0.0)
+[INSTALL_PODS] Installing AppCheckCore (11.2.0)
+[INSTALL_PODS] Installing EXApplication (7.0.8)
+[INSTALL_PODS] Installing EXConstants (18.0.13)
+[INSTALL_PODS] Installing EXImageLoader (6.0.0)
+[INSTALL_PODS] Installing EXJSONUtils (0.15.0)
+[INSTALL_PODS] Installing EXManifests (1.0.10)
+[INSTALL_PODS] Installing EXNotifications (0.32.16)
+[INSTALL_PODS] Installing EXUpdatesInterface (2.0.0)
+[INSTALL_PODS] Installing Expo (54.0.33)
+[INSTALL_PODS] Installing ExpoAdapterGoogleSignIn (16.1.2)
+[INSTALL_PODS] Installing ExpoAsset (12.0.12)
+[INSTALL_PODS] Installing ExpoCamera (17.0.10)
+[INSTALL_PODS] Installing ExpoDocumentPicker (14.0.8)
+[INSTALL_PODS] Installing ExpoFileSystem (19.0.21)
+[INSTALL_PODS] Installing ExpoFont (14.0.11)
+[INSTALL_PODS] Installing ExpoHaptics (15.0.8)
+[INSTALL_PODS] Installing ExpoImageManipulator (14.0.8)
+[INSTALL_PODS] Installing ExpoImagePicker (17.0.10)
+[INSTALL_PODS] Installing ExpoKeepAwake (15.0.8)
+[INSTALL_PODS] Installing ExpoLinking (8.0.11)
+[INSTALL_PODS] Installing ExpoLocalAuthentication (17.0.8)
+[INSTALL_PODS] Installing ExpoModulesCore (3.0.29)
+[INSTALL_PODS] Installing ExpoPrint (15.0.8)
+[INSTALL_PODS] Installing ExpoSecureStore (15.0.8)
+[INSTALL_PODS] Installing ExpoSharing (14.0.8)
+[INSTALL_PODS] Installing FBLazyVector (0.81.5)
+[INSTALL_PODS] Installing Firebase (12.10.0)
+[INSTALL_PODS] Installing FirebaseAnalytics (12.10.0)
+[INSTALL_PODS] Installing FirebaseCore (12.10.0)
+[INSTALL_PODS] Installing FirebaseCoreExtension (12.10.0)
+[INSTALL_PODS] Installing FirebaseCoreInternal (12.10.0)
+[INSTALL_PODS] Installing FirebaseCrashlytics (12.10.0)
+[INSTALL_PODS] Installing FirebaseInstallations (12.10.0)
+[INSTALL_PODS] Installing FirebaseRemoteConfigInterop (12.10.0)
+[INSTALL_PODS] Installing FirebaseSessions (12.10.0)
+[INSTALL_PODS] Installing GTMAppAuth (5.0.0)
+[INSTALL_PODS] Installing GTMSessionFetcher (3.5.0)
+[INSTALL_PODS] Installing GoogleAppMeasurement (12.10.0)
+[INSTALL_PODS] Installing GoogleDataTransport (10.1.0)
+[INSTALL_PODS] Installing GoogleSignIn (9.1.0)
+[INSTALL_PODS] Installing GoogleUtilities (8.1.0)
+[INSTALL_PODS] Installing NitroIap (15.2.0)
+[INSTALL_PODS] Installing NitroModules (0.35.4)
+[INSTALL_PODS] Installing PromisesObjC (2.4.0)
+[INSTALL_PODS] Installing PromisesSwift (2.4.0)
+[INSTALL_PODS] Installing PurchasesHybridCommon (18.1.0)
+[INSTALL_PODS] Installing PurchasesHybridCommonUI (18.1.0)
+[INSTALL_PODS] Installing RCTDeprecation (0.81.5)
+[INSTALL_PODS] Installing RCTRequired (0.81.5)
+[INSTALL_PODS] Installing RCTTypeSafety (0.81.5)
+[INSTALL_PODS] Installing RNAppleHealthKit (1.7.0)
+[INSTALL_PODS] Installing RNCAsyncStorage (2.2.0)
+[INSTALL_PODS] Installing RNFBAnalytics (24.0.0)
+[INSTALL_PODS] Installing RNFBApp (24.0.0)
+[INSTALL_PODS] Installing RNFBCrashlytics (24.0.0)
+[INSTALL_PODS] Installing RNGoogleSignin (16.1.2)
+[INSTALL_PODS] Installing RNPaywalls (10.0.1)
+[INSTALL_PODS] Installing RNPurchases (10.0.1)
+[INSTALL_PODS] Installing RNReanimated (4.1.7)
+[INSTALL_PODS] Installing RNSVG (15.12.1)
+[INSTALL_PODS] Installing RNScreens (4.16.0)
+[INSTALL_PODS] Installing RNWorklets (0.5.1)
+[INSTALL_PODS] Installing React (0.81.5)
+[INSTALL_PODS] Installing React-Core (0.81.5)
+[INSTALL_PODS] Installing React-Core-prebuilt (0.81.5)
+[INSTALL_PODS] Installing React-CoreModules (0.81.5)
+[INSTALL_PODS] Installing React-Fabric (0.81.5)
+[INSTALL_PODS] Installing React-FabricComponents (0.81.5)
+[INSTALL_PODS] Installing React-FabricImage (0.81.5)
+[INSTALL_PODS] Installing React-ImageManager (0.81.5)
+[INSTALL_PODS] Installing React-Mapbuffer (0.81.5)
+[INSTALL_PODS] Installing React-NativeModulesApple (0.81.5)
+[INSTALL_PODS] Installing React-RCTActionSheet (0.81.5)
+[INSTALL_PODS] Installing React-RCTAnimation (0.81.5)
+[INSTALL_PODS] Installing React-RCTAppDelegate (0.81.5)
+[INSTALL_PODS] Installing React-RCTBlob (0.81.5)
+[INSTALL_PODS] Installing React-RCTFBReactNativeSpec (0.81.5)
+[INSTALL_PODS] Installing React-RCTFabric (0.81.5)
+[INSTALL_PODS] Installing React-RCTImage (0.81.5)
+[INSTALL_PODS] Installing React-RCTLinking (0.81.5)
+[INSTALL_PODS] Installing React-RCTNetwork (0.81.5)
+[INSTALL_PODS] Installing React-RCTRuntime (0.81.5)
+[INSTALL_PODS] Installing React-RCTSettings (0.81.5)
+[INSTALL_PODS] Installing React-RCTText (0.81.5)
+[INSTALL_PODS] Installing React-RCTVibration (0.81.5)
+[INSTALL_PODS] Installing React-RuntimeApple (0.81.5)
+[INSTALL_PODS] Installing React-RuntimeCore (0.81.5)
+[INSTALL_PODS] Installing React-RuntimeHermes (0.81.5)
+[INSTALL_PODS] Installing React-callinvoker (0.81.5)
+[INSTALL_PODS] Installing React-cxxreact (0.81.5)
+[INSTALL_PODS] Installing React-debug (0.81.5)
+[INSTALL_PODS] Installing React-defaultsnativemodule (0.81.5)
+[INSTALL_PODS] Installing React-domnativemodule (0.81.5)
+[INSTALL_PODS] Installing React-featureflags (0.81.5)
+[INSTALL_PODS] Installing React-featureflagsnativemodule (0.81.5)
+[INSTALL_PODS] Installing React-graphics (0.81.5)
+[INSTALL_PODS] Installing React-hermes (0.81.5)
+[INSTALL_PODS] Installing React-idlecallbacksnativemodule (0.81.5)
+[INSTALL_PODS] Installing React-jserrorhandler (0.81.5)
+[INSTALL_PODS] Installing React-jsi (0.81.5)
+[INSTALL_PODS] Installing React-jsiexecutor (0.81.5)
+[INSTALL_PODS] Installing React-jsinspector (0.81.5)
+[INSTALL_PODS] Installing React-jsinspectorcdp (0.81.5)
+[INSTALL_PODS] Installing React-jsinspectornetwork (0.81.5)
+[INSTALL_PODS] Installing React-jsinspectortracing (0.81.5)
+[INSTALL_PODS] Installing React-jsitooling (0.81.5)
+[INSTALL_PODS] Installing React-jsitracing (0.81.5)
+[INSTALL_PODS] Installing React-logger (0.81.5)
+[INSTALL_PODS] Installing React-microtasksnativemodule (0.81.5)
+[INSTALL_PODS] Installing React-oscompat (0.81.5)
+[INSTALL_PODS] Installing React-perflogger (0.81.5)
+[INSTALL_PODS] Installing React-performancetimeline (0.81.5)
+[INSTALL_PODS] Installing React-rendererconsistency (0.81.5)
+[INSTALL_PODS] Installing React-renderercss (0.81.5)
+[INSTALL_PODS] Installing React-rendererdebug (0.81.5)
+[INSTALL_PODS] Installing React-runtimeexecutor (0.81.5)
+[INSTALL_PODS] Installing React-runtimescheduler (0.81.5)
+[INSTALL_PODS] Installing React-timing (0.81.5)
+[INSTALL_PODS] Installing React-utils (0.81.5)
+[INSTALL_PODS] Installing ReactAppDependencyProvider (0.81.5)
+[INSTALL_PODS] Installing ReactCodegen (0.81.5)
+[INSTALL_PODS] Installing ReactCommon (0.81.5)
+[INSTALL_PODS] Installing ReactNativeDependencies (0.81.5)
+[INSTALL_PODS] Installing RevenueCat (5.68.0)
+[INSTALL_PODS] Installing RevenueCatUI (5.68.0)
+[INSTALL_PODS] Installing SDWebImage (5.21.7)
+[INSTALL_PODS] Installing SDWebImageWebPCoder (0.15.0)
+[INSTALL_PODS] Installing Yoga (0.0.0)
+[INSTALL_PODS] Installing ZXingObjC (3.6.9)
+[INSTALL_PODS] Installing expo-dev-client (6.0.20)
+[INSTALL_PODS] Installing expo-dev-launcher (6.0.20)
+[INSTALL_PODS] Installing expo-dev-menu (7.0.18)
+[INSTALL_PODS] Installing expo-dev-menu-interface (2.0.0)
+[INSTALL_PODS] Installing hermes-engine (0.81.5)
+[INSTALL_PODS] Installing libwebp (1.5.0)
+[INSTALL_PODS] Installing nanopb (3.30910.0)
+[INSTALL_PODS] Installing openiap (2.1.0)
+[INSTALL_PODS] Installing react-native-safe-area-context (5.6.2)
+[INSTALL_PODS] Installing react-native-view-shot (4.0.3)
+[INSTALL_PODS] [Expo] Disabling USE_FRAMEWORKS for modules ExpoModulesCore, Expo, ReactAppDependencyProvider, expo-dev-menu
+[INSTALL_PODS] Generating Pods project
+[INSTALL_PODS] Setting USE_HERMES build settings
+[INSTALL_PODS] Setting REACT_NATIVE_PATH build settings
+[INSTALL_PODS] Setting SWIFT_ACTIVE_COMPILATION_CONDITIONS build settings
+[INSTALL_PODS] [Ccache]: Removing Ccache from CC, LD, CXX & LDPLUSPLUS build settings
+[INSTALL_PODS] Setting SWIFT_ENABLE_EXPLICIT_MODULES build settings
+[INSTALL_PODS] [SPM] Cleaning old SPM dependencies from Pods project
+[INSTALL_PODS] [SPM] Adding SPM dependencies to Pods project
+[INSTALL_PODS] [Privacy Manifest Aggregation] No existing PrivacyInfo.xcprivacy file found, creating a new one.
+[INSTALL_PODS] [Privacy Manifest Aggregation] Reading .xcprivacy files to aggregate all used Required Reason APIs.
+[INSTALL_PODS] file_root: NourivaAI
+[INSTALL_PODS] Setting CLANG_CXX_LANGUAGE_STANDARD to c++20 on /private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/NourivaAI.xcodeproj
+[INSTALL_PODS] ==================== DEPRECATION NOTICE =====================
+[INSTALL_PODS] Calling `pod install` directly is deprecated in React Native
+[INSTALL_PODS] because we are moving away from Cocoapods toward alternative
+[INSTALL_PODS] solutions to build the project.
+[INSTALL_PODS] * If you are using Expo, please run:
+[INSTALL_PODS] `npx expo run:ios`
+[INSTALL_PODS] * If you are using the Community CLI, please run:
+[INSTALL_PODS] `yarn ios`
+[INSTALL_PODS] =============================================================
+[INSTALL_PODS] Pod install took 34 [s] to run
+[INSTALL_PODS] Integrating client project
+[INSTALL_PODS] [!] Please close any current Xcode sessions and use `NourivaAI.xcworkspace` for this project from now on.
+[INSTALL_PODS] [Expo] Installing the build script for target NourivaAI
+[INSTALL_PODS] Pod installation complete! There are 112 dependencies from the Podfile and 140 total pods installed.
+[INSTALL_PODS] [Expo] Adding '[Expo Autolinking] Run Codegen with autolinking' build phase to ReactCodegen
+[INSTALL_PODS] [!] React-Core-prebuilt has added 1 script phase. Please inspect before executing a build. See `https://guides.cocoapods.org/syntax/podspec.html#script_phases` for more information.
+[INSTALL_PODS] [!] ReactNativeDependencies has added 1 script phase. Please inspect before executing a build. See `https://guides.cocoapods.org/syntax/podspec.html#script_phases` for more information.
+[INSTALL_PODS] [!] hermes-engine has added 1 script phase. Please inspect before executing a build. See `https://guides.cocoapods.org/syntax/podspec.html#script_phases` for more information.
+[CONFIGURE_XCODE_PROJECT] Configuring Xcode project
+[CONFIGURE_XCODE_PROJECT] Assigning provisioning profile '*[expo] in.productverse.nourivaai AppStore 2026-04-25T04:52:19.524Z' (Apple Team ID: 59T58N567J) to target 'NourivaAI'
+[EAGER_BUNDLE] Starting Metro Bundler
+[EAGER_BUNDLE] iOS ./index.ts ▓▓░░░░░░░░░░░░░░ 14.5% ( 8/21)
+[EAGER_BUNDLE] iOS ./index.ts ▓▓▓▓▓▓░░░░░░░░░░ 39.2% (459/745)
+[EAGER_BUNDLE] iOS ./index.ts ▓▓▓▓▓▓▓▓░░░░░░░░ 55.2% ( 681/2367)
+[EAGER_BUNDLE] iOS ./index.ts ▓▓▓▓▓▓▓▓░░░░░░░░ 55.2% (1604/3405)
+[EAGER_BUNDLE] iOS ./index.ts ▓▓▓▓▓▓▓▓░░░░░░░░ 55.2% (3073/4414)
+[EAGER_BUNDLE] iOS ./index.ts ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 98.8% (4586/4613)
+[EAGER_BUNDLE] iOS Bundled 18981ms index.ts (4681 modules)
+[EAGER_BUNDLE] Writing bundle output to: /var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/ykfm65pg0gc/main.jsbundle
+[EAGER_BUNDLE] Copying 17 asset files
+[EAGER_BUNDLE] Done writing bundle output
+[RUN_FASTLANE] Creating Gymfile
+[RUN_FASTLANE] Gymfile created
+[RUN_FASTLANE] Successfully loaded '/private/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/build/ios/Gymfile' 📄
+[RUN_FASTLANE] 
+[RUN_FASTLANE] +--------------------------------------------------------------+
+[RUN_FASTLANE] |               Detected Values from './Gymfile'               |
+[RUN_FASTLANE] +-----------------------+--------------------------------------+
+[RUN_FASTLANE] | suppress_xcode_output | true                                 |
+[RUN_FASTLANE] | clean                 | false                                |
+[RUN_FASTLANE] | scheme                | NourivaAI                            |
+[RUN_FASTLANE] | configuration         | Release                              |
+[RUN_FASTLANE] | export_options        | {method: "app-store",                |
+[RUN_FASTLANE] |                       | provisioningProfiles:                |
+[RUN_FASTLANE] |                       | {"in.productverse.nourivaai" =>      |
+[RUN_FASTLANE] |                       | "ba9db84c-fa09-4580-86ab-784e25ed11  |
+[RUN_FASTLANE] |                       | a3"}}                                |
+[RUN_FASTLANE] | export_xcargs         | OTHER_CODE_SIGN_FLAGS="--keychain    |
+[RUN_FASTLANE] |                       | /var/folders/6p/t801jjn107n1msqrk3k  |
+[RUN_FASTLANE] |                       | 1ktmr0000gn/T/eas-build-1948e0d0-1a  |
+[RUN_FASTLANE] |                       | 8b-40cc-94e8-4c93d62cbb67.keychain"  |
+[RUN_FASTLANE] | disable_xcpretty      | true                                 |
+[RUN_FASTLANE] | buildlog_path         | /var/folders/6p/t801jjn107n1msqrk3k  |
+[RUN_FASTLANE] |                       | 1ktmr0000gn/T/eas-build-local-nodej  |
+[RUN_FASTLANE] |                       | s/b8a43240-2fe7-42a3-9281-96cdfdb63  |
+[RUN_FASTLANE] |                       | d00/logs                             |
+[RUN_FASTLANE] | derived_data_path     | ./build                              |
+[RUN_FASTLANE] | result_bundle         | true                                 |
+[RUN_FASTLANE] | result_bundle_path    | /var/folders/6p/t801jjn107n1msqrk3k  |
+[RUN_FASTLANE] |                       | 1ktmr0000gn/T/result-bundle-1777221  |
+[RUN_FASTLANE] |                       | 610599.xcresult                      |
+[RUN_FASTLANE] | output_directory      | ./build                              |
+[RUN_FASTLANE] +-----------------------+--------------------------------------+
+[RUN_FASTLANE] Resolving Swift Package Manager dependencies...
+[RUN_FASTLANE] $ xcodebuild -resolvePackageDependencies -workspace ./NourivaAI.xcworkspace -scheme NourivaAI -configuration Release -derivedDataPath ./build
+[RUN_FASTLANE] ▸ Command line invocation:
+[RUN_FASTLANE] ▸     /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -resolvePackageDependencies -workspace ./NourivaAI.xcworkspace -scheme NourivaAI -configuration Release -derivedDataPath ./build
+[RUN_FASTLANE] ▸ resolved source packages:
+[RUN_FASTLANE] $ xcodebuild -showBuildSettings -workspace ./NourivaAI.xcworkspace -scheme NourivaAI -configuration Release -derivedDataPath ./build 2>&1
+[RUN_FASTLANE] Command timed out after 3 seconds on try 1 of 4, trying again with a 6 second timeout...
+[RUN_FASTLANE] Detected provisioning profile mapping: {"in.productverse.nourivaai": "ba9db84c-fa09-4580-86ab-784e25ed11a3"}
+[RUN_FASTLANE] 
+[RUN_FASTLANE] +-----------------------------------------------------------------------------+
+[RUN_FASTLANE] |                           Summary for gym 2.233.0                           |
+[RUN_FASTLANE] +--------------------------------------+--------------------------------------+
+[RUN_FASTLANE] | workspace                            | ./NourivaAI.xcworkspace              |
+[RUN_FASTLANE] | scheme                               | NourivaAI                            |
+[RUN_FASTLANE] | clean                                | false                                |
+[RUN_FASTLANE] | output_directory                     | ./build                              |
+[RUN_FASTLANE] | output_name                          | NourivaAI                            |
+[RUN_FASTLANE] | configuration                        | Release                              |
+[RUN_FASTLANE] | silent                               | false                                |
+[RUN_FASTLANE] | skip_package_ipa                     | false                                |
+[RUN_FASTLANE] | skip_package_pkg                     | false                                |
+[RUN_FASTLANE] | export_options.method                | app-store                            |
+[RUN_FASTLANE] | export_options.provisioningProfiles  | ba9db84c-fa09-4580-86ab-784e25ed11a  |
+[RUN_FASTLANE] | .in.productverse.nourivaai           | 3                                    |
+[RUN_FASTLANE] | export_xcargs                        | OTHER_CODE_SIGN_FLAGS="--keychain    |
+[RUN_FASTLANE] |                                      | /var/folders/6p/t801jjn107n1msqrk3k  |
+[RUN_FASTLANE] |                                      | 1ktmr0000gn/T/eas-build-1948e0d0-1a  |
+[RUN_FASTLANE] |                                      | 8b-40cc-94e8-4c93d62cbb67.keychain"  |
+[RUN_FASTLANE] | build_path                           | /Users/yogs87/Library/Developer/Xco  |
+[RUN_FASTLANE] |                                      | de/Archives/2026-04-26               |
+[RUN_FASTLANE] | derived_data_path                    | ./build                              |
+[RUN_FASTLANE] | result_bundle                        | true                                 |
+[RUN_FASTLANE] | result_bundle_path                   | /var/folders/6p/t801jjn107n1msqrk3k  |
+[RUN_FASTLANE] |                                      | 1ktmr0000gn/T/result-bundle-1777221  |
+[RUN_FASTLANE] |                                      | 610599.xcresult                      |
+[RUN_FASTLANE] | buildlog_path                        | /var/folders/6p/t801jjn107n1msqrk3k  |
+[RUN_FASTLANE] |                                      | 1ktmr0000gn/T/eas-build-local-nodej  |
+[RUN_FASTLANE] |                                      | s/b8a43240-2fe7-42a3-9281-96cdfdb63  |
+[RUN_FASTLANE] |                                      | d00/logs                             |
+[RUN_FASTLANE] | destination                          | generic/platform=iOS                 |
+[RUN_FASTLANE] | suppress_xcode_output                | true                                 |
+[RUN_FASTLANE] | xcodebuild_formatter                 | xcpretty                             |
+[RUN_FASTLANE] | build_timing_summary                 | false                                |
+[RUN_FASTLANE] | disable_xcpretty                     | true                                 |
+[RUN_FASTLANE] | skip_profile_detection               | false                                |
+[RUN_FASTLANE] | xcodebuild_command                   | xcodebuild                           |
+[RUN_FASTLANE] | skip_package_dependencies_resolutio  | false                                |
+[RUN_FASTLANE] | n                                    |                                      |
+[RUN_FASTLANE] | disable_package_automatic_updates    | false                                |
+[RUN_FASTLANE] | skip_package_repository_fetches      | false                                |
+[RUN_FASTLANE] | use_system_scm                       | false                                |
+[RUN_FASTLANE] | generate_appstore_info               | false                                |
+[RUN_FASTLANE] | xcode_path                           | /Applications/Xcode.app              |
+[RUN_FASTLANE] +--------------------------------------+--------------------------------------+
+[RUN_FASTLANE] $ set -o pipefail && xcodebuild -workspace ./NourivaAI.xcworkspace -scheme NourivaAI -configuration Release -derivedDataPath ./build -destination 'generic/platform=iOS' -archivePath /Users/yogs87/Library/Developer/Xcode/Archives/2026-04-26/NourivaAI\ 2026-04-26\ 22.10.20.xcarchive -resultBundlePath '/var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/result-bundle-1777221610599.xcresult' archive | tee /var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-local-nodejs/b8a43240-2fe7-42a3-9281-96cdfdb63d00/logs/NourivaAI-NourivaAI.log > /dev/null
+[RUN_FASTLANE] ⚠️  Pods/SDWebImage-SDWebImage: iOS@9.0 deployment version mismatch, expected >= 2.0 <= 26.4.99
+[RUN_FASTLANE] ⚠️  Pods/GTMSessionFetcher-GTMSessionFetcher_Core_Privacy: iOS@10.0 deployment version mismatch, expected >= 2.0 <= 26.4.99
+[RUN_FASTLANE] ⚠️  Pods/PromisesSwift-Promises_Privacy: iOS@9.0 deployment version mismatch, expected >= 2.0 <= 26.4.99
+[RUN_FASTLANE] 
+❌  Provisioning profile "*[expo] in.productverse.nourivaai AppStore 2026-04-25T04:52:19.524Z" doesn't include signing certificate "Apple Distribution: Yogesh Bagle (59T58N567J)". (in target 'NourivaAI' from project 'NourivaAI')
+
+
+[RUN_FASTLANE] ⚠️  Script has ambiguous dependencies causing it to run on every build.
+   To fix, go to: Xcode » NourivaAI/NourivaAI » Build Phases » '[CP-User] [RNFB] Core Configuration'
+   Either: Uncheck "Based on dependency analysis", or select output files to trigger the script
+
+[RUN_FASTLANE] ⚠️  Script has ambiguous dependencies causing it to run on every build.
+   To fix, go to: Xcode » NourivaAI/NourivaAI » Build Phases » '[CP-User] [RNFB] Crashlytics Configuration'
+   Either: Uncheck "Based on dependency analysis", or select output files to trigger the script
+
+[RUN_FASTLANE] ⚠️  Pods/PromisesObjC-FBLPromises_Privacy: iOS@9.0 deployment version mismatch, expected >= 2.0 <= 26.4.99
+[RUN_FASTLANE] ▸ ** ARCHIVE FAILED **
+[RUN_FASTLANE] ▸ The following build commands failed:
+[RUN_FASTLANE] ▸ 	Archiving workspace NourivaAI with scheme NourivaAI
+[RUN_FASTLANE] ▸ (1 failure)
+[RUN_FASTLANE] Exit status: 65
+[RUN_FASTLANE] 
+[RUN_FASTLANE] +---------------------------------------+
+[RUN_FASTLANE] |           Build environment           |
+[RUN_FASTLANE] +-------------+-------------------------+
+[RUN_FASTLANE] | xcode_path  | /Applications/Xcode.app |
+[RUN_FASTLANE] | gym_version | 2.233.0                 |
+[RUN_FASTLANE] | sdk         | iPhoneOS26.4.sdk        |
+[RUN_FASTLANE] +-------------+-------------------------+
+[RUN_FASTLANE] 
+[RUN_FASTLANE] Looks like fastlane ran into a build/archive error with your project
+[RUN_FASTLANE] It's hard to tell what's causing the error, so we wrote some guides on how
+[RUN_FASTLANE] to troubleshoot build and signing issues: https://docs.fastlane.tools/codesigning/getting-started/
+[RUN_FASTLANE] Before submitting an issue on GitHub, please follow the guide above and make
+[RUN_FASTLANE] sure your project is set up correctly.
+[RUN_FASTLANE] fastlane uses `xcodebuild` commands to generate your binary, you can see the
+[RUN_FASTLANE] the full commands printed out in yellow in the above log.
+[RUN_FASTLANE] Make sure to inspect the output above, as usually you'll find more error information there
+[RUN_FASTLANE] [!] Error building the application - see the log above
+[RUN_FASTLANE] Error: The "Run fastlane" step failed because of an error in the Xcode build process. We automatically detected following errors in your Xcode build logs:
+- Provisioning profile "*[expo] in.productverse.nourivaai AppStore 2026-04-25T04:52:19.524Z" doesn't include signing certificate "Apple Distribution: Yogesh Bagle (59T58N567J)". (in target 'NourivaAI' from project 'NourivaAI')
+Refer to "Xcode Logs" below for additional, more detailed logs.
+[CLEAN_UP_CREDENTIALS] Destroying keychain - /var/folders/6p/t801jjn107n1msqrk3k1ktmr0000gn/T/eas-build-1948e0d0-1a8b-40cc-94e8-4c93d62cbb67.keychain
+[CLEAN_UP_CREDENTIALS] Removing provisioning profile
+
+Build failed
+The "Run fastlane" step failed because of an error in the Xcode build process. We automatically detected following errors in your Xcode build logs:
+- Provisioning profile "*[expo] in.productverse.nourivaai AppStore 2026-04-25T04:52:19.524Z" doesn't include signing certificate "Apple Distribution: Yogesh Bagle (59T58N567J)". (in target 'NourivaAI' from project 'NourivaAI')
+Refer to "Xcode Logs" below for additional, more detailed logs.
+Error: The "Run fastlane" step failed because of an error in the Xcode build process. We automatically detected following errors in your Xcode build logs:
+- Provisioning profile "*[expo] in.productverse.nourivaai AppStore 2026-04-25T04:52:19.524Z" doesn't include signing certificate "Apple Distribution: Yogesh Bagle (59T58N567J)". (in target 'NourivaAI' from project 'NourivaAI')
+Refer to "Xcode Logs" below for additional, more detailed logs.
+    at resolveBuildPhaseErrorAsync (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/@expo/build-tools/dist/buildErrors/detectError.js:61:12)
+    at async BuildContext.handleBuildPhaseErrorAsync (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/@expo/build-tools/dist/context.js:194:28)
+    at async BuildContext.runBuildPhase (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/@expo/build-tools/dist/context.js:139:35)
+    at async buildAsync (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/@expo/build-tools/dist/builders/ios.js:137:26)
+    at async runBuilderWithHooksAsync (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/@expo/build-tools/dist/builders/common.js:12:13)
+    at async Object.iosBuilder (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/@expo/build-tools/dist/builders/ios.js:38:16)
+    at async buildIosAsync (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/eas-cli-local-build-plugin/dist/ios.js:43:12)
+    at async buildAsync (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/eas-cli-local-build-plugin/dist/build.js:58:29)
+    at async main (/Users/yogs87/.npm/_npx/0917d8cd6fe7b3c5/node_modules/eas-cli-local-build-plugin/dist/main.js:16:9)
+npx -y eas-cli-local-build-plugin@18.8.0 eyJqb2IiOnsidHlwZSI6Im1hbmFnZWQiLCJwbGF0Zm9ybSI6ImlvcyIsInByb2plY3RBcmNoaXZlIjp7InR5cGUiOiJQQVRIIiwicGF0aCI6Ii92YXIvZm9sZGVycy82cC90ODAxampuMTA3bjFtc3FyazNrMWt0bXIwMDAwZ24vVC9lYXMtY2xpLW5vZGVqcy8zMjkzZjE5Ny0xMWUxLTQ1MjctOTlmYy0zMjcwYmY3YzQ5YjUudGFyLmd6In0sInByb2plY3RSb290RGlyZWN0b3J5IjoiLiIsImJ1aWxkZXJFbnZpcm9ubWVudCI6eyJlbnYiOnt9fSwiY2FjaGUiOnsiZGlzYWJsZWQiOmZhbHNlLCJwYXRocyI6W10sImNsZWFyIjpmYWxzZX0sInNlY3JldHMiOnsiYnVpbGRDcmVkZW50aWFscyI6eyJOb3VyaXZhQUkiOnsicHJvdmlzaW9uaW5nUHJvZmlsZUJhc2U2NCI6Ik1JSXlTUVlKS29aSWh2Y05BUWNDb0lJeU9qQ0NNallDQVFFeEN6QUpCZ1VyRGdNQ0dnVUFNSUlpVmdZSktvWklodmNOQVFjQm9JSWlSd1NDSWtNOFAzaHRiQ0IyWlhKemFXOXVQU0l4TGpBaUlHVnVZMjlrYVc1blBTSlZWRVl0T0NJL1BnbzhJVVJQUTFSWlVFVWdjR3hwYzNRZ1VGVkNURWxESUNJdEx5OUJjSEJzWlM4dlJGUkVJRkJNU1ZOVUlERXVNQzh2UlU0aUlDSm9kSFJ3T2k4dmQzZDNMbUZ3Y0d4bExtTnZiUzlFVkVSekwxQnliM0JsY25SNVRHbHpkQzB4TGpBdVpIUmtJajRLUEhCc2FYTjBJSFpsY25OcGIyNDlJakV1TUNJK0NqeGthV04wUGdvSlBHdGxlVDVCY0hCSlJFNWhiV1U4TDJ0bGVUNEtDVHh6ZEhKcGJtYytlVzluYzJKT2IzVnlhWFpoUVVrZ1lqRXhZamhqWmpnMVlqQmlZekJsWldReU1EUXdaakU0TmpKaFlqbG1OVEE4TDNOMGNtbHVaejRLQ1R4clpYaytRWEJ3YkdsallYUnBiMjVKWkdWdWRHbG1hV1Z5VUhKbFptbDRQQzlyWlhrK0NnazhZWEp5WVhrK0NnazhjM1J5YVc1blBqVTVWRFU0VGpVMk4wbzhMM04wY21sdVp6NEtDVHd2WVhKeVlYaytDZ2s4YTJWNVBrTnlaV0YwYVc5dVJHRjBaVHd2YTJWNVBnb0pQR1JoZEdVK01qQXlOaTB3TkMweU5WUXdORG8xTWpveU1GbzhMMlJoZEdVK0NnazhhMlY1UGxCc1lYUm1iM0p0UEM5clpYaytDZ2s4WVhKeVlYaytDZ2tKUEhOMGNtbHVaejVwVDFNOEwzTjBjbWx1Wno0S0NRazhjM1J5YVc1blBuaHlUMU04TDNOMGNtbHVaejRLQ1FrOGMzUnlhVzVuUG5acGMybHZiazlUUEM5emRISnBibWMrQ2drOEwyRnljbUY1UGdvSlBHdGxlVDVKYzFoamIyUmxUV0Z1WVdkbFpEd3ZhMlY1UGdvSlBHWmhiSE5sTHo0S0NUeHJaWGsrUkdWMlpXeHZjR1Z5UTJWeWRHbG1hV05oZEdWelBDOXJaWGsrQ2drOFlYSnlZWGsrQ2drSlBHUmhkR0UrVFVsSlJuTjZRME5DU25WblFYZEpRa0ZuU1ZGSVpsSmtVREEwTkdKRVVFcEtSemxLT0VoV1ZVTlVRVTVDWjJ0eGFHdHBSemwzTUVKQlVYTkdRVVJDTVUxVlVYZFJaMWxFVmxGUlJFUkVkRUpqU0VKeldsTkNXR0l6U25OYVNHUndXa2RWWjFKSFZqSmFWM2gyWTBkV2VVbEdTbXhpUjBZd1lWYzVkV041UWtSYVdFb3dZVmRhY0ZreVJqQmhWemwxU1VWR01XUkhhSFpqYld3d1pWUkZURTFCYTBkQk1WVkZRM2QzUTFKNlRYaEZla0ZTUW1kT1ZrSkJiMDFEYTBaM1kwZDRiRWxGYkhWWmVUUjRRM3BCU2tKblRsWkNRVmxVUVd4V1ZFMUNORmhFVkVreVRVUlJlVTVVUVRCT1JFbDRUbFp2V0VSVVNUTk5SRkY1VGxSQk1FNUVTWGhPUm05M1oxazBlRWRxUVZsQ1oyOUthMmxoU21zdlNYTmFRVVZDUkVGdk1VOVdVVEZQUlRReFRtcGtTMDFVWTNkT1VWbEVWbEZSUkVSRE5YQlZSMmgyWW0xVloxSkhiSHBrU0Vwd1dXNVdNR0ZYT1hWUGFVSmFZakprYkdNeVoyZFJiVVp1WWtkVlowdEVWVFZXUkZVMFZHcFZNazR3YjNCTlVrMTNSVkZaUkZaUlVVeEVRVzh4VDFaUk1VOUZOREZPYW1STFRWSlZkMFYzV1VSV1VWRkxSRUY0V21JeVpHeGpNbWRuVVcxR2JtSkhWWGhEZWtGS1FtZE9Wa0pCV1ZSQmJGWlVUVWxKUWtscVFVNUNaMnR4YUd0cFJ6bDNNRUpCVVVWR1FVRlBRMEZST0VGTlNVbENRMmRMUTBGUlJVRndhazk2VUdsVU9URXZiWHBwYTFWVVZVaEdWamhIVFZKVUx6ZFRRMWxTWVV4dmR5OURSMlV4TkROalVVMWhOa1EwUVhOTVNIUjBRVUZIYVdoc1JFRk5jMFZoWXpSVEwzQjRZVGR1TW5wTFpYUjNiWE51U2xWT1pUVk5MMDFwZVRSUFZXNXdkVFU1VjJGMVpGSnZOMEk1UTI5bE1uWnhia3A0VEhwSlNXcGhMMVJwTmpKaU9URkNTR0pFTkZsRlpYbE9hWGRWU2pSeFEydGpNM0pwZG5aMmFteDBaR2t6VlVSblVVNWxZblJrY1VkR1MxTTVOSFptTTNOTldUQjFhbkpuWmtoamJtcGtSRFZ4UVVkNFoxQkNXR3BYVms1eUwxWnZaMWhrTW5ORlpXcGFabnBJVjI5VGFqZDFNV0pMYW5CaWJsaGlabU52Y0hndlVFVjZVRU4zU2xaTFdsZFpWa2x2WlV0VGFuUmFXVGhZYTBSdGRUZ3lWMFpJWldFM09EaExUbWRuTjBzNGFtNVRRMk4wYW14Sll6VnFkbTB5TkRVeWNEWlVkVk52UzBaeE5GQTFkWEZVUTFZMVNFMVJTMUZPU2pCMWFWRkpSRUZSUVVKdk5FbERTWHBEUTBGb09IZEVRVmxFVmxJd1ZFRlJTQzlDUVVsM1FVUkJaa0puVGxaSVUwMUZSMFJCVjJkQ1VVb3ZjMEZXYTFCdGRscEJjVk5GY210dFMwZE5UV3dyZVc1emFrSjNRbWRuY2tKblJVWkNVV05DUVZGU2EwMUhTWGRNVVZsSlMzZFpRa0pSVlVoTlFVdEhTVmRvTUdSSVFUWk1lVGxxV2xoS01HTjVOV2hqU0VKeldsTTFhbUl5TUhaa00yUnJZMjFqZWt4dFVteGpha0Y0UW1kbmNrSm5SVVpDVVdOM1FWbFpiR0ZJVWpCalJHOTJUREk1YW1NelFYVlpXRUozWWtkVmRWa3lPWFJNTWpscVl6TkJkMDE1TVROa01sSjVXbnBOZDAxcVEwTkJValJIUVRGVlpFbEJVME5CVWxWM1oyZEZVazFKU1VKRVVWbEtTMjlhU1doMlpHcGFRVlZDVFVsSUwwMUpTRVJDWjJkeVFtZEZSa0pSWTBOQmFrTkNkR2Q1UW5NeFNteGlSMnhvWW0xT2JFbEhPWFZKU0ZKdllWaE5aMWt5Vm5sa1IyeHRZVmRPYUdSSFZXZFpibXRuV1ZjMU5VbElRbWhqYmxJMVNVZEdlbU16Vm5SYVdFMW5XVmRPYWxwWVFqQlpWelZxV2xOQ2RscHBRakJoUjFWblpFZG9iR0pwUW1oalNFSnpZVmRPYUZsdGVHeEpTRTR3V1ZjMWExbFlTbXRKU0ZKc1kyMHhla2xIUm5WYVEwSnFZakkxYTJGWVVuQmlNalY2U1VjNWJVbElWbnBhVTNkbldUSldlV1JIYkcxaFYwNW9aRWRWWjJOSE9YTmhWMDQxU1VkR2RWcERRbXBhV0Vvd1lWZGFjRmt5UmpCaFZ6bDFTVWhDZVZsWFRqQmhWMDVzU1VoT01GbFlVbXhpVjFaMVpFaE5kVTFFWTBkRFEzTkhRVkZWUmtKM1NVSkdhWFJ2WkVoU2QyTjZiM1pNTTJRelpIazFhR05JUW5OYVV6VnFZakl3ZGxreVZubGtSMnh0WVZkT2FHUkhWbWhrV0ZKdllqTktjR1JJYTNaTlFsbEhRVEZWWkVwUlJVSXZkMUZOVFVGdlIwTkRjMGRCVVZWR1FuZE5SRTFDTUVkQk1WVmtSR2RSVjBKQ1ZIbERVWEYxTUdnNVZrbG5SRXhTZVZGT1dWWk1OalJQWVhWblJFRlBRbWRPVmtoUk9FSkJaamhGUWtGTlEwSTBRWGRGZDFsTFMyOWFTV2gyWkdwYVFWbENRa0ZGUWk5M1VVTkNVVUYzUkZGWlNrdHZXa2xvZG1OT1FWRkZURUpSUVVSblowVkNRVWQzU2sxR1JTc3laRWRxY1dwME9HRlJWWGhLUlc1TFEwbEZXSEJ5VWtvMFNITllkMnMzTDJKTU5XWXZhMHBVTVM5amFqbE5XV3RvUjFaR1NUaGlObkp3VGxKQ2IyeFFNM2c0YVhkSldIUXdaRmhZYW5waWRuaDZkVkJuT1dOME1ITk5iMjF6UmxadmRrUklaRVpCZEhCcVVVMXJhM05NUzJVek5IaG5OVXhUU1daNFREQk1VMjVKZURsYUsxUklLMGcwWlU1TllsWklZUzlDZWk5UWRqUTFZVXhxWnpoQ2IycHZSRWt6TlM5aWRrTnVOVU5HUmxZMmNHdFJjRzFFTUhSRFdWQmtXWFJPTHpVeFJrRTRjMlpKUzBGQlJETkVMMEptY1dwWWJVOUJjazR2YTBaamVTOU9jM2xXVEZGak5uWnFiMm94UjAxelFVMU1USGgyU2xwWmIxcExXa1I2VlRZMFlUaERhbmxwYkRJNFZVZHJRbVJWZGtsRlVYaE1LMGRZVGxBeVVIQkNkbVJzZFROcFUwY3JUWEYxUkRnemFIWkNNRWxsYkdNMlkwWXZVbTlFTkZKTUwycG1jemxHUjIxNlkxRkVORDA4TDJSaGRHRStDZ2s4TDJGeWNtRjVQZ29LQ1R4clpYaytSRVZTTFVWdVkyOWtaV1F0VUhKdlptbHNaVHd2YTJWNVBnb0pQR1JoZEdFK1RVbEpUMHhSV1VwTGIxcEphSFpqVGtGUlkwTnZTVWxQU0dwRFEwUm9iME5CVVVWNFJGUkJURUpuYkdkb2EyZENXbEZOUlVGblJYZG5aMUJ6UW1kcmNXaHJhVWM1ZHpCQ1FuZEhaMmRuVUdSQ1NVbEVNbFJIUTBFNVZYZEVRWGRJVm0xV2VXTXliSFppWjBsQ1FWUkJUa1JCYUZGVlJrWkVZVWRXYW1GM1JVSkJSRUZSUkVGd1ZXRlhNV3hXUnpsTllWaGFiRUZuU1VKaVJFRlVSRUUxU21NeGFHcGlNbEpzVkZkR2RWbFhaR3hhUVVWQ1FVUkJXVVJCYUZWYVYwWjBWRzFHZEZwUmQwMVhWemx1V2xoT2IwbEZTbWhhTW5oc1RVSXdUVVJGVG5sYVYwWXdZVmM1ZFZKSFJqQmFVbU5PVFdwWmQwNUVTVEZOUkZFeFRXcEpkMWRxUVdWRVFUVlZXbGRHZEZOWFVteGlibEp3V20xc2JHTnFRVTFFUVc4eFQxWlJNVTlGTkRGT2FtUkxUVUk0VFVSclZqUmpSMng1V1ZoU2NHSXlOVVZaV0ZKc1JuY3dlVTU2UVRCTmFsVjNUa1JSZVUxVVVtRk5RMEZOUmpGQ2VXSXlXbkJpUjFaRllWaE9NR050Ykdsa1dGSndZakkxVldWWVFteEVRVlpVVmtVNVUxSlVRV2hFUVdoUllrZEdNRnB0T1hsaVZFRldSRUZPY0ZReFRVMUNTR2g1VkRGTlRVTklXbkJqTW14MlltczVWRTFEYzAxSE1FWjNZMGQ0Y0ZreVJqQmhWemwxVTFkU2JHSnVVbkJhYld4c1kyeENlVnBYV25CbFJFRk5SRUZ2TVU5V1VURlBSVFF4VG1wa1MwMURkMDFDUmxaV1UxVlJUVXBIU21oUFYxSnBUMFJTYWt4WFdtaE5SR3QwVGtSVk5FMURNRFJPYlVacFRGUmpORTVIVlhsT1YxWnJUVlJHYUUxNlFUZEVRbFpGV2xoYWJHSkhPWGRhV0VwRVdsaEtNR0ZYV25CWk1rWXdXbGhOZDBsblVXZGhjVFp5YVRNMEswZHhRVEV3YjBsNlQzVldiMUYxUWl0UFZTdElXak5WZW1aWFNUbGhTM2h2Uld3NGQxQkJkMHBSV0VKM1UxVlNUMWxYTVd4RVF6azFZakprZWxsck5YWmtXRXB3WkcxR1FsTlRRbWxOVkVacFQwZE9iVTlFVm1sTlIwcHFUVWRXYkZwRVNYZE9SRUp0VFZSbk1rMXRSbWxQVjFreFRVUkNURVJCVWs5WlZ6RnNSRVZOY1ZjeVZqUmpSemxrU1Vkc2RVeHVRbmxpTWxJeFdUTlNNbHBZU25wYVV6VjFZak5XZVdGWVdtaFpWMnRuVVZoQ2QxVXpVblpqYlZWblRXcEJlVTVwTUhkT1F6QjVUbFpSZDA1RWJ6Rk5hbTk0VDFNME1VMXFVbUZOU1VsQ2NYZDNUVkpYTlRCaFdGSnpXbGN4YkdKdVVucGpTVWxDYlZGSlFrRmlRME5CV2tsM1VHZDNWMWxZUW5kaVIyeHFXVmhTY0dJeU5IUmhWMUpzWW01U2NGcHRiR3hqWjNkclRsUnNWVTVVYUU5T1ZGa3pVMmsxY0dKcE5YZGpiVGxyWkZkT01HUnRWbmxqTWxWMVltMDVNV050YkRKWlYwWndUVUl3VFVReVJuZGplVEZzWW01YWNHTnRPWFZpVjFaMVpFRjNTMk5JU25aYVNGWnFaRWRzZG1KcVFWbEVRazVwV2xoU2FFeFlTbXhqUnpsNVpFaE5kRmxYVGpCaFdGcHNRVkZJTDAxRFNVMUlWMDUyWWxNMWFHTklRbk5hVXpWcldsaGFiR0pIT1hkYVdFbDFZVWRXYUdKSVVtOWhNbXd3UVZGSUwwMUVaMDFLUjA1MllsTTFhR05JUW5OYVV6VnJXbGhhYkdKSE9YZGFXRWwxWVVkV2FHSklVbTloTW13d1RHMUdhbGt5Vm5wamVrRlJSRUUxYjFwWFJuTmtSMmQwWTIxV2FtSXpTbXRqZWtFeVJFUkdhbUl5TUhWWldFSjNZa2RWZFZwSFZqSmFWM2gyWTBkV2VVeHRhR3haVjNnd1lVZDBjR1JETldsWlYwNXlXak5LZG1SWE5XdE1WMUpzWWtkc01scFlTalZCVVVndlRVUkZUVWt5VG5aaVV6Vm9ZMGhDYzFwVE5XdGFXRnBzWWtjNWQxcFlTWFZrUjFab1lsTXhjRnBIVm5Wa1IyeHRZVmRXZVVSQmJ6RlBWbEV4VDBVME1VNXFaRXROUWsxTlJHMWtiR1JETVRCWldFNXlURmRHYzJKSE9UTkJVVVZCVFVSclRVWnRkR3hsVjA1dldWZHNkVXhYUm1wWk1sWjZZM2t4Ym1OdE9URmpTRTEzU0hkM1RVNVViRlZPVkdoUFRsUlpNMU5wTkhGRVFUbHFZakl3ZFZsWVFuZGlSMVYxWkVjNWNscFhObWRuWjJjNVRVbEpRMUY2UTBOQlkyMW5RWGRKUWtGblNVbE1ZMWc0YVU1TVJsTTFWWGREWjFsSlMyOWFTWHBxTUVWQmQwMTNXbnBGWWsxQ2EwZEJNVlZGUVhkM1UxRllRbmRpUjFWblZXMDVkbVJEUWtSUlUwRjBTVVZqZWsxVFdYZEtRVmxFVmxGUlRFUkNNVUpqU0VKeldsTkNSRnBZU2pCaFYxcHdXVEpHTUdGWE9YVkpSVVl4WkVkb2RtTnRiREJsVkVWVVRVSkZSMEV4VlVWRFozZExVVmhDZDJKSFZXZFRWelZxVEdwRlRFMUJhMGRCTVZWRlFtaE5RMVpXVFhkSWFHTk9UVlJSZDA1RVRYZE5WR2Q0VDFSQk1sZG9ZMDVOZW10M1RrUk5kMDFVWjNoUFZFRXlWMnBDYmsxU2MzZEhVVmxFVmxGUlJFUkNTa0pqU0VKeldsTkNVMkl5T1RCSlJVNUNTVU13WjFKNlRYaEtha0ZyUW1kT1ZrSkJjMDFJVlVaM1kwZDRiRWxGVG14amJsSndXbTFzYWxsWVVuQmlNalJuVVZoV01HRkhPWGxoV0ZJMVRWSk5kMFZSV1VSV1VWRkxSRUZ3UW1OSVFuTmFVMEpLWW0xTmRVMVJjM2REVVZsRVZsRlJSMFYzU2xaVmVrSXlUVUpCUjBKNWNVZFRUVFE1UVdkRlIwSlRkVUpDUVVGcFFUSkpRVUpLYW5CTWVqRkJZM0ZVZEd0NVNubG5VazFqTTFKRFZqaGpWMnBVYmtoalJrSmlXa1IxVjIxQ1UzQXpXa2gwWmxScWFsUjFlSGhGZEZndk1VZzNXWGxaYkROS05sbFNZbFI2UWxCRlZtOUJMMVpvV1VSTFdERkVlWGhPUWpCalZHUmtjVmhzTldSMlRWWjZkRXMxTVRkSlJIWlpkVlpVV2xod2JXdFBiRVZMVFdGT1EwMUZRWGRJVVZsRVZsSXdUMEpDV1VWR1RIVjNNM0ZHV1UwMGFXRndTWEZhTTNJMk9UWTJMMkY1ZVZOeVRVRTRSMEV4VldSRmQwVkNMM2RSUmsxQlRVSkJaamgzUkdkWlJGWlNNRkJCVVVndlFrRlJSRUZuUlVkTlFXOUhRME54UjFOTk5EbENRVTFFUVRKblFVMUhWVU5OVVVORU5tTklSVVpzTkdGWVZGRlpNbVV6ZGpsSGQwOUJSVnBNZFU0cmVWSm9TRVpFTHpOdFpXOTVhSEJ0ZGs5M1oxQlZibEJYVkhodVV6UmhkQ3R4U1hoVlEwMUhNVzFwYUVSTE1VRXpWVlE0TWs1UmVqWXdhVzFQYkUweU4ycGlaRzlZZERKUlpubEdUVzByV1docFpFUnJURVl4ZGt4VllXZE5Oa0puUkRVMlMzbExSRU5EUVhWWmQyZG5TblJ2UVUxRFFWRkpRME5FVFU0M2Rta3ZWRWRuZFUxQmIwZERRM0ZIVTAwME9VSkJUVVJOUjJONFIzcEJXa0puVGxaQ1FVMU5SV3RHZDJOSGVHeEpSa3AyWWpOUloxRXdSV2RNVTBKSVRYcEZiVTFEVVVkQk1WVkZRM2QzWkZGWVFuZGlSMVZuVVRKV2VXUkhiRzFoVjA1b1pFZHNkbUpwUWtKa1dGSnZZak5LY0dSSWEzaEZla0ZTUW1kT1ZrSkJiMDFEYTBaM1kwZDRiRWxGYkhWWmVUUjRRM3BCU2tKblRsWkNRVmxVUVd4V1ZFMUNORmhFVkVVelRVUkplVTFxU1hsTmFrMTVUV3h2V0VSVVRYbE5SRWw0VDBSQmQwMUVRWGROUm05M1kycEZiVTFEVVVkQk1WVkZRWGQzWkZGWVFuZGlSMVZuVlROc2VtUkhWblJKUld4MVpFZFdibU50UmpCaFZ6bDFTVVZPUWtsRVVYaEtha0ZyUW1kT1ZrSkJjMDFJVlVaM1kwZDRiRWxGVG14amJsSndXbTFzYWxsWVVuQmlNalJuVVZoV01HRkhPWGxoV0ZJMVRWSk5kMFZSV1VSV1VWRkxSRUZ3UW1OSVFuTmFVMEpLWW0xTmRVMVJjM2REVVZsRVZsRlJSMFYzU2xaVmVrSmFUVUpOUjBKNWNVZFRUVFE1UVdkRlIwTkRjVWRUVFRRNVFYZEZTRUV3U1VGQ1FWcHljRVphZG1aYU9HNHdZelF5YW5CSllsWnpNVlZPYlZKTGVWcFNiMjFtY2twSlNEZHBPVlpuVUROUFNuRTJlR3hJVEhrM2RrODJVVUowUVVWVVVraDRZVXB4TW1kdVEydHNhWFZZYlVKdE9WQm1SbkZxWjJaamQyZG1VWGRFZDFsRVZsSXdWRUZSU0M5Q1FWVjNRWGRGUWk5NlFXWkNaMDVXU0ZOTlJVZEVRVmRuUWxNM2MwNDJhRmRFVDBsdGNWTkxiV1EySzNabGRYWXljM05yY1hwQ1IwSm5aM0pDWjBWR1FsRmpRa0ZSVVRaTlJHZDNUbWRaU1V0M1dVSkNVVlZJVFVGSFIwdHRhREJrU0VFMlRIazVkbGt6VG5kTWJVWjNZMGQ0YkV4dFRuWmlVemwyV1ROT2QwMUVUWFJaV0VKM1lrZFdlV0l5T1RCWk1rWnVUWHBCTTBKblRsWklVamhGVFVSQmRVMURlV2RMY1VGdmFHbGFiMlJJVW5kUGFUaDJXVE5LYzB4dFJuZGpSM2hzVEcxT2RtSlRPV2hqU0VKeldsaEtkbUl6VW1wWlYyTjZURzFPZVdKRVFXUkNaMDVXU0ZFMFJVWm5VVlZsYTJVMlQwbHZWa3BGWjJsU2N6SXJhbmh2YTJWNlVVUkxiV3QzUkdkWlJGWlNNRkJCVVVndlFrRlJSRUZuUlVkTlFrRkhRMmx4UjFOSllqTlpNbEZIUVdoRlJVRm5WVUZOUVc5SFEwTnhSMU5OTkRsQ1FVMUVRVEpqUVUxSFVVTk5RbFZOY1ZrM1IzSTFXbkJoTm1WbU0xWjZWVUV4YkhOeWJFeFZXVTFoVEdSMVF6TjRZVXg0UTFoNloyMTFUbkp6WlU0NFRXTlJibVZ4WlU5cFpqSnlaSGRKZDFsVVRXYzRVMjR2SzFsamVYSnBia2xhUkRFeVpURkhhekJuU1haa2NqVm5TWEJJZURGVWNERXpURlJwZUdseFZ5OXpXVW96UlhCUU1WTlVkeTlOY1hsTlNVbEVRMFJEUTBGeE1tZEJkMGxDUVdkSlNXUkJkeXRQWlZkVGNXMUJkME5uV1VsTGIxcEplbW93UlVGM1NYZGpha1Z0VFVOUlIwRXhWVVZCZDNka1VWaENkMkpIVldkVk0yeDZaRWRXZEVsRmJIVmtSMVp1WTIxR01HRlhPWFZKUlU1Q1NVUlJlRXBxUVd0Q1owNVdRa0Z6VFVoVlJuZGpSM2hzU1VWT2JHTnVVbkJhYld4cVdWaFNjR0l5TkdkUldGWXdZVWM1ZVdGWVVqVk5VazEzUlZGWlJGWlJVVXRFUVhCQ1kwaENjMXBUUWtwaWJVMTFUVkZ6ZDBOUldVUldVVkZIUlhkS1ZsVjZRV1ZHZHpCNVRtcEJlRTFxUlhoUFZFa3pUV3BDWVVaM01IcE5SRUY1VFZScmVFOVVTVE5OVkd4aFRVVTBlRXRxUVc5Q1owNVdRa0ZOVFVsV1pGaFNSa2xuVlVoS2RtUnRiSHBoVnpsMVlWYzFia2xHUW5saU1scHdZa2RWWjFVeWJHNWliV3gxV25wRlZFMUNSVWRCTVZWRlEyZDNTMUZZUW5kaVIxVm5VMWMxYWt4cVJVeE5RV3RIUVRGVlJVSm9UVU5XVmsxM1YxUkJWRUpuWTNGb2EycFBVRkZKUWtKblozRm9hMnBQVUZGTlFrSjNUa05CUVZOUlEyMHJTbm81VDBKblJFSlZkR0p6Tm5CM2RYQnllVzB5UldSR2Rtc3JNaXM0TUc1aFpWaElkV0Z3TW1Kb09FWlNMMmxVZVVSWWFsRk9ZblJMU1ZkUFQwSk9SeTl3Y25GUGNqVjJOREJKVVU5bVZrVTBielJKUWxSNlEwTkJWWE4zUkVGWlJGWlNNRlJCVVVndlFrRkpkMEZFUVdaQ1owNVdTRk5OUlVkRVFWZG5RbEkyVWpkdk5HbG9WV3RUUTBwSGVtSTJVRWRwVWpkT1FVMXhZVlJDUWtKblozSkNaMFZHUWxGalFrRlJVVEZOUkUxM1RWRlpTVXQzV1VKQ1VWVklUVUZIUjBwWGFEQmtTRUUyVEhrNWRsa3pUbmRNYlVaM1kwZDRiRXh0VG5aaVV6bDJXVE5PZDAxRVRYUlpXRTV3V1RKRk1FMUVUWGRuV2xsSFFURlZaRWxCVTBKcWFrTkNhWHBEUW1sQldVcExiMXBKYUhaa2FscEJWVUpOU0hOM1pWRlpTVXQzV1VKQ1VWVklRV2RKZDJKUmVISldSMmh3WTNsQ2FscFlTakJoVjFwd1dUSkdNRnBUUW5CamVVSXdZbmxDYVZwVFFqRmpNbFpyU1VkV05Ga3llREZqTW13eVdsZDROVWxIV25aamFVSnRaRmMxYW1SSGJIWmliazFuWVZjMU1GcFlTblZaVjNkblpFYzRaMUZZUW5kaVIxVm5WVWhLZGxwSVZtcGtTRTFuV1ZjMWEwd3lPWGxKUlVaM1kwZDRiRWxJUW5saU1rNXNZek5PYkdONU5IZElVVmxFVmxJd1QwSkNXVVZHVDA5U05GbHNNRUZYWVd0b0t6Y3ZjekZUVEROVVJreDRWaTlSVFVFMFIwRXhWV1JFZDBWQ0wzZFJSVUYzU1VoblJFRlFRbWRyY1docmFVYzVNazVyUkVKTlJVRm5WVUZOUVc5SFEwTnhSMU5OTkRsQ1FVMURRVEJyUVUxRldVTkpVVU5MVEVGdU5HNXJhMUpPUTJaeVpYVkNRMElyVG1oTmJpOTVhRkp4VUc1R1FYRXlSakpDTTBJd2MxWlJTV2hCVDBaV2JtSjZObVl6WVZScFl6ZEVUVFpFUkVSNWF6WTVXbnAzYTBNdldsZ3dPVFJSYm1veFRXUjZWVTFaU1VJd2VrTkRRV000UTBGUlJYZG1ha0o1VFZOWmQwcEJXVVJXVVZGRVJFSXhRbU5JUW5OYVUwSlVaVmhPTUZwWE1HZFRWelV3V2xka2VWbFlVbkJpTWpSblVUQkZaMDVFUlcxTlExRkhRVEZWUlVOM2QyUlJXRUozWWtkVloxRXlWbmxrUjJ4dFlWZE9hR1JIYkhaaWFVSkNaRmhTYjJJelNuQmtTR3Q0UlhwQlVrSm5UbFpDUVc5TlEydEdkMk5IZUd4SlJXeDFXWGswZUVONlFVcENaMDVXUWtGWlZFRnNWbFJCWjJnd1JFUTBOVFZhUzNGWlJFRk1RbWRzWjJoclowSmFVVTFGUVdkSFoyZGxZM2RIUVZsS1MyOWFTV2gyWTA1QlVXdEVUVkZ6UjBOVGNVZFRTV0l6UkZGRlNFRlVRV05DWjJ0eGFHdHBSemwzTUVKRFVWVjRSSGhqVGsxcVdYZE9SRWt4VFVSUk1VMXFTWGRYYWtGdlFtZHJjV2hyYVVjNWR6QkNRMVJSZUVkNlFWcE5RWE5IUTFkRFIxTkJSbXhCZDFGRFFXRkZTMEpuWjNGb2EycFBVRkZSUkVGcVFYWkNaMnR4YUd0cFJ6bDNNRUpEVVZGNFNXZFJaM2t4YlZkeVZHaFRjMDl2VVhWMFIwOUtVMU0zZFdoWFZYQmFURmN5TTJONFQxbEZOVk5tZDFGUU5UaDNWV2RaU2t0dldrbG9kbU5PUVZGclVFMVZWWGRSZWtGTFFtZG5jV2hyYVVjNWR6QkVRbnBCVDBKblozRm9hMmxIT1hjd1JFRm5TVU5CU1VGM1JGRlpTVXR2V2tsb2RtTk9RWGRKUTBGVlFYZENkMWxHUzNjMFJFRm5ZM2RFVVZsSlMyOWFTV2gyWTA1QmQwbERRVk5uZDBObldVbExiMXBKZW1vd1JVRjNTVVZTZWtKR1FXbENZMlYyZERGVk4zSkViM2hFYUhWVlkxUlZPRXR4VGxJclJqbDFObGh4TDFsNVFtb3JlRWxQYTJSeWQwbG9RVkJvWld4QlNXOXJha0pZVmpFME5uQk1jR2QwT1ZNeWJsRlhTRkl3TjNkRk1XeHpaV054YjBKRE1FMDhMMlJoZEdFK0Nna0pDUWtKQ1FrSkNRa0pDUWtKQ1FrSkNRa0pDZ2tKQ1R4clpYaytVRkJSUTJobFkyczhMMnRsZVQ0S0NUeG1ZV3h6WlM4K0Nnb0pQR3RsZVQ1RmJuUnBkR3hsYldWdWRITThMMnRsZVQ0S0NUeGthV04wUGdvSkNUeHJaWGsrWW1WMFlTMXlaWEJ2Y25SekxXRmpkR2wyWlR3dmEyVjVQZ29KQ1R4MGNuVmxMejRLQ1FrSkNRb0pDUWtKUEd0bGVUNWpiMjB1WVhCd2JHVXVaR1YyWld4dmNHVnlMbWhsWVd4MGFHdHBkQzVpWVdOclozSnZkVzVrTFdSbGJHbDJaWEo1UEM5clpYaytDZ2tKUEhSeWRXVXZQZ29KQ1FrSkNna0pDUWs4YTJWNVBtRndjeTFsYm5acGNtOXViV1Z1ZER3dmEyVjVQZ29KQ1R4emRISnBibWMrY0hKdlpIVmpkR2x2Ymp3dmMzUnlhVzVuUGdvSkNRa0pDZ2tKQ1FrOGEyVjVQbUZ3Y0d4cFkyRjBhVzl1TFdsa1pXNTBhV1pwWlhJOEwydGxlVDRLQ1FrOGMzUnlhVzVuUGpVNVZEVTRUalUyTjBvdWFXNHVjSEp2WkhWamRIWmxjbk5sTG01dmRYSnBkbUZoYVR3dmMzUnlhVzVuUGdvSkNRa0pDZ2tKQ1FrOGEyVjVQbU52YlM1aGNIQnNaUzVrWlhabGJHOXdaWEl1YUdWaGJIUm9hMmwwUEM5clpYaytDZ2tKUEhSeWRXVXZQZ29KQ1FrSkNna0pDUWs4YTJWNVBtdGxlV05vWVdsdUxXRmpZMlZ6Y3kxbmNtOTFjSE04TDJ0bGVUNEtDUWs4WVhKeVlYaytDZ2tKQ1FrOGMzUnlhVzVuUGpVNVZEVTRUalUyTjBvdUtqd3ZjM1J5YVc1blBnb0pDUWtKUEhOMGNtbHVaejVqYjIwdVlYQndiR1V1ZEc5clpXNDhMM04wY21sdVp6NEtDUWs4TDJGeWNtRjVQZ29KQ1FrSkNna0pDUWs4YTJWNVBtZGxkQzEwWVhOckxXRnNiRzkzUEM5clpYaytDZ2tKUEdaaGJITmxMejRLQ1FrSkNRb0pDUWtKUEd0bGVUNWpiMjB1WVhCd2JHVXVaR1YyWld4dmNHVnlMbWhsWVd4MGFHdHBkQzVoWTJObGMzTThMMnRsZVQ0S0NRazhZWEp5WVhrK0Nna0pDUWs4YzNSeWFXNW5QbWhsWVd4MGFDMXlaV052Y21SelBDOXpkSEpwYm1jK0Nna0pQQzloY25KaGVUNEtDUWtKQ1FvSkNRa0pQR3RsZVQ1amIyMHVZWEJ3YkdVdVpHVjJaV3h2Y0dWeUxuUmxZVzB0YVdSbGJuUnBabWxsY2p3dmEyVjVQZ29KQ1R4emRISnBibWMrTlRsVU5UaE9OVFkzU2p3dmMzUnlhVzVuUGdvSkNRb0pQQzlrYVdOMFBnb0pQR3RsZVQ1RmVIQnBjbUYwYVc5dVJHRjBaVHd2YTJWNVBnb0pQR1JoZEdVK01qQXlOeTB3TkMweU5WUXdORG8wTWpveE5GbzhMMlJoZEdVK0NnazhhMlY1UGs1aGJXVThMMnRsZVQ0S0NUeHpkSEpwYm1jK0tsdGxlSEJ2WFNCcGJpNXdjbTlrZFdOMGRtVnljMlV1Ym05MWNtbDJZV0ZwSUVGd2NGTjBiM0psSURJd01qWXRNRFF0TWpWVU1EUTZOVEk2TVRrdU5USTBXand2YzNSeWFXNW5QZ29KUEd0bGVUNVVaV0Z0U1dSbGJuUnBabWxsY2p3dmEyVjVQZ29KUEdGeWNtRjVQZ29KQ1R4emRISnBibWMrTlRsVU5UaE9OVFkzU2p3dmMzUnlhVzVuUGdvSlBDOWhjbkpoZVQ0S0NUeHJaWGsrVkdWaGJVNWhiV1U4TDJ0bGVUNEtDVHh6ZEhKcGJtYytXVzluWlhOb0lFSmhaMnhsUEM5emRISnBibWMrQ2drOGEyVjVQbFJwYldWVWIweHBkbVU4TDJ0bGVUNEtDVHhwYm5SbFoyVnlQak0yTkR3dmFXNTBaV2RsY2o0S0NUeHJaWGsrVlZWSlJEd3ZhMlY1UGdvSlBITjBjbWx1Wno1aVlUbGtZamcwWXkxbVlUQTVMVFExT0RBdE9EWmhZaTAzT0RSbE1qVmxaREV4WVRNOEwzTjBjbWx1Wno0S0NUeHJaWGsrVm1WeWMybHZiand2YTJWNVBnb0pQR2x1ZEdWblpYSStNVHd2YVc1MFpXZGxjajRLUEM5a2FXTjBQZ284TDNCc2FYTjBQcUNDRFQ4d2dnUTBNSUlESEtBREFnRUNBZ2hHSUMyOEEwK1B0akFOQmdrcWhraUc5dzBCQVFzRkFEQnpNUzB3S3dZRFZRUUREQ1JCY0hCc1pTQnBVR2h2Ym1VZ1EyVnlkR2xtYVdOaGRHbHZiaUJCZFhSb2IzSnBkSGt4SURBZUJnTlZCQXNNRjBObGNuUnBabWxqWVhScGIyNGdRWFYwYUc5eWFYUjVNUk13RVFZRFZRUUtEQXBCY0hCc1pTQkpibU11TVFzd0NRWURWUVFHRXdKVlV6QWVGdzB5TmpBeE1qZ3hPVFUxTlRKYUZ3MHpNREV5TXpFd01EQXdNREJhTUZreE5UQXpCZ05WQkFNTUxFRndjR3hsSUdsUWFHOXVaU0JQVXlCUWNtOTJhWE5wYjI1cGJtY2dVSEp2Wm1sc1pTQlRhV2R1YVc1bk1STXdFUVlEVlFRS0RBcEJjSEJzWlNCSmJtTXVNUXN3Q1FZRFZRUUdFd0pWVXpDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTGdCeGdLbitpMGdxODVHclJWWWN5N3B2RFZsNWF4eTJRWllIUm1YT2dPaWtCM25xa0Y5Ni9ua0ExNXJDZUtvZEk4UHMwSXp4VWVkMDlPRnJJc3FZaTV0TEUyT2lYcktERlBwM2FRZWJxVUNhZngyNkFSc09EMHQ4cW96ZFlFank0Y0ozdWJiLzNxWkVwK2NVb054TVZYNWZxMDdKWFZTVStBeXMyQmhUaG1yZXdSRnZLdFhhd2dQbE02Vk1rUUNXNHF0Y2lEQXFtYzdNczgzaDFWRm81T2k0aDV3LzZSdmdnV0V3WmsrYWRacWR4TUtXVUUwV2hFTnBDNFEyYkhHYXo5aFZTQURRcU5PUVlyNVBFWGYxWmNFdjAwb1RYd1F1WDV0TEQ2d0kzcmRhSmFUYVNkYWpxZTVkQkdCNThFZzIveWRtMlRLRHkzTURabFVNd01Ydm4wQ0F3RUFBYU9CNVRDQjRqQU1CZ05WSFJNQkFmOEVBakFBTUI4R0ExVWRJd1FZTUJhQUZHL3hsUmhpWE9ESThjWHRiQmpKNE5Oa1VwZ2dNRUFHQ0NzR0FRVUZCd0VCQkRRd01qQXdCZ2dyQmdFRkJRY3dBWVlrYUhSMGNEb3ZMMjlqYzNBdVlYQndiR1V1WTI5dEwyOWpjM0F3TXkxaGFYQmpZVEEzTUM4R0ExVWRId1FvTUNZd0pLQWlvQ0NHSG1oMGRIQTZMeTlqY213dVlYQndiR1V1WTI5dEwyRnBjR05oTG1OeWJEQWRCZ05WSFE0RUZnUVVPeFJvRUU4bUxZN2FDMGxRRjIydVpENy9saEV3RGdZRFZSMFBBUUgvQkFRREFnZUFNQThHQ1NxR1NJYjNZMlFHT2dRQ0JRQXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBRHBBZUtuRmJBc2NqdUR4L2hKdE0wNitiZy9TVnM0dnZnazI0clpwa1VteENxTjhhQkpEV0hyNVk4ZmpudXNIZmtSR2x2QjFwNlI4ZWg3K1BmemZRdmE4YzR5elFNcFJPZEZDOCtIM2luM1d5R2RxUHZNa3dQVk53aHduOXpycmhWN203enRqRzN4SUJySXdpTU8zQUZsbzlVRHRoYytZR3VIVzBtSXRUSldiMGk1TDVDM3FIY0dCUko1cU00RXVGa3Z5VjFDTkRzNEpOcGdYSUQzK0JPQ3kvSnpUT21PbEl2N1RnRERqSW1NUG5YZEFEcU5zNHNqbUdyZFpqVFVoMlBLZU41MDhSVTNhTVlaVHF4NlM4VWxpQUNXd1RnOE1ZaEV3NjJKMGNQem9CTm1HVjZGZUtOUGk1ZHFLR0hrVzVIREJlWmk1UTR6UHh3WGYzaXB4cDc4d2dnUkVNSUlETEtBREFnRUNBZ2hjWThya1NqZFR5VEFOQmdrcWhraUc5dzBCQVFzRkFEQmlNUXN3Q1FZRFZRUUdFd0pWVXpFVE1CRUdBMVVFQ2hNS1FYQndiR1VnU1c1akxqRW1NQ1FHQTFVRUN4TWRRWEJ3YkdVZ1EyVnlkR2xtYVdOaGRHbHZiaUJCZFhSb2IzSnBkSGt4RmpBVUJnTlZCQU1URFVGd2NHeGxJRkp2YjNRZ1EwRXdIaGNOTVRjd05URXdNakV5TnpNd1doY05NekF4TWpNeE1EQXdNREF3V2pCek1TMHdLd1lEVlFRRERDUkJjSEJzWlNCcFVHaHZibVVnUTJWeWRHbG1hV05oZEdsdmJpQkJkWFJvYjNKcGRIa3hJREFlQmdOVkJBc01GME5sY25ScFptbGpZWFJwYjI0Z1FYVjBhRzl5YVhSNU1STXdFUVlEVlFRS0RBcEJjSEJzWlNCSmJtTXVNUXN3Q1FZRFZRUUdFd0pWVXpDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTWxGYWdFUFBvTUVoc2Y4djl4ZThCNkI3aGN3YzJNbUx0NDllaVROa3o1UE9VZTZkYjd6d05MeFdhS3JILzRLaGp6Wkxab0g4ZzVydVNtUkdsOGlDb3Z4Y2xnRnJreExSTVY1cDRBOHNJamdqQXduaEYwWjVZY1pOc3ZqeFhhM3NQUkJjbEgwQlZ5RFM2SnRwbEc0OFNiZmUxNnRaUXpHc3BoUmpMdDlHMHpCVHNnSXg5THRaQXUwM1J1TlQwQjlHNDlJbHBKYjg5Q1lmdG04cEJrT21XRzdRVjBCekZ0M2VuMGswTnpUVS8vRDNNV1VMTFphVFk0WUl6bTkyY1pTUHRIeTlDV0tvU3FIL2RnTVJpbFIvKzBYYklrbGE0ZS9pbWtVbjNlZnd4VzNhTE9JUmIyRTVnWUNRV1FQclNvb3VCWEo0S3luaXJweUJEU3llSXo0c29VQ0F3RUFBYU9CN0RDQjZUQVBCZ05WSFJNQkFmOEVCVEFEQVFIL01COEdBMVVkSXdRWU1CYUFGQ3ZRYVVlVWRnbis5R3VOTGtDbTkwZE5md2hlTUVRR0NDc0dBUVVGQndFQkJEZ3dOakEwQmdnckJnRUZCUWN3QVlZb2FIUjBjRG92TDI5amMzQXVZWEJ3YkdVdVkyOXRMMjlqYzNBd015MWhjSEJzWlhKdmIzUmpZVEF1QmdOVkhSOEVKekFsTUNPZ0lhQWZoaDFvZEhSd09pOHZZM0pzTG1Gd2NHeGxMbU52YlM5eWIyOTBMbU55YkRBZEJnTlZIUTRFRmdRVWIvR1ZHR0pjNE1qeHhlMXNHTW5nMDJSU21DQXdEZ1lEVlIwUEFRSC9CQVFEQWdFR01CQUdDaXFHU0liM1kyUUdBaElFQWdVQU1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQTZ6NnlZamI2U0lDRUpyWlh6c1Z3aCtqWXRWeUJFZEhOa2tnaXpscXozYlpmNld6UTRKODhTUnRNOEVmQUh5Wm1Rc2RIb0VRbWw0NlZyYkdNSVA1NGwrdFdabkV6bTVjNk9zazFvN0l1cm82SlBpaEVWUHR3VUt4ekdSTFp2WjhWYlQ1VXBMWWRjUDl5REhuZFA3ZHBVcHkzbkU0SEJZOFJVQ3h0TENtb29JZ2pVTjVKOGYyY29YNjg5UDdlc1dSMDROR1JhN2pOS0dVSkVLY1RLR0d2aHdWTXRMZlJOd2hYMk16SVllUEVtYjRwTjY1Uk1vK2ovRDdNRGkyWGE2eTdZWlZDZjNKK0szekdvaEZUY1VsSkIwcklUSFRGR1I0aGZQdTdEOG93akJKWHJySW8rZ213R255N2ppME9hWWxzMERmU1p6eXp1dW5LR0dTT2wvSTYxTUlJRXV6Q0NBNk9nQXdJQkFnSUJBakFOQmdrcWhraUc5dzBCQVFVRkFEQmlNUXN3Q1FZRFZRUUdFd0pWVXpFVE1CRUdBMVVFQ2hNS1FYQndiR1VnU1c1akxqRW1NQ1FHQTFVRUN4TWRRWEJ3YkdVZ1EyVnlkR2xtYVdOaGRHbHZiaUJCZFhSb2IzSnBkSGt4RmpBVUJnTlZCQU1URFVGd2NHeGxJRkp2YjNRZ1EwRXdIaGNOTURZd05ESTFNakUwTURNMldoY05NelV3TWpBNU1qRTBNRE0yV2pCaU1Rc3dDUVlEVlFRR0V3SlZVekVUTUJFR0ExVUVDaE1LUVhCd2JHVWdTVzVqTGpFbU1DUUdBMVVFQ3hNZFFYQndiR1VnUTJWeWRHbG1hV05oZEdsdmJpQkJkWFJvYjNKcGRIa3hGakFVQmdOVkJBTVREVUZ3Y0d4bElGSnZiM1FnUTBFd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUURra2FrSkg1SGJIa2RRNndYdFhubUVMZXMyb2xkTVZleUxHWW5lK1V0czlRZXJJakFDNkJnKytGQUowMzlCcUpqNTBjcG1uQ1JyRWRDanUrUWJLc01mbFo1NkRLUkhpMXZVRmpjenk4UVBUYzRVYWRISkdYTDFYUTdWZjErYjhpVUR1bFdQVFYwTjhXUTFJeFZMRlZrZHM1VDM5cHllejFDNndWaFFaNDhJdENEM3k2d3NJRzl3dGo4Qk1JeTNRODhQblQzekswa29Hc2orenJXNUR0bGVITmJMUGJVNnJmUVBEZ0NTQzdFaEZpNTAxVHdOMjJJV3E2Tnhra2RUVmNHdkwwR3orUHZqY00zbW8weEZmaDlNYTFDV1FZbkVkR0lMRUlOQmh6T0tnYkV3V094YUJES01hTE9QSGQ1bGMvOW5YbVc4U2RoMm56TVVaYUYzbE1rdEFnTUJBQUdqZ2dGNk1JSUJkakFPQmdOVkhROEJBZjhFQkFNQ0FRWXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVLOUJwUjVSMkNmNzBhNDB1UUtiM1IwMS9DRjR3SHdZRFZSMGpCQmd3Rm9BVUs5QnBSNVIyQ2Y3MGE0MHVRS2IzUjAxL0NGNHdnZ0VSQmdOVkhTQUVnZ0VJTUlJQkJEQ0NBUUFHQ1NxR1NJYjNZMlFGQVRDQjhqQXFCZ2dyQmdFRkJRY0NBUlllYUhSMGNITTZMeTkzZDNjdVlYQndiR1V1WTI5dEwyRndjR3hsWTJFdk1JSERCZ2dyQmdFRkJRY0NBakNCdGhxQnMxSmxiR2xoYm1ObElHOXVJSFJvYVhNZ1kyVnlkR2xtYVdOaGRHVWdZbmtnWVc1NUlIQmhjblI1SUdGemMzVnRaWE1nWVdOalpYQjBZVzVqWlNCdlppQjBhR1VnZEdobGJpQmhjSEJzYVdOaFlteGxJSE4wWVc1a1lYSmtJSFJsY20xeklHRnVaQ0JqYjI1a2FYUnBiMjV6SUc5bUlIVnpaU3dnWTJWeWRHbG1hV05oZEdVZ2NHOXNhV041SUdGdVpDQmpaWEowYVdacFkyRjBhVzl1SUhCeVlXTjBhV05sSUhOMFlYUmxiV1Z1ZEhNdU1BMEdDU3FHU0liM0RRRUJCUVVBQTRJQkFRQmNOcGxNTFhpMzdZeWIzUE4zbS9KMjBuY3dUOEVmaFlPRkc1azlSemZ5cVp0QWppelVzWkFTMkw3MGM1dnUwbVFQeTNsUE5OaWlQdmw0LzJ2SUIreDlPWU9MVXlEVE9NU3h2NXBQQ212L0sveFpwd1VKZkJkQVZoRWVkTk8zaXlNN1I2UFZieVRpNjlHM2NOOFBSZUVueXZGdGVPM250UmNYcU54K0lqWEtKZFhaRDlacjFLSWtJeEgzb2F5UGM0Rmd4aHRiQ1MrU3N2aEVTUEJnT0o0VjlUMG1aeUNLTTJyM0RZTFAzdXVqTC9sVGFsdGt3R016ZC9jNkJ5eFc2OW9QSVE3YXVuTVpUN1haTm4vQmgxWFpwNW01TWtMNzJOVnhubjZoVXJjYnZaTkNKQklxeHc4ZHRrMmNYbVBJUzRBWFVLcUsxZHJrL05BSkJ6ZXdkWFVoTVlJQ2hUQ0NBb0VDQVFFd2Z6QnpNUzB3S3dZRFZRUUREQ1JCY0hCc1pTQnBVR2h2Ym1VZ1EyVnlkR2xtYVdOaGRHbHZiaUJCZFhSb2IzSnBkSGt4SURBZUJnTlZCQXNNRjBObGNuUnBabWxqWVhScGIyNGdRWFYwYUc5eWFYUjVNUk13RVFZRFZRUUtEQXBCY0hCc1pTQkpibU11TVFzd0NRWURWUVFHRXdKVlV3SUlSaUF0dkFOUGo3WXdDUVlGS3c0REFob0ZBS0NCM0RBWUJna3Foa2lHOXcwQkNRTXhDd1lKS29aSWh2Y05BUWNCTUJ3R0NTcUdTSWIzRFFFSkJURVBGdzB5TmpBME1qVXdORFV5TWpCYU1DTUdDU3FHU0liM0RRRUpCREVXQkJSaFNPTXBwY0xrRVI0c0cvZVlDZjJsSTl6SGJqQXBCZ2txaGtpRzl3MEJDVFF4SERBYU1Ba0dCU3NPQXdJYUJRQ2hEUVlKS29aSWh2Y05BUUVCQlFBd1VnWUpLb1pJaHZjTkFRa1BNVVV3UXpBS0JnZ3Foa2lHOXcwREJ6QU9CZ2dxaGtpRzl3MERBZ0lDQUlBd0RRWUlLb1pJaHZjTkF3SUNBVUF3QndZRkt3NERBZ2N3RFFZSUtvWklodmNOQXdJQ0FTZ3dEUVlKS29aSWh2Y05BUUVCQlFBRWdnRUFZS2huTEhzbXlRN3FWSHFVbVVyNWRuUHc4SlhXekpZQlpReFBWdEcyMW9pZ3BZYmZSQUpFRGlkQ2NLVCtEeWJBTSt3bXkzR1NHZTE2RzFEYTJEY0lnZWhJc0VWQ0UwK3l5eGtnbVhlTkdPSkFHYk9JWEpHNU1Kc2VOMm8xNkNvTHFQVng1dkpQQkdGSjRBVlJMck5RM2xqWU9PTVhZNEJNMWpZWGxiRjFxblRxajBTSmd4Z1p2L2swcUtXeU9MQmRKd2xvbUNBZDBGbHk4Ui9HOWtjTHVGWVdJZDEzTVhNV0Y3eURNSWQ3anNGajdlbVBxTEY1RTJCd1pGQ1BWU3lYUWJGbzYveWt2TEN1M2h2djFoSjRsMys2U3ViVVpBbVJMQ2pFMU9lRHN5NXF2TUN3Zit2Z1FQZkFoQWNzcGJrbkszNDR5eTExY2ZieldMRmswcVFUQkE9PSIsImRpc3RyaWJ1dGlvbkNlcnRpZmljYXRlIjp7ImRhdGFCYXNlNjQiOiJNSUlMNmdJQkF6Q0NDN0FHQ1NxR1NJYjNEUUVIQWFDQ0M2RUVnZ3VkTUlJTG1UQ0NCamtHQ1NxR1NJYjNEUUVIQWFDQ0Jpb0VnZ1ltTUlJR0lqQ0NCaDRHQ3lxR1NJYjNEUUVNQ2dFRG9JSUZ6ekNDQmNzR0NpcUdTSWIzRFFFSkZnR2dnZ1c3QklJRnR6Q0NCYk13Z2dTYm9BTUNBUUlDRUIzMFhUOU9PR3d6eVNSdlNmQjFWQWt3RFFZSktvWklodmNOQVFFTEJRQXdkVEZFTUVJR0ExVUVBd3c3UVhCd2JHVWdWMjl5YkdSM2FXUmxJRVJsZG1Wc2IzQmxjaUJTWld4aGRHbHZibk1nUTJWeWRHbG1hV05oZEdsdmJpQkJkWFJvYjNKcGRIa3hDekFKQmdOVkJBc01Ba2N6TVJNd0VRWURWUVFLREFwQmNIQnNaU0JKYm1NdU1Rc3dDUVlEVlFRR0V3SlZVekFlRncweU5qQTBNalV3TkRReU1UVmFGdzB5TnpBME1qVXdORFF5TVRSYU1JR09NUm93R0FZS0NaSW1pWlB5TEdRQkFRd0tOVGxVTlRoT05UWTNTakUzTURVR0ExVUVBd3d1YVZCb2IyNWxJRVJwYzNSeWFXSjFkR2x2YmpvZ1dXOW5aWE5vSUVKaFoyeGxJQ2cxT1ZRMU9FNDFOamRLS1RFVE1CRUdBMVVFQ3d3S05UbFVOVGhPTlRZM1NqRVZNQk1HQTFVRUNnd01XVzluWlhOb0lFSmhaMnhsTVFzd0NRWURWUVFHRXdKVlV6Q0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQQURDQ0FRb0NnZ0VCQUtZenN6NGsvZGY1czRwRkUxQnhWZkJqRVUvKzBnbUVXaTZNUHdobnRlTjNFREd1ZytBTEN4N2JRQUJvb1pRd0RMQkduT0V2NmNXdTU5c3lucmNKckp5VkRYdVRQeklzdURsSjZidWZWbXJuVWFPd2ZRcUh0cjZweWNTOHlDSTJ2MDR1dG0vZFFSMncrR0JIc2pZc0ZDZUtncEhONjRyNzc0NWJYWXQxQTRFRFhtN1hhaGhTa3ZlTDM5N0RHTkxvNjRIeDNKNDNRK2FnQnNZRHdWNDFsVGEvMWFJRjNkckJIbzJYOHgxcUVvKzd0V3lvNlc1MTIzM0tLY2Z6eE16d3NDVlNtVm1GU0tIaWtvN1dXUEY1QTVydk5saFIzbXUvUENqWUlPeXZJNTBnbkxZNVNIT1k3NXR1T2RxZWs3a3FDaGF1RCticWt3bGVSekVDa0RTZExva0NBd0VBQWFPQ0FpTXdnZ0lmTUF3R0ExVWRFd0VCL3dRQ01BQXdId1lEVlIwakJCZ3dGb0FVQ2Y3QUZaRDVyMlFLa2hLNUppaGpESmZzcDdJd2NBWUlLd1lCQlFVSEFRRUVaREJpTUMwR0NDc0dBUVVGQnpBQ2hpRm9kSFJ3T2k4dlkyVnlkSE11WVhCd2JHVXVZMjl0TDNkM1pISm5NeTVrWlhJd01RWUlLd1lCQlFVSE1BR0dKV2gwZEhBNkx5OXZZM053TG1Gd2NHeGxMbU52YlM5dlkzTndNRE10ZDNka2NtY3pNREl3Z2dFZUJnTlZIU0FFZ2dFVk1JSUJFVENDQVEwR0NTcUdTSWIzWTJRRkFUQ0IvekNCd3dZSUt3WUJCUVVIQWdJd2diWU1nYk5TWld4cFlXNWpaU0J2YmlCMGFHbHpJR05sY25ScFptbGpZWFJsSUdKNUlHRnVlU0J3WVhKMGVTQmhjM04xYldWeklHRmpZMlZ3ZEdGdVkyVWdiMllnZEdobElIUm9aVzRnWVhCd2JHbGpZV0pzWlNCemRHRnVaR0Z5WkNCMFpYSnRjeUJoYm1RZ1kyOXVaR2wwYVc5dWN5QnZaaUIxYzJVc0lHTmxjblJwWm1sallYUmxJSEJ2YkdsamVTQmhibVFnWTJWeWRHbG1hV05oZEdsdmJpQndjbUZqZEdsalpTQnpkR0YwWlcxbGJuUnpMakEzQmdnckJnRUZCUWNDQVJZcmFIUjBjSE02THk5M2QzY3VZWEJ3YkdVdVkyOXRMMk5sY25ScFptbGpZWFJsWVhWMGFHOXlhWFI1THpBV0JnTlZIU1VCQWY4RUREQUtCZ2dyQmdFRkJRY0RBekFkQmdOVkhRNEVGZ1FVOGdrS3J0SWZWU0lBeTBja0RXRlMrdURtcm9Bd0RnWURWUjBQQVFIL0JBUURBZ2VBTUJNR0NpcUdTSWIzWTJRR0FRUUJBZjhFQWdVQU1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQnNDVEJSUHRuUm82bzdmR2tGTVNSSnlnaUJGNmEwU2VCN0Y4Sk8vMnkrWC81Q1U5ZjNJL1RHSklSbFJTUEcrcTZUVVFhSlQ5OGZJc0NGN2RIVjE0ODI3OGM3ajRQWExkTERLSnJCVmFMd3gzUlFMYVkwREpKTEN5bnQrTVlPUzBpSDhTOUMwcHlNZldma3gvaCtIalRHMVIydndjL3o3K09XaTQ0UEFhSTZBeU4rZjI3d3ArUWhSVmVxWkVLWmc5TFFtRDNXTFRmK2RSUVBMSHlDZ0FBOXcvd1g2bzE1amdLemY1QlhNdnpiTWxTMEhPcjQ2STlSakxBREN5OGJ5V1dLR1NtUTgxT3VHdkFvOG9wZHZGQnBBWFZMeUJFTVMvaGx6VDlqNlFiM1pidDRraHZqS3JnL040YndkQ0hwWE9uQmYwYUErRVMvNDM3UFJScHMzRUErTVR3d0l3WUpLb1pJaHZjTkFRa1ZNUllFRkVFNkRFa0pXdEQ1a2dVdXY4aWg0bTcyOXhwb01CVUdDU3FHU0liM0RRRUpGREVJSGdZQWF3QmxBSGt3Z2dWWUJna3Foa2lHOXcwQkJ3R2dnZ1ZKQklJRlJUQ0NCVUV3Z2dVOUJnc3Foa2lHOXcwQkRBb0JBcUNDQk80d2dnVHFNQndHQ2lxR1NJYjNEUUVNQVFNd0RnUUk2dEkxbWpCV3hoOENBZ2dBQklJRXlBZEdrR0Fad0dEYXZ1V001ZVpOdTlWUGtWc2tnU2JBdnlkR2s2QkdCdFV0R3dMYWhMU3BMclpBQzBzTHNFaWpYTXRoWFZaZzREUlZMRXdQK01JK1h4c3NmWUVzdGI3R2dJRHduT2JGVEhXVC9CUWJFdnA0T1NaZEI1em03WEhzQ1pIMGVtZ0VQakQyOXR2SDRWRjN4bE5qVWNuTW1Deisrbmx6RXE5K0FZSzJvQ09rTXhaQm5tcUNrUTdiZkRIRG41M01OTzkrSWU3QXpSdE5KdG9RdjhLTlArVjNjdzlzdlN3RTlUZ3lDa0I3Z1hpZTRxTGZwcDI1aUdsak5qQzE3U0lDVWhRN1dZVGNGZnEwbld1TXdmTWo3S3U3RlZNZlNFeXNodWF2MjZTc0dRRFJoK0EvQjlQUjVHQkJJcUJodktLQXZEU0tvQmozR0QxZUhtUjBXbGcvbmYxdnRjM1UwRDFrcWJ3LzM5VVVCNmorVGEyYXEvb2FvSUdhWVBrVW0rL3NONFQxOUk4a2lycHhiNThQbVpJbGtDTFlJS01tOEVJTzNyMnVJeGU1RXdKNjhxSDRva09jVDVCWklueUFReEJyYm9LaFN2VDZhYlV1MHpPdHVIM0pxZ1RpbG9WYUdtSFpveVJ5SllQMVpwdTlGZEoyd2lUS0VJQmRlY2cwNW5nKzZDbVV6UGE5UHpwTm94OE8rUGpvYkZuL1Bwc3pjbEh1RHZ6UHcxTllETnJTVG9IVmpvbndyVVA4dlpJcDFKN3BndGVGRmJGdU15SkhNNDlmdEhtSW1wTnhLb0Ewa3h1T0QzQ3hIVUw5RWdwTVB3WDVqUlVXMzFUWjRHSysxRzJnc3MzclpOZ0tnU0I5cDZZRXhuQ01wUFBrNFkvYkgxS1ZxSGtHVFYxdmdyc2Y2WHR0TGRhcndUSVZ5d0JuNFFWSCtBeEtWNW4zVEhGV3BHU3F6VFVsTHF0VmhSRThheXAvQlFhYytyQnNDbFRoVkdLMUc3dVBVaVYxVTVUS1R2MmxVQnNBR0Z0N2JkTXk1dkVtMzhnZVNYK0NhNkJKL085ZjZVdHk5cnAzcXVIVlo1QUlJTmRJWDVVaHlZVnFGdDZoZ21lUnl2dlJPVHlVRHQ1TXdnUmJpSTllaUU2Q2FHZkRicEtPMkxEdHdFcmM3VnMvSkFTdjErZ1lQNUNwR0JGOGxTaU9uZjU1aU10ZVQyWHAzUW0rR2V6cnJtdmlzNUptUlRhdVNRUHVSRTRaRkpNajdOSVQyNHdWbU1kV085SmEvS1prcHo1NFFxckxtS2dXSmJwU1JsR3BKNE9PV2xGbUdKUllVVmZIYjBxYk1KMGU4V0JwdzE5UmVBTHBaTEVIL2hWZGE2TWg3Mk4rakY3TXpoNmZjMlRreFBGV0t0ZWd4aGNkU3l2UXU1bWFKTTNLaWtFbUlSc0ZtKzIvNEF5d1dOeENsbzJNYXR2bVJvZGEzSWpHSVQ2bVpQeURLMTR1MURNLzRKbm42Nm9VZDBUL2Vzc1Z3VHp5RE5mVUU0Vit1OGx6bUp4ZmlvZUF1ckQyL0ljaFJhRGJrVWxzWlVLMisyV1c5QlB6UWF2OTRwWXNqM2dhV1ZrNDE2Y3dUbjhyenIvREcwS21iTmJpYXpwNUVTNXZzQWlPd0hTMEVzTVhqdG1TTjRQSWtOQ2Ivc0VSaUp6MGg1cXErYTM3dDZodTEzWlNSd2pDSlN4NnoybWF3ZnpiSkpvWmN2Q1djWFRqWHhXYk5pOWZZMUlWdjREM2VnZUxOdk56NjJGbHkxY3g4L3U0OExUYy9zWGJmK0N4dS96MmFJT3ArcnJXd1JTOURFNGlMbFFWRCtveERKSjM3TjVBUGw2VWlTeDUyOVdVU0FOei9ZYWxITDdONTZiQlIreFNpeVZYajlEc1BBaStpN3JqTEJlMnVGRUFGZ3k2NlhnU3ZQQkFoRnZKajM0dTJlSUUzWGF5bDhiMGF0ZVhLZXFpZG0rMEZ5bmVUZ0tFcUdaaFJYenNjSUFSR1lvK1ZuaDdMaEpkemZOQ094ZEo3OWhwSWNyREliTEhTcDNFakxkd1N6UHFyRGljSE16b1VYRWJWWHJ1TWpiWWF6Y2paMVZpQURzNXB4RDJnSGhHM1duZWRVaUxXemxhS1VSZVFvQndIMlBadUswLzl6RThNQ01HQ1NxR1NJYjNEUUVKRlRFV0JCUkJPZ3hKQ1ZyUStaSUZMci9Jb2VKdTl2Y2FhREFWQmdrcWhraUc5dzBCQ1JReENCNEdBR3NBWlFCNU1ERXdJVEFKQmdVckRnTUNHZ1VBQkJUYWZ6dW9zK3VYd0VVV1VJSEJ5VUo2M08vQ1FRUUlMOTlEcmV0ZHV5a0NBZ2dBIiwicGFzc3dvcmQiOiJvbG85WXE5NWtRM0pjMkR0aUxGMGJ3PT0ifX19fSwidXBkYXRlcyI6e30sInNjaGVtZSI6Ik5vdXJpdmFBSSIsImVudmlyb25tZW50IjoicHJvZHVjdGlvbiIsInVzZXJuYW1lIjoieW9nc2IiLCJleHBlcmltZW50YWwiOnt9LCJtb2RlIjoiYnVpbGQiLCJ0cmlnZ2VyZWRCeSI6IkVBU19DTEkiLCJhcHBJZCI6IjhiY2JhYWQzLWNhMTEtNDliZS1iMzI4LTEyNGM3OWQ4ZDFkNSIsImluaXRpYXRpbmdVc2VySWQiOiIwODNhNjA0OS0wN2U4LTRhMTgtYWUxZS0zZDRhZTNkNTI4Y2IifSwibWV0YWRhdGEiOnsidHJhY2tpbmdDb250ZXh0Ijp7InRyYWNraW5nX2lkIjoiNjk2NzAyMjUtNDQzMC00MTE4LWE3ZDItYmQyOTg2ZjdlZDg4IiwicGxhdGZvcm0iOiJpb3MiLCJzZGtfdmVyc2lvbiI6IjU0LjAuMCIsImFjY291bnRfaWQiOiJiYmQ4N2MwZC00ZDYzLTRhNzctYjkwMy1jM2I1YjdkY2QyMjQiLCJwcm9qZWN0X2lkIjoiOGJjYmFhZDMtY2ExMS00OWJlLWIzMjgtMTI0Yzc5ZDhkMWQ1IiwicHJvamVjdF90eXBlIjoibWFuYWdlZCIsImRldl9jbGllbnQiOmZhbHNlLCJkZXZfY2xpZW50X3ZlcnNpb24iOiI2LjAuMjAiLCJub193YWl0IjpmYWxzZSwicnVuX2Zyb21fY2kiOmZhbHNlLCJsb2NhbCI6dHJ1ZX0sImFwcEJ1aWxkVmVyc2lvbiI6IjEyIiwiYXBwVmVyc2lvbiI6IjEuMC4wIiwiY2xpVmVyc2lvbiI6IjE4LjguMSIsIndvcmtmbG93IjoibWFuYWdlZCIsImNyZWRlbnRpYWxzU291cmNlIjoicmVtb3RlIiwic2RrVmVyc2lvbiI6IjU0LjAuMCIsImZpbmdlcnByaW50SGFzaCI6IjMyMGE2MGIyZTI2Mzk0MzFjZTAxMjMzODcwZGEyMDk2NTJjNjkwZjgiLCJyZWFjdE5hdGl2ZVZlcnNpb24iOiIwLjgxLjUiLCJkaXN0cmlidXRpb24iOiJzdG9yZSIsImFwcE5hbWUiOiJOb3VyaXZhIEFJIiwiYXBwSWRlbnRpZmllciI6ImluLnByb2R1Y3R2ZXJzZS5ub3VyaXZhYWkiLCJidWlsZFByb2ZpbGUiOiJwcm9kdWN0aW9uIiwiZ2l0Q29tbWl0SGFzaCI6IjIyM2M3ZTRjNzRiYWExYTdjMDkwMTBjZjhjODE5YTdjNGFlZmFhYjYiLCJnaXRDb21taXRNZXNzYWdlIjoiTGluayB0byBuZXcgRUFTIGFjY291bnQgeW9nc2JhZyAoYnVpbGQgMTIpIiwiaXNHaXRXb3JraW5nVHJlZURpcnR5Ijp0cnVlLCJ1c2VybmFtZSI6InlvZ3NiIiwicnVuV2l0aE5vV2FpdEZsYWciOmZhbHNlLCJydW5Gcm9tQ0kiOmZhbHNlLCJkZXZlbG9wbWVudENsaWVudCI6ZmFsc2UsInJlcXVpcmVkUGFja2FnZU1hbmFnZXIiOiJucG0iLCJzaW11bGF0b3IiOmZhbHNlfX0= exited with non-zero code: 1
+    Error: build command failed.

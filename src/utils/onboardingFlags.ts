@@ -22,8 +22,11 @@ export type OnboardingFlags = { completed: boolean; paywallSeen: boolean };
 export async function loadOnboardingFlagsForUserId(userId: string): Promise<OnboardingFlags> {
   const last = await SecureStore.getItemAsync(LAST_ONBOARDING_USER);
   if (last && last !== userId) {
+    // New user on this device — clear all device-global legacy keys so the
+    // new account doesn't inherit the previous user's onboarding or pro status.
     await SecureStore.deleteItemAsync(LEGACY_ONBOARDING).catch(() => undefined);
     await SecureStore.deleteItemAsync(LEGACY_PAYWALL).catch(() => undefined);
+    await SecureStore.deleteItemAsync('isPro').catch(() => undefined);
   }
 
   let completed = (await SecureStore.getItemAsync(kOnb(userId))) === 'true';

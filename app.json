@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "in.productverse.nourivaai",
-      "buildNumber": "12",
+      "buildNumber": "14",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSFaceIDUsageDescription": "Allow Nouriva AI to use Face ID to protect your account on this device.",
@@ -26,7 +26,7 @@
     },
     "android": {
       "package": "in.productverse.nourivaai",
-      "versionCode": 6,
+      "versionCode": 17,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D3B26"
@@ -54,6 +54,7 @@
       "@react-native-firebase/app",
       "@react-native-firebase/crashlytics",
       "expo-secure-store",
+      "expo-apple-authentication",
       [
         "expo-image-picker",
         {
@@ -86,7 +87,7 @@
       [
         "@react-native-google-signin/google-signin",
         {
-          "iosUrlScheme": "com.googleusercontent.apps.452919317535-08plcntnpk9l29b5v8u683dcbo6dvihb"
+          "iosUrlScheme": "com.googleusercontent.apps.311592013058-135dku8t8d5s5d4ku5riojkbvi2k9dtf"
         }
       ],
       "./plugins/withFirebaseFix.js"

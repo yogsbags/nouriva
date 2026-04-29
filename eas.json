@@ -8,6 +8,11 @@
       "developmentClient": true,
       "distribution": "internal"
     },
+    "simulator": {
+      "ios": {
+        "simulator": true
+      }
+    },
     "preview": {
       "distribution": "internal"
     },
@@ -23,6 +28,9 @@
       "environment": "production",
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "GRADLE_OPTS": "-Xmx16384m -XX:MaxMetaspaceSize=2048m"
       }
     },
     "production": {
@@ -33,7 +41,8 @@
     "internal": {
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
-        "track": "internal"
+        "track": "internal",
+        "releaseStatus": "draft"
       }
     },
     "production": {

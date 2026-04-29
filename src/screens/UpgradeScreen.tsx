@@ -38,8 +38,8 @@ const FEATURE_LINES = [
   'Lab uploads & profile-aware scans',
 ];
 
-const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL || '';
-const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL || '';
+const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL || 'https://productverse.in/terms';
+const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL || 'https://productverse.in/privacy';
 
 export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenProps) {
   const C = useColors();

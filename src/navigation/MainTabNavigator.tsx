@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScanIcon as Scan, ClockCounterClockwiseIcon as HistoryIcon, ChartLineIcon as ChartLine, UserIcon as User, ClockCounterClockwiseIcon as ClockCounterClockwise } from 'phosphor-react-native';
@@ -10,10 +11,17 @@ import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
+// Android 3-button nav bar is ~48dp tall. useSafeAreaInsets().bottom can
+// return 0 on some Android devices when window insets aren't forwarded,
+// so we use a platform-specific minimum to ensure labels are never cut off.
+const ANDROID_NAV_FALLBACK = 28;
+
 export default function MainTabNavigator() {
   const insets = useSafeAreaInsets();
   const C = useColors();
-  const bottomPad = Math.max(insets.bottom, 8);
+  const bottomPad = Platform.OS === 'android'
+    ? Math.max(insets.bottom, ANDROID_NAV_FALLBACK)
+    : Math.max(insets.bottom, 8);
 
   return (
     <Tab.Navigator
@@ -25,9 +33,9 @@ export default function MainTabNavigator() {
           backgroundColor: C.tabBarBg,
           borderTopColor: C.tabBarBorder,
           borderTopWidth: 1,
-          paddingTop: 6,
+          paddingTop: 8,
           paddingBottom: bottomPad,
-          minHeight: 52 + bottomPad,
+          minHeight: 60 + bottomPad,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}

@@ -442,7 +442,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               <View style={styles.questionSlide}>
                 <Text style={styles.questionTitle}>{slide.title}</Text>
                 <Text style={styles.questionSubtitle}>{slide.subtitle}</Text>
-                <View style={styles.optionsList}>
+                <ScrollView
+                  style={styles.optionsScroll}
+                  contentContainerStyle={styles.optionsList}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
                   {slide.options?.map((opt) => {
                     const isSelected = selections[slide.id] === opt.id;
                     return (
@@ -466,7 +471,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                       </TouchableOpacity>
                     );
                   })}
-                </View>
+                </ScrollView>
               </View>
             )}
 
@@ -475,7 +480,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               <View style={styles.questionSlide}>
                 <Text style={styles.questionTitle}>{slide.title}</Text>
                 <Text style={styles.questionSubtitle}>{slide.subtitle}</Text>
-                <View style={styles.optionsList}>
+                <ScrollView
+                  style={styles.optionsScroll}
+                  contentContainerStyle={styles.optionsList}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
                   {slide.options?.map((opt) => {
                     const isSelected = sensitivityMulti.includes(opt.id);
                     return (
@@ -499,10 +509,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                       </TouchableOpacity>
                     );
                   })}
-                </View>
-                {sensitivityMulti.length === 0 && (
-                  <Text style={styles.multiSelectHint}>Tap any that apply, or tap "No specific triggers" to skip.</Text>
-                )}
+                  {sensitivityMulti.length === 0 && (
+                    <Text style={styles.multiSelectHint}>Tap any that apply, or tap "No specific triggers" to skip.</Text>
+                  )}
+                </ScrollView>
               </View>
             )}
 
@@ -806,7 +816,8 @@ function makeStyles(C: AppColors) {
     },
 
     // Question / multi-select slides
-    questionSlide: { paddingBottom: 12 },
+    questionSlide: { flex: 1 },
+    optionsScroll: { flex: 1 },
     questionTitle: {
       fontSize: 26,
       fontWeight: '900',
@@ -820,7 +831,7 @@ function makeStyles(C: AppColors) {
       lineHeight: 21,
       marginBottom: 24,
     },
-    optionsList: { gap: 9 },
+    optionsList: { gap: 9, paddingBottom: 24 },
     optionItem: {
       flexDirection: 'row',
       alignItems: 'center',
