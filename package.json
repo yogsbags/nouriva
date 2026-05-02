@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
+    "postinstall": "bash scripts/remove-expo-android-bin-mirrors.sh",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
@@ -42,6 +43,7 @@
     "expo-print": "~15.0.8",
     "expo-secure-store": "~15.0.8",
     "expo-sharing": "~14.0.8",
+    "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "lucide-react-native": "^1.8.0",
     "phosphor-react-native": "^3.0.6",
