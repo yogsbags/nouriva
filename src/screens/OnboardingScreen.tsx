@@ -211,6 +211,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const [personalizingStage, setPersonalizingStage] = useState(0);
   const [personalizingDone, setPersonalizingDone] = useState(false);
   const [computedCalories, setComputedCalories] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const personalizingStarted = useRef(false);
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -285,24 +286,33 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     });
   }, [slide.type]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function animateTransition(cb: () => void) {
+  function animateToSlide(nextSlide: number) {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: -20, duration: 180, useNativeDriver: true }),
     ]).start(() => {
-      cb();
+      fadeAnim.setValue(0);
       slideAnim.setValue(20);
-      Animated.parallel([
-        Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
-        Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
-      ]).start();
+      setCurrentSlide(nextSlide);
+
+      // Wait for React to commit the new slide before fading back in.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          Animated.parallel([
+            Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
+            Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
+          ]).start(() => setIsTransitioning(false));
+        });
+      });
     });
   }
 
   const handleNext = () => {
     Haptics.selectionAsync();
     if (currentSlide < SLIDES.length - 1) {
-      animateTransition(() => setCurrentSlide(currentSlide + 1));
+      animateToSlide(currentSlide + 1);
     } else {
       onComplete();
     }
@@ -311,7 +321,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const handleBack = () => {
     if (currentSlide === 0) return;
     Haptics.selectionAsync();
-    animateTransition(() => setCurrentSlide(currentSlide - 1));
+    animateToSlide(currentSlide - 1);
   };
 
   const toggleSensitivity = (id: string) => {
@@ -378,7 +388,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     .map(id => sensitivitySlideData?.options?.find(o => o.id === id)?.label ?? id);
 
   return (
-    <ScreenEnterAnimation variant="fade">
+    <ScreenEnterAnimation variant="fadeDown" delayMs={80} durationMs={420}>
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: C.bg }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -390,7 +400,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               <TouchableOpacity
                 style={[styles.backBtn, currentSlide === 0 && { opacity: 0 }]}
                 onPress={handleBack}
-                disabled={currentSlide === 0}
+                disabled={currentSlide === 0 || isTransitioning}
               >
                 <CaretLeft size={20} color={C.textSecondary} weight="bold" />
               </TouchableOpacity>
@@ -682,7 +692,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               <TouchableOpacity
                 style={[styles.nextButton, !canProceed && styles.nextButtonDisabled]}
                 onPress={handleNext}
-                disabled={!canProceed}
+                disabled={!canProceed || isTransitioning}
                 activeOpacity={0.85}
               >
                 <Text style={styles.nextButtonText}>{ctaLabel}</Text>

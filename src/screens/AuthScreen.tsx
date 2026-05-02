@@ -40,9 +40,14 @@ function GoogleLogo({ size = 20 }: { size?: number }) {
 import { useColors, AppColors } from '../theme';
 import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
 
+// Public OAuth client IDs from GoogleService-Info.plist / google-services.json.
+// Keep these in source so EAS environment drift cannot ship a stale Google project ID.
+const GOOGLE_WEB_CLIENT_ID = '311592013058-fuf3p7ss0iti06vtvr93lihf98tbo0np.apps.googleusercontent.com';
+const GOOGLE_IOS_CLIENT_ID = '311592013058-135dku8t8d5s5d4ku5riojkbvi2k9dtf.apps.googleusercontent.com';
+
 GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  webClientId: GOOGLE_WEB_CLIENT_ID,
+  iosClientId: GOOGLE_IOS_CLIENT_ID,
   scopes: ['email', 'profile'],
 });
 
@@ -134,6 +139,13 @@ export default function AuthScreen() {
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) return;
       if (error.code === statusCodes.IN_PROGRESS) return;
+      if (error.code === '10' || String(error.message ?? '').includes('DEVELOPER_ERROR')) {
+        Alert.alert(
+          'Google Sign-In Error',
+          'Google sign-in is not configured for this build. Install the latest build, or check that the Android package name, signing SHA-1, and Google OAuth client IDs match Firebase.',
+        );
+        return;
+      }
       Alert.alert('Google Sign-In Error', error.message);
     } finally {
       setGoogleLoading(false);

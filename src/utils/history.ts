@@ -28,7 +28,21 @@ export interface FoodLog {
   glucose_excursion?: number;
   glucose_insulin_peak?: number;
   glucose_recovery_min?: number;
+  longevity_data?: LongevityData;
   created_at: string;
+}
+
+export interface LongevityData {
+  longevityScore: number;          // -10 to +10
+  dietaryAgeDelta: number;         // years (negative = anti-aging)
+  nadPathway: 'boost' | 'neutral' | 'deplete';
+  sirtuinActivators: string[];
+  mTorStatus: 'suppressed' | 'neutral' | 'activated';
+  autophagyInduction: 'strong' | 'mild' | 'neutral' | 'inhibited';
+  inflammationIndex: number;       // 0–10
+  telomereImpact: 'protective' | 'neutral' | 'damaging';
+  keyCompounds: { name: string; pathway: string; source: string }[];
+  longevitySummary: string;
 }
 
 export interface GlucoseSim {
@@ -52,6 +66,7 @@ export async function saveFoodLog(
     balancerSuggestions?: any[];
     biochemicals?: any[];
     refs?: any[];
+    longevityData?: LongevityData;
   },
   glucoseSim?: GlucoseSim,
 ) {
@@ -83,6 +98,7 @@ export async function saveFoodLog(
         glucose_excursion: glucoseSim?.excursion ?? null,
         glucose_insulin_peak: glucoseSim?.peakInsulin ?? null,
         glucose_recovery_min: glucoseSim?.recoveryMin ?? null,
+        longevity_data: scanResult?.longevityData ?? null,
       }]);
 
     if (error) throw error;

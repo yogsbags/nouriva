@@ -34,7 +34,10 @@
       }
     },
     "production": {
-      "environment": "production"
+      "environment": "production",
+      "ios": {
+        "credentialsSource": "local"
+      }
     }
   },
   "submit": {

@@ -15,6 +15,7 @@ import {
   Share,
   Modal,
   Alert,
+  InteractionManager,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -46,6 +47,10 @@ import {
   IconProps,
   LockSimpleIcon as LockSimple,
   SparkleIcon as Sparkle,
+  LeafIcon as Leaf,
+  FireSimpleIcon as FireSimple,
+  CaretDownIcon as CaretDown,
+  CaretUpIcon as CaretUp,
 } from 'phosphor-react-native';
 import { Svg, Circle, Defs, LinearGradient, Stop, Path, Rect, Line as SvgLine, Text as SvgText } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
@@ -53,13 +58,14 @@ import { RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
-import { saveFoodLog, getScanCount } from '../utils/history';
-import { uploadFoodImage } from '../utils/imageUpload';
+import { saveFoodLog, getScanCount, LongevityData } from '../utils/history';
+import { capture, Events } from '../utils/posthog';
+import { onScanCompleted, sendImmediateNotification, Nudges } from '../utils/notifications';
+import { uploadFoodImage, uploadFoodImageFromUri } from '../utils/imageUpload';
 import { fetchHealthStats, getHealthImpactAnalysis, HealthStats, writeNutritionToAppleHealth } from '../utils/health';
 import { supabase } from '../utils/supabase';
 import * as SecureStore from 'expo-secure-store';
 import { useColors, AppColors } from '../theme';
-import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
 import { getAnalysisFailureMessage, isAnalysisIncomplete } from '../utils/analysisResult';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -87,22 +93,27 @@ interface FoodScanResult {
   glucoseData?: GlucoseData;
   refs?: ReferenceItem[];
   vision?: VisionItem[];
+  longevityData?: LongevityData;
   analysisIncomplete?: boolean;
   analysisError?: string;
   rawText?: string;
   error?: string;
 }
 
-interface ResultsScreenProps {
-  navigation: NativeStackNavigationProp<any>;
-  route: RouteProp<{ Results: { result?: FoodScanResult; originalImage?: string; isPersonalized?: boolean; isReplay?: boolean } }, 'Results'>;
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : [];
 }
 
-type Tab = 'Holistic' | 'Organ' | 'Bio' | 'Alerts' | 'Glucose';
+interface ResultsScreenProps {
+  navigation: NativeStackNavigationProp<any>;
+  route: RouteProp<{ Results: { result?: FoodScanResult; originalImage?: string; originalImageUri?: string; isPersonalized?: boolean; isReplay?: boolean } }, 'Results'>;
+}
+
+type Tab = 'Holistic' | 'Organ' | 'Longevity' | 'Alerts' | 'Glucose';
 const TABS: { id: Tab; icon: ComponentType<IconProps>; label: string }[] = [
   { id: 'Holistic', icon: SquaresFour, label: 'Overview' },
   { id: 'Organ', icon: Stack, label: 'Organ' },
-  { id: 'Bio', icon: Microscope, label: 'Compounds' },
+  { id: 'Longevity', icon: Dna, label: 'Longevity' },
   { id: 'Alerts', icon: WarningCircle, label: 'Alerts' },
   { id: 'Glucose', icon: TrendUp, label: 'Glucose' },
 ];
@@ -117,6 +128,18 @@ interface GlucoseSim {
   recoveryMin: number;
   totalMin: number;
   points: [number, number][];
+}
+
+function toFiniteNumber(value: unknown, fallback: number): number {
+  const parsed = typeof value === 'number'
+    ? value
+    : parseFloat(String(value ?? '').replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function clampFinite(value: unknown, fallback: number, min: number, max: number): number {
+  const parsed = toFiniteNumber(value, fallback);
+  return Math.min(max, Math.max(min, parsed));
 }
 
 function parseFastingGlucose(conditions: string[], healthContext: string): number {
@@ -151,31 +174,39 @@ function computeGlucoseSim(
   fastingGlucose: number = 90,
   conditionMult: number = 1.0,
 ): GlucoseSim {
-  const giMod = Math.max(0.3, Math.min(1.8, gi / 55));
-  const fiberMod = Math.max(0.55, 1 - fiberG * 0.025);
-  const fatMod = Math.max(0.55, 1 - fats * 0.007);
-  const protMod = Math.max(0.82, 1 - protein * 0.003);
-  const excursion = Math.round(carbs * 1.35 * giMod * fiberMod * fatMod * protMod * conditionMult);
-  const peakGlucose = fastingGlucose + excursion;
-  const peakTimeMin = Math.round(45 + fats * 0.55 + protein * 0.25);
-  const peakInsulin = Math.round(excursion * 0.26 * conditionMult);
+  const safeCarbs = clampFinite(carbs, 40, 0, 300);
+  const safeFats = clampFinite(fats, 10, 0, 250);
+  const safeProtein = clampFinite(protein, 15, 0, 250);
+  const safeGi = clampFinite(gi, 55, 1, 100);
+  const safeFiberG = clampFinite(fiberG, 0, 0, 80);
+  const safeFasting = clampFinite(fastingGlucose, 90, 60, 300);
+  const safeConditionMult = clampFinite(conditionMult, 1, 0.5, 3);
+
+  const giMod = Math.max(0.3, Math.min(1.8, safeGi / 55));
+  const fiberMod = Math.max(0.55, 1 - safeFiberG * 0.025);
+  const fatMod = Math.max(0.55, 1 - safeFats * 0.007);
+  const protMod = Math.max(0.82, 1 - safeProtein * 0.003);
+  const excursion = Math.max(0, Math.round(safeCarbs * 1.35 * giMod * fiberMod * fatMod * protMod * safeConditionMult));
+  const peakGlucose = safeFasting + excursion;
+  const peakTimeMin = Math.max(30, Math.round(45 + safeFats * 0.55 + safeProtein * 0.25));
+  const peakInsulin = Math.max(0, Math.round(excursion * 0.26 * safeConditionMult));
   const insulinPeakMin = peakTimeMin + 18;
-  const recoveryMin = peakTimeMin + Math.max(55, Math.round(excursion * 1.75 * Math.max(1, conditionMult * 0.9)));
-  const totalMin = Math.min(Math.round(recoveryMin * 1.25), 360);
+  const recoveryMin = peakTimeMin + Math.max(55, Math.round(excursion * 1.75 * Math.max(1, safeConditionMult * 0.9)));
+  const totalMin = Math.max(120, Math.min(Math.round(recoveryMin * 1.25), 360));
 
   const points: [number, number][] = [];
   for (let t = 0; t <= totalMin; t += 4) {
     let g: number;
     if (t <= peakTimeMin) {
       const p = t / peakTimeMin;
-      g = fastingGlucose + excursion * (1 - Math.exp(-3.2 * p)) / (1 - Math.exp(-3.2));
+      g = safeFasting + excursion * (1 - Math.exp(-3.2 * p)) / (1 - Math.exp(-3.2));
     } else {
       const hl = (recoveryMin - peakTimeMin) * 0.55;
-      g = fastingGlucose + (peakGlucose - fastingGlucose) * Math.exp(-((t - peakTimeMin) / hl));
+      g = safeFasting + (peakGlucose - safeFasting) * Math.exp(-((t - peakTimeMin) / hl));
     }
-    points.push([t, Math.round(g)]);
+    points.push([t, Number.isFinite(g) ? Math.round(g) : safeFasting]);
   }
-  return { fasting: fastingGlucose, peakGlucose, excursion, peakTimeMin, peakInsulin, insulinPeakMin, recoveryMin, totalMin, points };
+  return { fasting: safeFasting, peakGlucose, excursion, peakTimeMin, peakInsulin, insulinPeakMin, recoveryMin, totalMin, points };
 }
 
 export default function ResultsScreen({ navigation, route }: ResultsScreenProps) {
@@ -184,6 +215,9 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
   const styles = useMemo(() => makeStyles(C), [C]);
 
   const [activeTab, setActiveTab] = useState<Tab>('Holistic');
+  const [longevityExpanded, setLongevityExpanded] = useState<Record<string, boolean>>({});
+  const toggleLongevityExpand = (key: string) =>
+    setLongevityExpanded(prev => ({ ...prev, [key]: !prev[key] }));
   const [selectedOrganForRebalance, setSelectedOrganForRebalance] = useState<string | null>(null);
   const [healthStats, setHealthStats] = useState<HealthStats | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -199,6 +233,18 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
   const [userHealthContext, setUserHealthContext] = useState('');
   const [trialActive, setTrialActive] = useState(true);
   const isAhaLocked = !isPro && !trialActive;
+  const hasPersonalizationContext =
+    !!route.params?.isPersonalized ||
+    userConditions.length > 0 ||
+    userHealthContext.trim().length > 0;
+  const showPersonalizeCTA = !isAhaLocked && !hasPersonalizationContext;
+  const hasSavedScanRef = useRef(false);
+
+  const handleBackToScanner = () => {
+    InteractionManager.runAfterInteractions(() => {
+      (navigation as any).navigate('Main', { screen: 'Scan' });
+    });
+  };
 
   useEffect(() => {
     (async () => {
@@ -211,7 +257,13 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
       ]);
       setIsPro(val === 'true');
       setTrialActive(active);
-      const conds: string[] = conditions ? JSON.parse(conditions) : [];
+      let conds: string[] = [];
+      try {
+        const parsed = conditions ? JSON.parse(conditions) : [];
+        conds = Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        console.warn('Results: failed to parse stored medical conditions', e);
+      }
       setUserConditions(conds);
       setUserHealthContext([bio ?? '', insights ?? ''].filter(Boolean).join(' '));
     })();
@@ -219,15 +271,17 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
 
   const result: FoodScanResult = route?.params?.result || {};
   const analysisFailed = isAnalysisIncomplete(result);
-  const displaySystemicData = result.systemicData ?? [];
-  const displayOrganData = result.organData ?? [];
-  const displayBiochemicals = result.biochemicals ?? [];
-  const displayAlerts = result.alerts ?? [];
-  const displayBalancerSuggestions = result.balancerSuggestions ?? [];
-  const displayRefs: ReferenceItem[] = result.refs ?? [];
+  const displaySystemicData = asArray<SystemicItem>(result.systemicData);
+  const displayOrganData = asArray<OrganItem>(result.organData);
+  const displayBiochemicals = asArray<BiochemicalItem>(result.biochemicals);
+  const displayAlerts = asArray<AlertItem>(result.alerts);
+  const displayBalancerSuggestions = asArray<BalancerSuggestion>(result.balancerSuggestions);
+  const displayRefs = asArray<ReferenceItem>(result.refs);
   const originalImage: string | undefined = route?.params?.originalImage;
+  const originalImageUri: string | undefined = route?.params?.originalImageUri;
+  const originalImageSourceUri = originalImageUri || (originalImage ? `data:image/jpeg;base64,${originalImage}` : undefined);
   const isReplay: boolean = route?.params?.isReplay ?? false;
-  const visionData: VisionItem[] = result.vision || [];
+  const visionData = asArray<VisionItem>(result.vision);
 
   const scaleMacro = (macroStr: string | undefined, factor: number) => {
     if (!macroStr) return '0';
@@ -253,61 +307,93 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
   }, [result]);
 
   useEffect(() => {
-    if (isReplay || analysisFailed) return;
+    if (isReplay || analysisFailed || hasSavedScanRef.current) return;
     if (result.foodName && avgScore !== '0' && healthStats && currentMacros) {
-      (async () => {
-        let imageUrl: string | undefined;
-        if (originalImage) {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            imageUrl = await uploadFoodImage(originalImage, session.user.id) ?? undefined;
+      hasSavedScanRef.current = true;
+      void (async () => {
+        try {
+          let imageUrl: string | undefined;
+          if (originalImageUri || originalImage) {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              imageUrl = originalImageUri
+                ? await uploadFoodImageFromUri(originalImageUri, session.user.id) ?? undefined
+                : await uploadFoodImage(originalImage!, session.user.id) ?? undefined;
+            }
           }
-        }
-        saveFoodLog(
-          result.foodName!,
-          parseFloat(avgScore),
-          imageUrl,
-          originalImage,
-          healthStats,
-          currentMacros,
-          {
-            systemicData: result.systemicData,
-            organData: result.organData,
-            alerts: result.alerts,
-            balancerSuggestions: result.balancerSuggestions,
-            biochemicals: result.biochemicals,
-            refs: result.refs,
-          },
-          {
-            peakGlucose: glucoseSim.peakGlucose,
-            excursion: glucoseSim.excursion,
-            peakInsulin: glucoseSim.peakInsulin,
-            recoveryMin: glucoseSim.recoveryMin,
-          },
-        );
+          saveFoodLog(
+            result.foodName!,
+            parseFloat(avgScore),
+            imageUrl,
+            isReplay ? originalImage : undefined,
+            healthStats,
+            currentMacros,
+            {
+              systemicData: result.systemicData,
+              organData: result.organData,
+              alerts: result.alerts,
+              balancerSuggestions: result.balancerSuggestions,
+              biochemicals: result.biochemicals,
+              refs: result.refs,
+              longevityData: result.longevityData,
+            },
+            {
+              peakGlucose: glucoseSim.peakGlucose,
+              excursion: glucoseSim.excursion,
+              peakInsulin: glucoseSim.peakInsulin,
+              recoveryMin: glucoseSim.recoveryMin,
+            },
+          );
 
-        // Write nutrition to Apple Health so Nouriva AI appears in Settings → Health
-        const parseG = (s?: string) => parseFloat((s || '0').replace(/[^0-9.]/g, '')) || 0;
-        const parseKcal = (s?: string) => parseFloat((s || '0').replace(/[^0-9.]/g, '')) || 0;
-        writeNutritionToAppleHealth({
-          name: result.foodName!,
-          calories: parseKcal(currentMacros?.calories),
-          carbs: parseG(currentMacros?.carbs),
-          protein: parseG(currentMacros?.protein),
-          fat: parseG(currentMacros?.fats),
-        }).catch(() => {/* silent — Health not connected */});
+          // Track scan completion in PostHog + reset daily nudge timer
+          const longevityScore = result.longevityData?.longevityScore ?? null;
+          capture(Events.SCAN_COMPLETED, {
+            food_name: result.foodName,
+            vitality_score: parseFloat(avgScore),
+            longevity_score: longevityScore,
+            is_personalized: hasPersonalizationContext,
+            is_replay: isReplay,
+          });
+          void onScanCompleted(); // resets daily nudge
+          // Send a nudge if longevity is bad (< -2)
+          if (longevityScore !== null && longevityScore < -2) {
+            void sendImmediateNotification(
+              Nudges.lowLongevity(longevityScore).title,
+              Nudges.lowLongevity(longevityScore).body,
+              Nudges.lowLongevity(longevityScore).data,
+            );
+          }
+          // Write nutrition to Apple Health so Nouriva AI appears in Settings → Health
+          const parseG = (s?: string) => parseFloat((s || '0').replace(/[^0-9.]/g, '')) || 0;
+          const parseKcal = (s?: string) => parseFloat((s || '0').replace(/[^0-9.]/g, '')) || 0;
+          writeNutritionToAppleHealth({
+            name: result.foodName!,
+            calories: parseKcal(currentMacros?.calories),
+            carbs: parseG(currentMacros?.carbs),
+            protein: parseG(currentMacros?.protein),
+            fat: parseG(currentMacros?.fats),
+          }).catch(() => {/* silent — Health not connected */});
+        } catch (e) {
+          console.warn('Results: failed to save scan side effects', e);
+        }
       })();
     }
   }, [healthStats, quantity, analysisFailed, isReplay]);
 
   const loadHealthData = async () => {
-    const stats = await fetchHealthStats();
-    setHealthStats(stats);
+    try {
+      const stats = await fetchHealthStats();
+      setHealthStats(stats);
+    } catch (e) {
+      console.warn('Results: failed to load health data', e);
+      setHealthStats({ steps: 0, heartRate: 0, sleepHours: 0, weight: 0 });
+    }
   };
 
   const handleTabChange = (tab: Tab) => {
     Haptics.selectionAsync();
     setActiveTab(tab);
+    capture(Events.TAB_VIEWED, { tab, food_name: result?.foodName });
   };
 
   const getScoreColor = (scoreText: string) => {
@@ -466,13 +552,13 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
   const avgScoreColor = getScoreColor(`${avgScore}/10`);
 
   const glucoseSim = useMemo<GlucoseSim & { interpretation: string; peakColor: string; isPersonalized: boolean; gi: number; gl: number; fiberG: number }>(() => {
-    const parseG = (s?: string) => parseFloat((s || '0').replace(/[^0-9.]/g, '')) || 0;
+    const parseG = (s?: string) => toFiniteNumber(s, 0);
     const carbs = parseG(currentMacros?.carbs ?? result.macros?.carbs);
     const fats = parseG(currentMacros?.fats ?? result.macros?.fats);
     const protein = parseG(currentMacros?.protein ?? result.macros?.protein);
-    const gi = result.glucoseData?.gi ?? 55;
-    const fiberG = result.glucoseData?.fiberG ?? 0;
-    const gl = result.glucoseData?.gl ?? Math.round(gi * carbs / 100);
+    const gi = clampFinite(result.glucoseData?.gi, 55, 1, 100);
+    const fiberG = clampFinite(result.glucoseData?.fiberG, 0, 0, 80);
+    const gl = clampFinite(result.glucoseData?.gl, Math.round(gi * carbs / 100), 0, 200);
     const fastingGlucose = isPro ? parseFastingGlucose(userConditions, userHealthContext) : 90;
     const conditionMult = isPro ? getConditionGlucoseMult(userConditions, userHealthContext) : 1.0;
     const isPersonalized = isPro && (fastingGlucose !== 90 || conditionMult !== 1.0);
@@ -526,6 +612,45 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
     );
   };
 
+  const renderMiniScoreRing = (scoreText: string) => {
+    const ringSize = 34;
+    const strokeWidth = 3.5;
+    const center = ringSize / 2;
+    const radius = center - strokeWidth / 2;
+    const circumference = 2 * Math.PI * radius;
+    const score = Math.max(0, Math.min(10, parseFloat(String(scoreText || '0').split('/')[0]) || 0));
+    const color = getScoreColor(scoreText);
+    const strokeDashoffset = circumference - (score / 10) * circumference;
+
+    return (
+      <View style={styles.miniScoreRing}>
+        <Svg width={ringSize} height={ringSize} style={StyleSheet.absoluteFill}>
+          <Circle
+            cx={center}
+            cy={center}
+            r={radius}
+            stroke={color + '22'}
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          <Circle
+            cx={center}
+            cy={center}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            fill="none"
+            transform={`rotate(-90 ${center} ${center})`}
+          />
+        </Svg>
+        <Text style={[styles.scoreText, styles.miniScoreText, { color }]}>{String(scoreText || '0').split('/')[0]}</Text>
+      </View>
+    );
+  };
+
   const renderPersonalizeCTA = () => (
     <TouchableOpacity 
       style={styles.personalizeCTA} 
@@ -551,10 +676,10 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
   if (analysisFailed) {
     const failureMsg = getAnalysisFailureMessage(result);
     return (
-      <ScreenEnterAnimation>
+      <>
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.navBar}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBackToScanner}>
             <CaretLeft color={C.textPrimary} size={24} weight="bold" />
           </TouchableOpacity>
           <View style={styles.navHeaderCentered}>
@@ -564,9 +689,9 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
           <View style={{ width: 44 }} />
         </View>
         <ScrollView contentContainerStyle={[styles.scrollContent, styles.analysisFailScroll]} showsVerticalScrollIndicator={false}>
-          {originalImage ? (
+          {originalImageSourceUri ? (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: `data:image/jpeg;base64,${originalImage}` }} style={styles.foodImage} resizeMode="cover" />
+              <Image source={{ uri: originalImageSourceUri }} style={styles.foodImage} resizeMode="cover" />
             </View>
           ) : null}
           <View style={styles.analysisFailCard}>
@@ -590,22 +715,22 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
             <Text style={styles.analysisFailHint}>
               Use good light, hold steady, and fill the frame with your food. On the scanner you can also upload a photo from your library.
             </Text>
-            <TouchableOpacity style={styles.analysisFailSecondary} onPress={() => navigation.goBack()} activeOpacity={0.75}>
+            <TouchableOpacity style={styles.analysisFailSecondary} onPress={handleBackToScanner} activeOpacity={0.75}>
               <Text style={styles.analysisFailSecondaryText}>Go back</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
-      </ScreenEnterAnimation>
+      </>
     );
   }
 
   return (
-    <ScreenEnterAnimation>
+    <>
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Nav bar */}
       <View style={styles.navBar}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackToScanner}>
           <CaretLeft color={C.textPrimary} size={24} weight="bold" />
         </TouchableOpacity>
         <View style={styles.navHeaderCentered}>
@@ -622,9 +747,9 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
         showsVerticalScrollIndicator={false}
       >
         {/* Food image with vision boxes */}
-        {originalImage && (
+        {originalImageSourceUri && (
           <View style={styles.imageContainer}>
-            <Image source={{ uri: `data:image/jpeg;base64,${originalImage}` }} style={styles.foodImage} resizeMode="cover" />
+            <Image source={{ uri: originalImageSourceUri }} style={styles.foodImage} resizeMode="cover" />
             {visionData.map((v, i) => {
               if (!v.box_2d) return null;
               const [ymin, xmin, ymax, xmax] = v.box_2d;
@@ -752,12 +877,12 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
             <View style={styles.card}>
               {isAhaLocked && renderLockedOverlay('Systemic Analysis')}
               <View style={styles.tableHeader}>
-                <Text style={[styles.columnHeader, { flex: 1.4 }]}>Body system</Text>
-                <View style={{ flex: 0.7, alignItems: 'center' }}>
+                <Text style={[styles.columnHeader, { flex: 1.65 }]}>Body system</Text>
+                <View style={{ flex: 0.58, alignItems: 'center' }}>
                   <Text style={styles.columnHeader}>Score</Text>
                   <Text style={styles.columnSubHeader}>(/10)</Text>
                 </View>
-                <Text style={[styles.columnHeader, { flex: 2.9 }]}>What this means</Text>
+                <Text style={[styles.columnHeader, { flex: 2.77, paddingLeft: 12 }]}>What this means</Text>
               </View>
               {effectiveSystemicData.map((item, index) => {
                 const scoreNum = parseFloat(String(item.score || '0').split('/')[0]);
@@ -771,14 +896,14 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
                 return (
                   <View key={index} style={[styles.tableRow, index === displaySystemicData.length - 1 && !isSelected && styles.lastRow, { flexDirection: 'column' }]}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View style={{ flex: 1.4, paddingRight: 8 }}>
+                      <View style={{ flex: 1.65, paddingRight: 8 }}>
                         <Text style={styles.pillarName}>{item.pillar || 'Overview'}</Text>
                         <Text style={styles.organName}>{item.organ || 'Impact'}</Text>
                       </View>
-                      <View style={{ flex: 0.7, alignItems: 'center' }}>
-                        <Text style={[styles.scoreText, { color: getScoreColor(item.score) }]}>{String(item.score || '0').split('/')[0]}</Text>
+                      <View style={{ flex: 0.58, alignItems: 'center' }}>
+                        {renderMiniScoreRing(item.score)}
                       </View>
-                      <View style={{ flex: 2.9 }}>
+                      <View style={{ flex: 2.77, paddingLeft: 12 }}>
                         <Text style={styles.descTitle}>{item.title || 'Summary'}</Text>
                         <Text style={styles.descText}>{item.desc || 'No further data available.'}</Text>
                       </View>
@@ -861,7 +986,7 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
                 );
               })}
             </View>
-            {!isAhaLocked && renderPersonalizeCTA()}
+            {showPersonalizeCTA && renderPersonalizeCTA()}
           </View>
         )}
 
@@ -894,7 +1019,7 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
                         )}
                       </View>
                       <View style={{ flex: 1, alignItems: 'center' }}>
-                        <Text style={[styles.scoreText, { color: getScoreColor(item.score) }]}>{String(item.score || '0').split('/')[0]}</Text>
+                        {renderMiniScoreRing(item.score)}
                         {isApplied && (
                           <Text style={[styles.scoreDeltaText, { color: C.scoreHigh }]}>
                             +{boost.toFixed(1)}
@@ -982,38 +1107,308 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
                   </View>
                 );
               })}
-              {!isAhaLocked && renderPersonalizeCTA()}
+              {showPersonalizeCTA && renderPersonalizeCTA()}
           </View>
         )}
 
-        {activeTab === 'Bio' && (
-          <View style={styles.card}>
-            {displayBiochemicals.map((item, index) => (
-              <View key={index} style={[styles.tableRow, index === displayBiochemicals.length - 1 && styles.lastRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
-                <View style={styles.bioItemHeader}>
-                  <Text style={styles.bioItemName}>{item.name}</Text>
-                  <View style={styles.bioTypeBadge}><Text style={styles.bioTypeText}>{String(item.type || 'compound').toUpperCase()}</Text></View>
+        {activeTab === 'Longevity' && (() => {
+          const ld = result.longevityData;
+          if (!ld) {
+            return (
+              <View style={styles.card}>
+                <View style={styles.emptyTabState}>
+                  <Dna size={32} weight="duotone" color={C.primary} />
+                  <Text style={styles.emptyTabTitle}>No Longevity Data</Text>
+                  <Text style={styles.emptyTabText}>Rescan this meal to get longevity pathway analysis.</Text>
                 </View>
-                {[
-                  { label: 'What it does: ', value: item.effect },
-                  { label: 'How it works: ', value: item.pathway },
-                  { label: 'Targets: ', value: item.targets },
-                  { label: 'Inhibitors: ', value: item.inhibitors },
-                ].map(({ label, value }) => (
-                  <View key={label} style={styles.bioDetailRow}>
-                    <Text style={styles.bioDetailLabel}>{label}</Text>
-                    <Text style={styles.bioDetailText}>{value}</Text>
+              </View>
+            );
+          }
+
+          const score = ld.longevityScore ?? 0;
+          const scorePct = (score + 10) / 20;
+          const scoreColor = score >= 3 ? C.scoreHigh ?? '#22c55e' : score >= -2 ? C.scoreMid ?? '#f59e0b' : C.scoreLow ?? '#ef4444';
+          const inflamm = ld.inflammationIndex ?? 5;
+          const inflammColor = inflamm <= 3 ? C.scoreHigh ?? '#22c55e' : inflamm <= 6 ? C.scoreMid ?? '#f59e0b' : C.scoreLow ?? '#ef4444';
+
+          const nadMeta: Record<string, { label: string; color: string }> = {
+            boost:   { label: 'Boosting',  color: C.scoreHigh ?? '#22c55e' },
+            neutral: { label: 'Neutral',   color: C.scoreMid  ?? '#f59e0b' },
+            deplete: { label: 'Depleting', color: C.scoreLow  ?? '#ef4444' },
+          };
+          const mTorMeta: Record<string, { label: string; color: string }> = {
+            suppressed: { label: 'Suppressed ✓', color: C.scoreHigh ?? '#22c55e' },
+            neutral:    { label: 'Neutral',       color: C.scoreMid  ?? '#f59e0b' },
+            activated:  { label: 'Activated',     color: C.scoreLow  ?? '#ef4444' },
+          };
+          const autophagyMeta: Record<string, { label: string; color: string }> = {
+            strong:   { label: 'Strong ✓',  color: C.scoreHigh ?? '#22c55e' },
+            mild:     { label: 'Mild',       color: '#84cc16' },
+            neutral:  { label: 'Neutral',    color: C.scoreMid  ?? '#f59e0b' },
+            inhibited:{ label: 'Inhibited',  color: C.scoreLow  ?? '#ef4444' },
+          };
+          const telomereMeta: Record<string, { label: string; color: string }> = {
+            protective: { label: 'Protective ✓', color: C.scoreHigh ?? '#22c55e' },
+            neutral:    { label: 'Neutral',        color: C.scoreMid  ?? '#f59e0b' },
+            damaging:   { label: 'Damaging',       color: C.scoreLow  ?? '#ef4444' },
+          };
+
+          const nad = nadMeta[ld.nadPathway ?? 'neutral'];
+          const mTor = mTorMeta[ld.mTorStatus ?? 'neutral'];
+          const autophagy = autophagyMeta[ld.autophagyInduction ?? 'neutral'];
+          const telomere = telomereMeta[ld.telomereImpact ?? 'neutral'];
+
+          // Static educational copy per pathway
+          const PATHWAY_INFO: Record<string, { what: string; why: string }> = {
+            'NAD⁺ Pathway': {
+              what: 'NAD⁺ (Nicotinamide Adenine Dinucleotide) is a coenzyme present in every living cell. It acts as the primary energy carrier in metabolism and the essential fuel for longevity proteins called sirtuins.',
+              why: 'NAD⁺ levels drop ~50% by age 60 — one of the main reasons aging accelerates. Without adequate NAD⁺, DNA repair slows, mitochondria become inefficient, and sirtuins go dormant. Foods with tryptophan, niacin (B3), and polyphenols help maintain NAD⁺ levels.',
+            },
+            'mTOR Status': {
+              what: 'mTOR (mechanistic Target Of Rapamycin) is a master cellular switch that decides whether cells should grow and divide, or pause and repair themselves.',
+              why: 'When mTOR is activated (by excess protein or refined carbs), cells stay in "build mode" and skip maintenance — letting damage accumulate. When suppressed (by fasting, polyphenols, or calorie restriction), cells enter "clean-up mode." Chronically high mTOR is linked to accelerated aging, obesity, and cancer. Intermittent fasting and plant polyphenols are among the most potent natural mTOR suppressors.',
+            },
+            'Autophagy': {
+              what: 'Autophagy (Greek: "self-eating") is your body\'s cellular recycling system. Damaged proteins, dysfunctional organelles, and cellular debris are broken down and reused as building blocks.',
+              why: 'It\'s one of the most powerful anti-aging mechanisms we know of — the 2016 Nobel Prize in Medicine was awarded for discovering it. Strong autophagy clears out senescent "zombie cells" and reduces inflammation. It\'s triggered by fasting, exercise, and polyphenol-rich foods like coffee, green tea, and turmeric. Inhibited autophagy lets cellular waste accumulate, accelerating tissue damage.',
+            },
+            'Telomere Impact': {
+              what: 'Telomeres are protective caps at the ends of chromosomes — like the plastic tips on shoelaces. They shorten slightly each time a cell divides.',
+              why: 'When telomeres become critically short, cells stop dividing (senescence) or die — driving tissue aging and organ decline. Chronic inflammation, oxidative stress, poor sleep, and ultra-processed foods all accelerate shortening. Omega-3s, folate, antioxidants, and anti-inflammatory foods help preserve telomere length, slowing cellular aging.',
+            },
+          };
+
+          // Compound info lookup (common longevity compounds)
+          const COMPOUND_INFO: Record<string, string> = {
+            resveratrol: 'A polyphenol found in grape skins and red wine. Directly activates SIRT1, mimicking some effects of calorie restriction. It also activates AMPK (another longevity sensor) and has anti-inflammatory and antioxidant properties.',
+            quercetin: 'A flavonoid in onions, apples, and capers. A potent senolytic — it selectively clears "zombie" senescent cells that secrete inflammatory signals. Also activates sirtuins and inhibits mTOR in some tissues.',
+            fisetin: 'Found in strawberries, apples, and cucumbers. One of the most potent senolytics discovered — shown in studies to extend lifespan in mice by 10%+ by clearing senescent cells. Also activates SIRT1 and reduces neuroinflammation.',
+            curcumin: 'The active compound in turmeric. Suppresses NF-κB (master inflammation switch), activates Nrf2 (antioxidant pathways), and induces autophagy. Its bioavailability is low alone — greatly enhanced by piperine (black pepper).',
+            egcg: 'Epigallocatechin gallate — the main catechin in green tea. Suppresses mTOR, activates autophagy, and inhibits DNMT enzymes (helping maintain healthy epigenetic patterns). One of the most studied longevity compounds.',
+            sulforaphane: 'Found in cruciferous vegetables like broccoli sprouts. Activates Nrf2 — the master regulator of antioxidant defences. Also induces autophagy and has potent anti-cancer and anti-inflammatory effects.',
+            spermidine: 'A polyamine in wheat germ, mushrooms, and aged cheese. One of the few compounds proven to induce autophagy when taken with food. Shown to extend lifespan in multiple organisms and improve cardiac health in humans.',
+            berberine: 'An alkaloid in barberry and goldenseal. Often called "nature\'s metformin" — it activates AMPK (mimicking calorie restriction), lowers blood glucose, and suppresses mTOR. Strongly anti-inflammatory.',
+            oleic_acid: 'The main fatty acid in olive oil. Reduces oxidative stress, activates AMPK, and has anti-inflammatory effects. Oleocanthal in extra virgin olive oil also acts as a natural ibuprofen-like compound.',
+            lycopene: 'A carotenoid in tomatoes and watermelon. Powerful antioxidant that protects DNA from oxidative damage and reduces inflammation markers like IL-6 and CRP.',
+            'omega-3': 'Essential polyunsaturated fats (EPA and DHA) found in fatty fish, flaxseed, and walnuts. Reduce production of inflammatory eicosanoids, lower triglycerides, support membrane fluidity, and protect telomere length.',
+            anthocyanins: 'Pigments in blueberries, blackberries, and purple vegetables. Activate SIRT1, reduce oxidative stress, and cross the blood-brain barrier to support neurological longevity.',
+            kaempferol: 'A flavonoid in kale, broccoli, and green tea. Activates AMPK, inhibits mTOR, and induces autophagy. Also has anti-cancer properties via apoptosis induction.',
+            apigenin: 'Found in parsley, celery, and chamomile. Activates CD38 inhibition (which otherwise destroys NAD⁺), helping preserve NAD⁺ levels. Also has anti-inflammatory and anti-cancer properties.',
+            naringenin: 'A flavanone in citrus fruits. Activates AMPK, suppresses mTOR, and has anti-inflammatory and hepatoprotective effects.',
+          };
+
+          const getCompoundInfo = (name: string): string => {
+            const key = name.toLowerCase().replace(/\s+/g, '_');
+            return COMPOUND_INFO[key] || COMPOUND_INFO[name.toLowerCase()] || '';
+          };
+
+          // Reusable expand row
+          const ExpandCaret = ({ id }: { id: string }) =>
+            longevityExpanded[id]
+              ? <CaretUp size={15} color={C.textTertiary} weight="bold" />
+              : <CaretDown size={15} color={C.textTertiary} weight="bold" />;
+
+          const InfoBox = ({ children }: { children: React.ReactNode }) => (
+            <View style={{ backgroundColor: C.bgSecondary, borderRadius: 12, padding: 12, marginTop: 10, borderLeftWidth: 3, borderLeftColor: C.primary + '40' }}>
+              {children}
+            </View>
+          );
+
+          const infoText = (text: string) => (
+            <Text style={{ fontSize: 12, color: C.textSecondary, lineHeight: 18, fontWeight: '400' }}>{text}</Text>
+          );
+          const infoLabel = (text: string) => (
+            <Text style={{ fontSize: 11, fontWeight: '800', color: C.primary, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 4 }}>{text}</Text>
+          );
+
+          return (
+            <View>
+              {/* Longevity score card */}
+              <View style={styles.card}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                  <Sparkle size={13} color={C.primary} weight="fill" />
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: C.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8 }}>Longevity Score</Text>
+                </View>
+                <View style={{ marginBottom: 6 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <Text style={{ fontSize: 11, color: C.textTertiary, fontWeight: '600' }}>–10 Aging</Text>
+                    <Text style={{ fontSize: 22, fontWeight: '900', color: scoreColor, letterSpacing: -0.5 }}>{score > 0 ? `+${score}` : score}</Text>
+                    <Text style={{ fontSize: 11, color: C.textTertiary, fontWeight: '600' }}>+10 Anti-aging</Text>
                   </View>
-                ))}
-                {item.summary && (
-                  <View style={styles.bioSummaryBox}>
-                    <Text style={styles.bioSummaryText}><Text style={{ fontWeight: '800' }}>Summary: </Text>{item.summary}</Text>
+                  <View style={{ height: 10, backgroundColor: C.bgSecondary, borderRadius: 5, overflow: 'hidden' }}>
+                    <View style={{ width: `${Math.round(scorePct * 100)}%`, height: '100%', backgroundColor: scoreColor, borderRadius: 5 }} />
                   </View>
+                </View>
+                {ld.longevitySummary ? (
+                  <View style={{ backgroundColor: C.bgSecondary, borderRadius: 12, padding: 12, marginTop: 10 }}>
+                    <Text style={{ fontSize: 13, color: C.textSecondary, fontWeight: '500', lineHeight: 19 }}>{ld.longevitySummary}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              {/* Aging Pathways — each row expandable */}
+              <View style={styles.card}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                  <Flask size={13} color={C.primary} weight="fill" />
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: C.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8 }}>Aging Pathways</Text>
+                </View>
+
+                {([
+                  { id: 'nad',      label: 'NAD⁺ Pathway',   badge: nad.label,       color: nad.color,       sub: 'Fuels sirtuins & DNA repair' },
+                  { id: 'mtor',     label: 'mTOR Status',     badge: mTor.label,      color: mTor.color,      sub: 'Controls growth vs. repair mode' },
+                  { id: 'autophagy',label: 'Autophagy',       badge: autophagy.label, color: autophagy.color, sub: 'Cellular recycling of damaged proteins' },
+                  { id: 'telomere', label: 'Telomere Impact', badge: telomere.label,  color: telomere.color,  sub: 'Protection of chromosomal end caps' },
+                ] as { id: string; label: string; badge: string; color: string; sub: string }[]).map(({ id, label, badge, color, sub }, i, arr) => {
+                  const open = !!longevityExpanded[id];
+                  const info = PATHWAY_INFO[label];
+                  return (
+                    <View key={id} style={[{ paddingVertical: 12 }, i < arr.length - 1 && { borderBottomWidth: 1, borderBottomColor: C.border }]}>
+                      <TouchableOpacity activeOpacity={0.7} onPress={() => toggleLongevityExpand(id)}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <View style={{ flex: 1, paddingRight: 8 }}>
+                            <Text style={{ fontSize: 13, fontWeight: '700', color: C.textPrimary }}>{label}</Text>
+                            <Text style={{ fontSize: 12, color: C.textTertiary, marginTop: 2 }}>{sub}</Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <View style={{ backgroundColor: color + '18', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}>
+                              <Text style={{ fontSize: 11, fontWeight: '800', color }}>{badge}</Text>
+                            </View>
+                            <ExpandCaret id={id} />
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                      {open && info && (
+                        <InfoBox>
+                          {infoLabel('What it is')}
+                          {infoText(info.what)}
+                          <View style={{ height: 10 }} />
+                          {infoLabel('Why it matters')}
+                          {infoText(info.why)}
+                        </InfoBox>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+
+              {/* Inflammation Index — expandable */}
+              <View style={styles.card}>
+                <TouchableOpacity activeOpacity={0.7} onPress={() => toggleLongevityExpand('inflamm')}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <FireSimple size={13} color={inflammColor} weight="fill" />
+                      <Text style={{ fontSize: 11, fontWeight: '800', color: C.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8 }}>Inflammation Index</Text>
+                    </View>
+                    <ExpandCaret id="inflamm" />
+                  </View>
+                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 14 }}>
+                  <Text style={{ fontSize: 32, fontWeight: '900', color: inflammColor, letterSpacing: -1 }}>{inflamm.toFixed(1)}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, color: C.textTertiary, marginBottom: 6 }}>/ 10</Text>
+                    <View style={{ height: 8, backgroundColor: C.bgSecondary, borderRadius: 4, overflow: 'hidden' }}>
+                      <View style={{ width: `${Math.round((inflamm / 10) * 100)}%`, height: '100%', backgroundColor: inflammColor, borderRadius: 4 }} />
+                    </View>
+                    <Text style={{ fontSize: 11, color: C.textTertiary, marginTop: 4 }}>
+                      {inflamm <= 3 ? 'Anti-inflammatory' : inflamm <= 6 ? 'Mildly inflammatory' : 'Pro-inflammatory'}
+                    </Text>
+                  </View>
+                </View>
+                {longevityExpanded['inflamm'] && (
+                  <InfoBox>
+                    {infoLabel('What it is')}
+                    {infoText('Chronic low-grade inflammation — called "inflammaging" — silently drives nearly every age-related disease: heart disease, type 2 diabetes, Alzheimer\'s, and certain cancers. Unlike acute inflammation (which heals wounds), inflammaging is a smouldering fire that slowly damages tissues over years.')}
+                    <View style={{ height: 10 }} />
+                    {infoLabel('Why it matters')}
+                    {infoText('Each inflammatory meal stresses the NF-κB pathway — the master switch for inflammation genes. Over time, this keeps your immune system in a state of low alert, accelerating cellular aging. Omega-3s, polyphenols, and dietary fibre suppress NF-κB and help restore a younger inflammatory profile.')}
+                  </InfoBox>
                 )}
               </View>
-            ))}
-          </View>
-        )}
+
+              {/* Sirtuin Activators — expandable section header + each pill */}
+              {(ld.sirtuinActivators ?? []).length > 0 && (
+                <View style={styles.card}>
+                  <TouchableOpacity activeOpacity={0.7} onPress={() => toggleLongevityExpand('sirtuins')}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Leaf size={13} color={C.scoreHigh ?? '#22c55e'} weight="fill" />
+                        <Text style={{ fontSize: 11, fontWeight: '800', color: C.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8 }}>Sirtuin Activators</Text>
+                      </View>
+                      <ExpandCaret id="sirtuins" />
+                    </View>
+                  </TouchableOpacity>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
+                    {(ld.sirtuinActivators ?? []).map((s) => (
+                      <View key={s} style={{ backgroundColor: (C.scoreHigh ?? '#22c55e') + '15', borderWidth: 1, borderColor: (C.scoreHigh ?? '#22c55e') + '30', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: C.scoreHigh ?? '#22c55e' }}>{s}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  {longevityExpanded['sirtuins'] && (
+                    <InfoBox>
+                      {infoLabel('What are Sirtuins?')}
+                      {infoText('Sirtuins (SIRT1–SIRT7) are a family of proteins often called "longevity genes." They act as cellular supervisors of aging — regulating DNA repair, inflammation control, metabolic efficiency, and stress resistance. David Sinclair (Harvard) famously calls them the "information theory" of aging: sirtuins maintain the epigenetic "software" that keeps cells functioning young.')}
+                      <View style={{ height: 10 }} />
+                      {infoLabel('Why sirtuins need NAD⁺')}
+                      {infoText('Sirtuins are NAD⁺-dependent enzymes — they literally cannot function without consuming NAD⁺. Even if sirtuins are genetically intact, they go dormant when NAD⁺ runs low (which happens naturally with age). This is why boosting NAD⁺ (through NMN, NR, or precursor-rich foods) amplifies sirtuin activity — it\'s like refuelling the engine. Polyphenols like resveratrol, quercetin, and fisetin are direct sirtuin activators found in food.')}
+                    </InfoBox>
+                  )}
+                </View>
+              )}
+
+              {/* Key Longevity Compounds — each row expandable */}
+              {(ld.keyCompounds ?? []).length > 0 && (
+                <View style={styles.card}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                    <Microscope size={13} color={C.primary} weight="fill" />
+                    <Text style={{ fontSize: 11, fontWeight: '800', color: C.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8 }}>Key Longevity Compounds</Text>
+                  </View>
+                  {(ld.keyCompounds ?? []).map((compound, i, arr) => {
+                    const cKey = `compound_${compound.name}`;
+                    const open = !!longevityExpanded[cKey];
+                    const extraInfo = getCompoundInfo(compound.name);
+                    return (
+                      <View key={compound.name} style={[{ paddingVertical: 12 }, i < arr.length - 1 && { borderBottomWidth: 1, borderBottomColor: C.border }]}>
+                        <TouchableOpacity activeOpacity={0.7} onPress={() => toggleLongevityExpand(cKey)}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <View style={{ flex: 1, paddingRight: 8 }}>
+                              <Text style={{ fontSize: 13, fontWeight: '800', color: C.textPrimary }}>{compound.name}</Text>
+                              <Text style={{ fontSize: 12, color: C.textTertiary, marginTop: 2 }}>{compound.source}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <View style={{ backgroundColor: C.primary + '15', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 7 }}>
+                                <Text style={{ fontSize: 10, fontWeight: '700', color: C.primary }}>{compound.pathway}</Text>
+                              </View>
+                              <ExpandCaret id={cKey} />
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                        {open && (
+                          <InfoBox>
+                            {extraInfo ? (
+                              <>
+                                {infoLabel('What it is & how it works')}
+                                {infoText(extraInfo)}
+                              </>
+                            ) : (
+                              <>
+                                {infoLabel('Pathway')}
+                                {infoText(compound.pathway)}
+                                <View style={{ height: 8 }} />
+                                {infoLabel('Found in')}
+                                {infoText(compound.source)}
+                              </>
+                            )}
+                          </InfoBox>
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          );
+        })()}
 
         {activeTab === 'Alerts' && (
           <View>
@@ -1037,7 +1432,41 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
               ))}
             </View>
 
-            {/* References below alerts */}
+            {/* Compounds below alerts */}
+            {displayBiochemicals.length > 0 && (
+              <View style={styles.card}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                  <Microscope size={13} color={C.primary} weight="fill" />
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: C.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8 }}>Compounds</Text>
+                </View>
+                {displayBiochemicals.map((item, index) => (
+                  <View key={index} style={[styles.tableRow, index === displayBiochemicals.length - 1 && styles.lastRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+                    <View style={styles.bioItemHeader}>
+                      <Text style={styles.bioItemName}>{item.name}</Text>
+                      <View style={styles.bioTypeBadge}><Text style={styles.bioTypeText}>{String(item.type || 'compound').toUpperCase()}</Text></View>
+                    </View>
+                    {[
+                      { label: 'What it does: ', value: item.effect },
+                      { label: 'How it works: ', value: item.pathway },
+                      { label: 'Targets: ', value: item.targets },
+                      { label: 'Inhibitors: ', value: item.inhibitors },
+                    ].map(({ label, value }) => (
+                      <View key={label} style={styles.bioDetailRow}>
+                        <Text style={styles.bioDetailLabel}>{label}</Text>
+                        <Text style={styles.bioDetailText}>{value}</Text>
+                      </View>
+                    ))}
+                    {item.summary && (
+                      <View style={styles.bioSummaryBox}>
+                        <Text style={styles.bioSummaryText}><Text style={{ fontWeight: '800' }}>Summary: </Text>{item.summary}</Text>
+                      </View>
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* References below compounds */}
             <View style={[styles.card, { marginTop: 0 }]}>
               <Text style={styles.refTitle}>Citations & sources</Text>
               {displayRefs.map((item, index) => (
@@ -1055,31 +1484,39 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
 
         {activeTab === 'Glucose' && (() => {
           const sim = glucoseSim;
-          const chartW = Dimensions.get('window').width - 64;
+          const chartW = Math.max(280, Dimensions.get('window').width - 64);
           const chartH = 196;
           const padL = 34, padR = 8, padT = 8, padB = 44;
           const innerW = chartW - padL - padR;
           const innerH = chartH - padT - padB;
           const yMin = 70, yMax = 310;
-          const xScale = (t: number) => padL + (t / sim.totalMin) * innerW;
-          const yScale = (g: number) => padT + (1 - (g - yMin) / (yMax - yMin)) * innerH;
+          const safeTotalMin = Math.max(1, toFiniteNumber(sim.totalMin, 120));
+          const xScale = (t: number) => padL + (toFiniteNumber(t, 0) / safeTotalMin) * innerW;
+          const yScale = (g: number) => {
+            const safeG = clampFinite(g, yMin, yMin, yMax);
+            return padT + (1 - (safeG - yMin) / (yMax - yMin)) * innerH;
+          };
           const yLabels = [70, 110, 150, 190, 230, 270, 310];
+          const chartPoints = sim.points.filter(([t, g]) => Number.isFinite(t) && Number.isFinite(g));
 
-          const glucosePath = sim.points.reduce((p, [t, g], i) =>
+          const glucosePath = chartPoints.reduce((p, [t, g], i) =>
             p + (i === 0 ? `M ${xScale(t).toFixed(1)} ${yScale(g).toFixed(1)}` : ` L ${xScale(t).toFixed(1)} ${yScale(g).toFixed(1)}`), '');
 
           // Insulin curve: peaks at insulinPeakMin, scaled to show alongside glucose
-          const insulinYMax = sim.peakInsulin * 1.3;
+          const safePeakInsulin = Math.max(0, toFiniteNumber(sim.peakInsulin, 0));
+          const safeInsulinPeakMin = Math.max(1, toFiniteNumber(sim.insulinPeakMin, 60));
+          const safeRecoveryMin = Math.max(safeInsulinPeakMin + 1, toFiniteNumber(sim.recoveryMin, 120));
+          const insulinYMax = Math.max(1, safePeakInsulin * 1.3);
           const insulinYScale = (u: number) => padT + (1 - u / insulinYMax) * innerH;
-          const insulinPath = sim.points.reduce((p, [t], i) => {
-            const u = t <= sim.insulinPeakMin
-              ? sim.peakInsulin * (1 - Math.exp(-3.5 * (t / sim.insulinPeakMin))) / (1 - Math.exp(-3.5))
-              : sim.peakInsulin * Math.exp(-((t - sim.insulinPeakMin) / ((sim.recoveryMin - sim.insulinPeakMin) * 0.45)));
+          const insulinPath = chartPoints.reduce((p, [t], i) => {
+            const u = t <= safeInsulinPeakMin
+              ? safePeakInsulin * (1 - Math.exp(-3.5 * (t / safeInsulinPeakMin))) / (1 - Math.exp(-3.5))
+              : safePeakInsulin * Math.exp(-((t - safeInsulinPeakMin) / ((safeRecoveryMin - safeInsulinPeakMin) * 0.45)));
             const y = insulinYScale(Math.max(0, u));
             return p + (i === 0 ? `M ${xScale(t).toFixed(1)} ${y.toFixed(1)}` : ` L ${xScale(t).toFixed(1)} ${y.toFixed(1)}`);
           }, '');
 
-          const xTickTimes = Array.from(new Set([0, sim.peakTimeMin, sim.insulinPeakMin, sim.totalMin])).sort((a, b) => a - b);
+          const xTickTimes = Array.from(new Set([0, sim.peakTimeMin, sim.insulinPeakMin, sim.totalMin].map(t => Math.round(clampFinite(t, 0, 0, safeTotalMin))))).sort((a, b) => a - b);
 
           const peakColor = sim.peakColor;
           const chartInterpretation = sim.interpretation;
@@ -1088,7 +1525,13 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
             { min: 0, color: C.scoreHigh, label: `Meal consumed — ${Math.round(parseFloat((currentMacros?.carbs ?? result.macros?.carbs ?? '0g').replace(/[^0-9.]/g,'')))}g carbs, ${Math.round(parseFloat((currentMacros?.fats ?? result.macros?.fats ?? '0g').replace(/[^0-9.]/g,'')))}g fat` },
             { min: 15, color: C.scoreHigh, label: 'Glucose starts rising from the gut into your bloodstream' },
             { min: sim.peakTimeMin, color: C.scoreMid, label: `Glucose peak: ${sim.peakGlucose} mg/dL at ${sim.peakTimeMin} min` },
-            { min: sim.insulinPeakMin, color: C.primary, label: `Insulin peak: ${sim.peakInsulin} µU/mL — pancreas working hard to keep up` },
+            {
+              min: sim.insulinPeakMin,
+              color: C.primary,
+              label: sim.peakInsulin <= 1
+                ? 'Insulin demand is minimal — pancreas response stays near baseline'
+                : `Insulin peak: ${sim.peakInsulin} µU/mL — pancreas working to clear the glucose rise`,
+            },
           ];
 
           return (
@@ -1274,9 +1717,9 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
 
                 {/* Food image + score row */}
                 <View style={styles.shareCardHero}>
-                  {originalImage ? (
+                  {originalImageSourceUri ? (
                     <Image
-                      source={{ uri: `data:image/jpeg;base64,${originalImage}` }}
+                      source={{ uri: originalImageSourceUri }}
                       style={styles.shareCardImage}
                       resizeMode="cover"
                     />
@@ -1400,7 +1843,7 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
         })}
       </View>
     </SafeAreaView>
-    </ScreenEnterAnimation>
+    </>
   );
 }
 
@@ -1544,6 +1987,17 @@ function makeStyles(C: AppColors) {
     pillarName: { fontSize: 13, fontWeight: '700', color: C.textPrimary },
     organName: { fontSize: 12, color: C.textSecondary, marginTop: 2 },
     scoreText: { fontSize: 13, fontWeight: '700' },
+    miniScoreRing: {
+      width: 34,
+      height: 34,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    miniScoreText: {
+      fontSize: 10.5,
+      fontWeight: '900',
+      letterSpacing: -0.2,
+    },
     descText: { fontSize: 13, color: C.textSecondary, lineHeight: 19 },
     descTitle: { fontWeight: '700', color: C.textPrimary },
     rebalanceCTA: {

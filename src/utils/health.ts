@@ -39,29 +39,14 @@ type IosHealthNative = {
 function getIosHealthNativeOrNull(): IosHealthNative | null {
   if (Platform.OS !== 'ios') return null;
 
-  // Try the react-native-health JS wrapper first (works on Old Architecture)
+  // Only use the public JS wrapper. Calling NativeModules.AppleHealthKit directly
+  // can throw native exceptions under the New Architecture/TurboModule bridge.
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const m = require('react-native-health') as Partial<IosHealthNative>;
     if (m && typeof m.initHealthKit === 'function') return m as IosHealthNative;
   } catch {
-    // fall through to direct NativeModules access
-  }
-
-  // Fallback: access NativeModules.AppleHealthKit directly.
-  // On New Architecture (TurboModules interop), the react-native-health JS wrapper
-  // only exports Constants but the native module IS registered and accessible directly.
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { NativeModules } = require('react-native') as { NativeModules: Record<string, unknown> };
-    const kit = NativeModules['AppleHealthKit'] as Partial<IosHealthNative> | undefined;
-    if (kit && typeof kit.initHealthKit === 'function') {
-      console.log('[Health] Using NativeModules.AppleHealthKit directly (New Arch path)');
-      return kit as IosHealthNative;
-    }
-    console.warn('[Health] NativeModules.AppleHealthKit found but initHealthKit missing:', Object.keys(kit ?? {}));
-  } catch (e) {
-    console.warn('[Health] NativeModules direct access failed:', e);
+    return null;
   }
 
   return null;

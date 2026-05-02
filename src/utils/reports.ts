@@ -1,9 +1,24 @@
 import * as FileSystem from 'expo-file-system';
+import { getGeminiApiKeys, isRetryableQuotaOrRateLimit } from './geminiApiKeys';
+
+/** Override with EXPO_PUBLIC_GEMINI_PRO_MODEL. */
+const DEFAULT_GEMINI_PRO_MODEL = 'gemini-3.1-pro-preview';
+
+const GEMINI_PRO_MODEL_ID =
+  (process.env.EXPO_PUBLIC_GEMINI_PRO_MODEL ?? '').trim() || DEFAULT_GEMINI_PRO_MODEL;
+
+const GEMINI_PRO_GENERATE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+  GEMINI_PRO_MODEL_ID
+)}:generateContent`;
+
+function reportUrlWithKey(apiKey: string): string {
+  return `${GEMINI_PRO_GENERATE_URL}?key=${encodeURIComponent(apiKey)}`;
+}
 
 export async function analyzeMedicalReport(uri: string): Promise<string> {
-  const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+  const keys = getGeminiApiKeys();
 
-  if (!GEMINI_API_KEY) {
+  if (!keys.length) {
     throw new Error('Gemini API key is not configured.');
   }
 
@@ -11,8 +26,6 @@ export async function analyzeMedicalReport(uri: string): Promise<string> {
   const base64Data = await FileSystem.readAsStringAsync(uri, {
     encoding: 'base64',
   });
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${GEMINI_API_KEY}`;
 
   const payload = {
     contents: [
@@ -41,24 +54,34 @@ OUTPUT: A concise, technical summary of findings and the physiological profile. 
     }
   };
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload)
-    });
+  for (let ki = 0; ki < keys.length; ki++) {
+    const url = reportUrlWithKey(keys[ki]!);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'Failed to analyze report');
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        if (isRetryableQuotaOrRateLimit(response.status, data) && ki < keys.length - 1) {
+          console.warn('[Gemini] Medical report analysis rate limited; retrying with fallback API key.');
+          continue;
+        }
+        const msg = (data as any)?.error?.message || 'Failed to analyze report';
+        throw new Error(msg);
+      }
+
+      return (data as any).candidates?.[0]?.content?.parts?.[0]?.text || "No insights extracted.";
+    } catch (error) {
+      console.error("Report Analysis Error:", error);
+      throw error instanceof Error ? error : new Error(String(error));
     }
-
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "No insights extracted.";
-  } catch (error) {
-    console.error("Report Analysis Error:", error);
-    throw error;
   }
+
+  throw new Error('Failed to analyze report');
 }

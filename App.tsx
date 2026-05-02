@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StyleSheet, InteractionManager, View } from 'react-native';
+import { PostHogProvider } from 'posthog-react-native';
+import { posthog } from './src/utils/posthog';
+import { registerForPushNotifications, setupNotificationListeners, scheduleDailyNudge } from './src/utils/notifications';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 
@@ -20,7 +23,8 @@ import { warmProfileHeaderCache } from './src/utils/profileHeaderCache';
 import { clearBiometricLoginSnapshot } from './src/utils/biometricLogin';
 import { signOutCompletely } from './src/utils/authRecovery';
 import { initializeRevenueCat } from './src/integrations/purchases';
-import { identifyUser, logScreenView } from './src/utils/analytics';
+import { identifyUser, logScreenView, resetUser } from './src/utils/analytics';
+import { capture, Events } from './src/utils/posthog';
 import { saveUserProfile } from './src/utils/userProfile';
 import { Session, type AuthChangeEvent } from '@supabase/supabase-js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -29,7 +33,6 @@ import {
   loadOnboardingFlagsForUserId,
   setOnboardingCompleteForUserId,
   setInitialPaywallSeenForUserId,
-  clearOnboardingUserBinding,
 } from './src/utils/onboardingFlags';
 
 const Stack = createNativeStackNavigator();
@@ -87,6 +90,10 @@ function AppInner() {
             console.warn('[RC] init failed, using cached isPro', e)
           );
           void identifyUser(session.user.id, session.user.email);
+          // Register for push notifications and schedule daily nudge
+          void registerForPushNotifications();
+          void scheduleDailyNudge();
+          capture(Events.SIGN_IN, { method: 'session_restore' });
           const [flags, proVal] = await Promise.all([
             loadOnboardingFlagsForUserId(session.user.id),
             SecureStore.getItemAsync('isPro'),
@@ -127,21 +134,25 @@ function AppInner() {
     // Only handle auth changes that happen AFTER initial startup
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
       if (!initializedRef.current || !alive) return;
-      setSession(session);
       if (!session) {
+        setSession(null);
         biometricPassedThisSessionRef.current = false;
         setIsBiometricVerified(false);
         setBiometricRequired(false);
         setHasCompletedOnboarding(false);
         setHasSeenInitialPaywall(false);
-        void clearOnboardingUserBinding();
+        void SecureStore.deleteItemAsync('isPro');
+        void SecureStore.deleteItemAsync('proplan');
         void clearBiometricLoginSnapshot();
+        capture(Events.SIGN_OUT);
+        resetUser();
         return;
       }
       // Token refresh runs often (incl. after network activity from a scan). Re-applying
       // biometric state set isBiometricVerified to false whenever biometrics are "required",
       // which sends the user back to BiometricGate and looks like the app restarted.
       if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        setSession(session);
         return;
       }
       if (!session.user?.id) return;
@@ -163,6 +174,7 @@ function AppInner() {
       const needsBio = bioPref === 'true' && hasHardware && isEnrolled;
       setBiometricRequired(needsBio);
       setIsBiometricVerified(!needsBio || biometricPassedThisSessionRef.current);
+      setSession(session);
     });
 
     return () => {
@@ -180,6 +192,12 @@ function AppInner() {
       return () => task.cancel();
     }
   }, [loading, session, hasCompletedOnboarding, isBiometricVerified]);
+
+  // Set up push notification listeners (foreground + tap)
+  useEffect(() => {
+    const cleanup = setupNotificationListeners();
+    return cleanup;
+  }, []);
 
   async function completeOnboarding() {
     const { data: { session: s } } = await supabase.auth.getSession();
@@ -242,6 +260,8 @@ function AppInner() {
             }
           }}
         >
+          {/* PostHog screen autocapture uses useNavigationState and must run inside a screen — not above Stack.Navigator. */}
+          {/* We disable it and send $screen via logScreenView in onStateChange (already mirrors to PostHog). */}
           <Stack.Navigator
             screenOptions={{
               headerShown: false,
@@ -295,11 +315,19 @@ function AppInner() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        {isSupabaseEnvConfigured() ? <AppInner /> : <ConfigErrorScreen />}
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <PostHogProvider
+      client={posthog}
+      autocapture={{
+        captureScreens: false,
+        captureTouches: true,
+      }}
+    >
+      <SafeAreaProvider>
+        <ThemeProvider>
+          {isSupabaseEnvConfigured() ? <AppInner /> : <ConfigErrorScreen />}
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </PostHogProvider>
   );
 }
 

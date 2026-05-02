@@ -21,8 +21,13 @@ import { hasConfiguredIapProducts } from '../integrations/purchasesConfig';
 import { isExpoGo } from '../utils/expoRuntime';
 import { saveUserProfile } from '../utils/userProfile';
 
-/** Shapes we read from the store; avoids importing `react-native-iap` at module load (Nitro / Expo Go). */
-type PlanProduct = { displayPrice: string; id?: string; currentPlanId?: string } | null;
+/** Shapes we read from RevenueCat at runtime; avoids importing native IAP modules at screen load. */
+type PlanProduct = {
+  displayPrice: string;
+  billedText: string;
+  id?: string;
+  currentPlanId?: string;
+} | null;
 
 interface UpgradeScreenProps {
   navigation: any;
@@ -80,7 +85,34 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
       setStoreLoading(false);
       return;
     }
-    setStoreLoading(false);
+
+    let alive = true;
+    void (async () => {
+      try {
+        const { getOfferings } = await import('../integrations/purchases');
+        const offerings = await getOfferings();
+        const current = offerings?.current;
+        if (!current || !alive) return;
+
+        const annualPackage = current.annual
+          ?? current.availablePackages?.find((p: any) => p.packageType === 'ANNUAL' || p.identifier === '$rc_annual');
+        const monthlyPackage = current.monthly
+          ?? current.availablePackages?.find((p: any) => p.packageType === 'MONTHLY' || p.identifier === '$rc_monthly');
+
+        setStoreProducts({
+          annual: buildPlanProduct(annualPackage, 'annual'),
+          monthly: buildPlanProduct(monthlyPackage, 'monthly'),
+        });
+      } catch (e) {
+        console.warn('[RevenueCat] Failed to load localized products:', e);
+      } finally {
+        if (alive) setStoreLoading(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const handleSubscribe = async () => {
@@ -118,9 +150,7 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
   const annualProduct = storeProducts.annual;
   const monthlyProduct = storeProducts.monthly;
   const annualPrice = annualProduct?.displayPrice ?? '$4.99';
-  const annualSub = annualProduct
-    ? `${annualProduct.displayPrice} billed yearly`
-    : '$59.99 billed yearly';
+  const annualSub = annualProduct?.billedText ?? '$59.99 billed yearly';
   const monthlyPrice = monthlyProduct?.displayPrice ?? '$12.99';
 
   return (
@@ -297,6 +327,46 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
     </SafeAreaView>
     </ScreenEnterAnimation>
   );
+}
+
+function buildPlanProduct(pkg: any, plan: Plan): PlanProduct {
+  const product = pkg?.product;
+  if (!product) return null;
+
+  const localizedPrice = product.priceString ?? product.localizedPrice;
+  const yearlyPrice = typeof product.price === 'number' ? product.price : null;
+  const currencyCode = product.currencyCode;
+
+  if (plan === 'annual') {
+    return {
+      id: product.identifier,
+      currentPlanId: pkg.identifier,
+      displayPrice:
+        yearlyPrice != null && currencyCode
+          ? formatCurrency(yearlyPrice / 12, currencyCode)
+          : localizedPrice ?? '$4.99',
+      billedText: `${localizedPrice ?? '$59.99'} billed yearly`,
+    };
+  }
+
+  return {
+    id: product.identifier,
+    currentPlanId: pkg.identifier,
+    displayPrice: localizedPrice ?? '$12.99',
+    billedText: 'Billed monthly',
+  };
+}
+
+function formatCurrency(amount: number, currencyCode: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currencyCode,
+      maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    }).format(amount);
+  } catch {
+    return `${currencyCode} ${amount.toFixed(2)}`;
+  }
 }
 
 function makeStyles(C: AppColors) {

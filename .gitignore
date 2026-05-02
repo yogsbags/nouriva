@@ -48,17 +48,24 @@ mcp-server.log
 /ios
 /android
 google-service-account.json
+credentials.json
 
 # build artifacts
 *.apk
 *.aab
+*.ipa
 scratch/
 app_store_screenshots/
+app_store_screenshot.png
+build-ios-manual-*/
 
 # Android Play upload signing (when android/ is tracked)
 android/keystore.properties
 **/keystore.properties
 !**/keystore.properties.example
+
+# Editor / tooling bundles dropped in repo root by mistake
+/*.plugin
 
 # Test and marketing artifacts
 test-*.json

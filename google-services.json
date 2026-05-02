@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "311592013058-1bm8n6otf9c95s1qu32925kbfikvrp3p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.productverse.nourivaai",
+            "certificate_hash": "4197b191cdda75822633a346f30dea6bf663eaf7"
+          }
+        },
+        {
           "client_id": "311592013058-52k7ldjs5nuf15o2c3hqs3gp4kfqbtib.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

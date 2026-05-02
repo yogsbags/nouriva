@@ -1,7 +1,22 @@
 import { getCachedFoodTextAnalysis, setCachedFoodTextAnalysis } from './analysisCache';
 import { isAnalysisResultActionable } from './analysisResult';
+import { getGeminiApiKeys, isRetryableQuotaOrRateLimit } from './geminiApiKeys';
 
-const TEXT_ANALYSIS_PROMPT_VERSION = 'meal-text-analysis-v1';
+const TEXT_ANALYSIS_PROMPT_VERSION = 'meal-text-analysis-v3';
+
+/** Override with EXPO_PUBLIC_GEMINI_FLASH_MODEL (e.g. gemini-2.0-flash). */
+const DEFAULT_GEMINI_FLASH_MODEL = 'gemini-3-flash-preview';
+
+const GEMINI_FLASH_MODEL_ID =
+  (process.env.EXPO_PUBLIC_GEMINI_FLASH_MODEL ?? '').trim() || DEFAULT_GEMINI_FLASH_MODEL;
+
+const GEMINI_FLASH_GENERATE_URL = `https://generativelanguage.googleapis.com/v1alpha/models/${encodeURIComponent(
+  GEMINI_FLASH_MODEL_ID
+)}:generateContent`;
+
+function geminiUrlWithKey(apiKey: string): string {
+  return `${GEMINI_FLASH_GENERATE_URL}?key=${encodeURIComponent(apiKey)}`;
+}
 
 /** Fixed “System Pillar” rows: pillar name + which organ/system the `organ` field must draw from (one primary per row). */
 const SYSTEMIC_PILLARS_JSON_SPEC = `
@@ -12,6 +27,21 @@ SYSTEM PILLARS (required): "systemicData" MUST be an array of EXACTLY 6 objects,
 4. { "pillar": "Digestive", "organ": "Gut Microbiome", "score": "X.X/10", "title": "...", "desc": "..." } — scope: Gut Microbiome
 5. { "pillar": "Cardiovascular", "organ": "Heart/Vessels", "score": "X.X/10", "title": "...", "desc": "..." } — scope: Heart/Vessels
 6. { "pillar": "Immunological", "organ": "Immune System/Spleen", "score": "X.X/10", "title": "...", "desc": "..." } — scope: Immune system
+`;
+
+/** Longevity pathway spec injected into both image and text prompts */
+const LONGEVITY_SPEC = `
+LONGEVITY ANALYSIS (required): Return a "longevityData" object assessing how this meal affects the molecular machinery of aging.
+- longevityScore: number from -10 (accelerates aging) to +10 (strongly anti-aging). 0 = neutral. Base on the net effect of all compounds.
+- dietaryAgeDelta: estimated years added (+) or removed (-) from biological age per meal. Typical range: -1.5 to +1.5. Be conservative.
+- nadPathway: one of "boost" | "neutral" | "deplete" — does this meal supply NAD+ precursors (niacin, NMN precursors in edamame/avocado/mushrooms)?
+- sirtuinActivators: array of specific compounds found (e.g. "resveratrol", "quercetin", "fisetin", "curcumin", "EGCG"). Empty array if none.
+- mTorStatus: one of "suppressed" | "neutral" | "activated" — high animal protein activates mTOR (pro-aging); caloric restriction/plant protein suppresses it.
+- autophagyInduction: one of "strong" | "mild" | "neutral" | "inhibited" — spermidine (wheat germ, mushrooms, soy), polyphenols, and low sugar induce autophagy.
+- inflammationIndex: 0.0–10.0 score. Higher = more inflammatory. Processed foods, refined carbs, omega-6 overload raise it. Turmeric, omega-3, polyphenols lower it.
+- telomereImpact: one of "protective" | "neutral" | "damaging" — omega-3s, antioxidants are protective; excess sugar, processed meat are damaging.
+- keyCompounds: array of up to 4 objects { "name": "compound name", "pathway": "which longevity pathway", "source": "which food in the meal" }
+- longevitySummary: one plain-English sentence summarising the net longevity impact of this meal. Max 25 words.
 `;
 
 const INCOMPLETE_MSG =
@@ -40,9 +70,19 @@ FIELD RULES:
 const MEAL_ANALYSIS_PERSONALIZATION = `
 PERSONALIZATION RULES (STRICT):
 - Use the "USER_BIOMETRIC_PROFILE" (if provided) as the absolute primary filter for all scores.
-- A meal that is "healthy" for a standard baseline may be "risky" for someone with specific markers.
-- ADJUST SCORES: If the user has markers for insulin resistance, pregnancy, or high athletic demand, you MUST adjust Metabolic and Organ scores accordingly. (e.g. A high-carb meal for an athlete might score 9/10 Metabolic, but for someone with insulin resistance markers it must score < 5/10).
-- TAILOR ADVICE: Ensure "balancerSuggestions" and "alerts" directly reference the user's physiological needs (e.g. "To support your higher electrolyte turnover as an athlete..." or "To blunt the glucose response given your current metabolic markers...").
+- Treat selected conditions, free-text profile notes, and uploaded-report markers as equally valid user context. Do not ignore free-text notes because they are not from a predefined catalog.
+- Infer clinically relevant nutrition implications from the user's context using general nutrition and physiology knowledge: nutrient needs, absorption blockers/enhancers, medication or lab-marker considerations, likely symptom triggers, and organ/system vulnerabilities.
+- A food that is "healthy" for a standard baseline may be neutral or risky for a specific profile; adjust scores whenever the scanned food has a meaningful interaction with the user's context.
+- If the user context changes whether this food is suitable, reflect that in Metabolic/Systemic scores, Organ scores, alerts, and balancerSuggestions. If the food is broadly beneficial but has a profile-specific limitation, keep a balanced score and explicitly explain the limitation.
+- PERSONALIZED OUTPUT VISIBILITY: When USER_BIOMETRIC_PROFILE is provided from selected conditions or free-text profile notes, at least 4 of the 6 "systemicData" descriptions and at least 3 "organData" drivers must visibly connect the meal to that profile context. Use natural phrasing such as "for your noted ...", "given your profile note about ...", or "with this condition in mind" when appropriate. Do not make the output feel like a generic healthy-adult analysis.
+- If USER_BIOMETRIC_PROFILE is NOT provided, keep the output generic for a standard healthy adult and do not pretend to personalize.
+- TAILOR ADVICE: Ensure "balancerSuggestions" and "alerts" directly reference the relevant user context in plain language when profile context is provided, without overdiagnosing or inventing conditions not supplied by the user.
+- If the meal has no meaningful interaction with the user's context, say that briefly in the relevant descriptions rather than forcing a warning.
+- Examples are illustrative, not exhaustive:
+  - If the user context implies impaired nutrient absorption or higher micronutrient needs, evaluate whether this food improves, blocks, or requires pairing for relevant nutrients.
+  - If the user context implies glucose sensitivity or metabolic stress, adjust glycemic scoring using carbohydrates, fiber, fats, protein, and portion size.
+  - If the user context implies high activity, recovery needs, or pregnancy/lactation, consider calories, protein quality, electrolytes, hydration, and micronutrient density.
+  - If the user context implies cardiovascular, kidney, digestive, inflammatory, immune, or neurological vulnerability, evaluate the relevant food factors such as sodium, potassium, saturated fat, fiber, acidity, allergens, histamine-like triggers, antioxidants, and hydration load.
 `;
 
 const MEAL_ANALYSIS_CORE_STEPS = `
@@ -52,17 +92,14 @@ const MEAL_ANALYSIS_CORE_STEPS = `
 `;
 
 export async function analyzeFoodImage(images: string[], medicalConditions: string[] = []): Promise<any> {
-  const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-
-  if (!GEMINI_API_KEY) {
+  const keys = getGeminiApiKeys();
+  if (!keys.length) {
     throw new Error('Gemini API key is not configured.');
   }
 
   const profileContext = medicalConditions.some(c => c && c.trim().length > 0)
     ? `USER_BIOMETRIC_PROFILE: ${medicalConditions.join('. ')}`
     : 'INSTRUCTION: Standard healthy adult baseline.';
-
-  const url = `https://generativelanguage.googleapis.com/v1alpha/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
 
   console.log(`--- MEAL ANALYSIS (${images.length} frames) ---`);
   const _t0 = Date.now();
@@ -87,6 +124,7 @@ ${MEAL_ANALYSIS_VOICE}
 ${MEAL_ANALYSIS_FIELD_RULES}
 ${MEAL_ANALYSIS_PERSONALIZATION}
 ${SYSTEMIC_PILLARS_JSON_SPEC}
+${LONGEVITY_SPEC}
 - NEVER generic balancer lines: each must name a specific food or compound with amount, timing, and a distinct mechanism/pathway.
 
 Return JSON:
@@ -111,6 +149,18 @@ Return JSON:
     }
   ],
   "glucoseData": { "gi": 55, "gl": 12, "fiberG": 3.5, "profile": "moderate", "insulinDemand": "moderate" },
+  "longevityData": {
+    "longevityScore": 3.5,
+    "dietaryAgeDelta": -0.3,
+    "nadPathway": "boost",
+    "sirtuinActivators": ["resveratrol"],
+    "mTorStatus": "neutral",
+    "autophagyInduction": "mild",
+    "inflammationIndex": 4.0,
+    "telomereImpact": "neutral",
+    "keyCompounds": [{ "name": "Resveratrol", "pathway": "SIRT1 activation", "source": "grape skin" }],
+    "longevitySummary": "One plain-English sentence on net aging impact, max 25 words."
+  },
   "refs": [ { "title": "Source", "desc": "Fact", "url": "URL" } ],
   "vision": [ { "label": "Detected Component", "box_2d": [100, 100, 900, 900] } ]
 }`
@@ -125,48 +175,60 @@ Return JSON:
     }
   };
 
-  let response: Response;
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s for image analysis
+  let data: Record<string, unknown> = {};
 
-    response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (e: any) {
+  keyAttempt: for (let ki = 0; ki < keys.length; ki++) {
+    const url = geminiUrlWithKey(keys[ki]!);
+    let response: Response;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s for image analysis
+
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (e: any) {
+      console.log(`Latency: ${Date.now() - _t0}ms`);
+      return {
+        analysisIncomplete: true,
+        analysisError: e?.name === 'AbortError'
+          ? 'Analysis timed out. Try a smaller or clearer photo.'
+          : (e?.message ? `Network error: ${e.message}` : 'Could not reach the analysis service. Check your connection.'),
+      };
+    }
+
     console.log(`Latency: ${Date.now() - _t0}ms`);
-    return {
-      analysisIncomplete: true,
-      analysisError: e?.name === 'AbortError'
-        ? 'Analysis timed out. Try a smaller or clearer photo.'
-        : (e?.message ? `Network error: ${e.message}` : 'Could not reach the analysis service. Check your connection.'),
-    };
+    data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+
+    if (!response.ok) {
+      if (isRetryableQuotaOrRateLimit(response.status, data) && ki < keys.length - 1) {
+        console.warn('[Gemini] Meal image analysis rate limited; retrying with fallback API key.');
+        continue keyAttempt;
+      }
+      const msg =
+        (data as any)?.error?.message ||
+        (data as any)?.error?.status ||
+        `Analysis request failed (${response.status})`;
+      return { analysisIncomplete: true, analysisError: String(msg) };
+    }
+    break keyAttempt;
   }
 
-  console.log(`Latency: ${Date.now() - _t0}ms`);
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const msg =
-      (data as any)?.error?.message ||
-      (data as any)?.error?.status ||
-      `Analysis request failed (${response.status})`;
-    return { analysisIncomplete: true, analysisError: String(msg) };
-  }
-
-  const contentText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const contentText = (data as any).candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!contentText) {
-    const blockReason = data.promptFeedback?.blockReason || data.candidates?.[0]?.finishReason;
-    const msg = blockReason
-      ? `Could not analyse this image (${blockReason}). Try a different photo.`
-      : 'No analysis returned. Try again.';
-    console.error('Gemini: empty content', data);
-    return { analysisIncomplete: true, analysisError: msg };
+    const blockReason =
+      (data as any).promptFeedback?.blockReason || (data as any).candidates?.[0]?.finishReason;
+    if (blockReason) {
+      console.warn('[Gemini] empty or blocked content (reason in logs only; not shown to user)', blockReason);
+    } else {
+      console.error('Gemini: empty content', data);
+    }
+    return { analysisIncomplete: true, analysisError: INCOMPLETE_MSG };
   }
 
   let parsed: Record<string, unknown>;
@@ -192,8 +254,8 @@ Return JSON:
 }
 
 export async function analyzeFoodText(text: string, medicalConditions: string[] = []): Promise<any> {
-  const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-  if (!GEMINI_API_KEY) throw new Error('Gemini API key is not configured.');
+  const keys = getGeminiApiKeys();
+  if (!keys.length) throw new Error('Gemini API key is not configured.');
 
   const cached = await getCachedFoodTextAnalysis(text, medicalConditions, TEXT_ANALYSIS_PROMPT_VERSION);
   if (cached) {
@@ -204,8 +266,6 @@ export async function analyzeFoodText(text: string, medicalConditions: string[] 
   const profileContext = medicalConditions.some(c => c && c.trim().length > 0)
     ? `USER_BIOMETRIC_PROFILE: ${medicalConditions.join('. ')}`
     : 'INSTRUCTION: Standard healthy adult baseline.';
-
-  const url = `https://generativelanguage.googleapis.com/v1alpha/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
 
   console.log(`--- TEXT MEAL ANALYSIS START: ${text} ---`);
 
@@ -219,6 +279,7 @@ ${MEAL_ANALYSIS_VOICE}
 ${MEAL_ANALYSIS_FIELD_RULES}
 ${MEAL_ANALYSIS_PERSONALIZATION}
 ${SYSTEMIC_PILLARS_JSON_SPEC}
+${LONGEVITY_SPEC}
 - NEVER generic balancer lines: each must name a specific food or compound with amount, timing, and a distinct mechanism/pathway.
 
 Return JSON:
@@ -243,6 +304,18 @@ Return JSON:
     }
   ],
   "glucoseData": { "gi": 55, "gl": 12, "fiberG": 3.5, "profile": "moderate", "insulinDemand": "moderate" },
+  "longevityData": {
+    "longevityScore": 3.5,
+    "dietaryAgeDelta": -0.3,
+    "nadPathway": "boost",
+    "sirtuinActivators": ["resveratrol"],
+    "mTorStatus": "neutral",
+    "autophagyInduction": "mild",
+    "inflammationIndex": 4.0,
+    "telomereImpact": "neutral",
+    "keyCompounds": [{ "name": "Resveratrol", "pathway": "SIRT1 activation", "source": "grape skin" }],
+    "longevitySummary": "One plain-English sentence on net aging impact, max 25 words."
+  },
   "refs": [ { "title": "Source", "desc": "Fact", "url": "URL" } ]
 }`
       }]
@@ -253,35 +326,45 @@ Return JSON:
     }
   };
 
-  let response: Response;
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+  let data: Record<string, unknown> = {};
 
-    response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-  } catch (e: any) {
-    return {
-      analysisIncomplete: true,
-      analysisError: e?.name === 'AbortError'
-        ? 'Analysis timed out. Please check your connection and try again.'
-        : (e?.message ? `Network error: ${e.message}` : 'Could not reach the analysis service.'),
-    };
+  keyAttempt: for (let ki = 0; ki < keys.length; ki++) {
+    const url = geminiUrlWithKey(keys[ki]!);
+    let response: Response;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+      response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+    } catch (e: any) {
+      return {
+        analysisIncomplete: true,
+        analysisError: e?.name === 'AbortError'
+          ? 'Analysis timed out. Please check your connection and try again.'
+          : (e?.message ? `Network error: ${e.message}` : 'Could not reach the analysis service.'),
+      };
+    }
+
+    data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+
+    if (!response.ok) {
+      if (isRetryableQuotaOrRateLimit(response.status, data) && ki < keys.length - 1) {
+        console.warn('[Gemini] Text meal analysis rate limited; retrying with fallback API key.');
+        continue keyAttempt;
+      }
+      const msg = (data as any)?.error?.message || `Analysis request failed (${response.status})`;
+      return { analysisIncomplete: true, analysisError: String(msg) };
+    }
+    break keyAttempt;
   }
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const msg = (data as any)?.error?.message || `Analysis request failed (${response.status})`;
-    return { analysisIncomplete: true, analysisError: String(msg) };
-  }
-
-  const contentText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const contentText = (data as any).candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!contentText) {
     console.error('Gemini Error: No content returned', data);

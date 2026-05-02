@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { clearBiometricLoginSnapshot } from './biometricLogin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
 /**
  * When refresh fails (revoked session, old install, or changed Supabase project),
@@ -8,6 +9,9 @@ import { clearBiometricLoginSnapshot } from './biometricLogin';
 export async function signOutCompletely(): Promise<void> {
   try {
     await clearBiometricLoginSnapshot();
+    await GoogleSignin.signOut().catch(() => {
+      // The user may not have used Google Sign-In in this install.
+    });
   } finally {
     await supabase.auth.signOut();
   }

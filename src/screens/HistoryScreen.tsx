@@ -104,12 +104,32 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
   }, []);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [manualAnalysisProgress, setManualAnalysisProgress] = useState(0);
   const [organDropdownVisible, setOrganDropdownVisible] = useState(false);
   const [trendFilter, setTrendFilter] = useState('Overall');
   const [trendDropdownOpen, setTrendDropdownOpen] = useState(false);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [sharingImage, setSharingImage] = useState(false);
   const shareCardRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setManualAnalysisProgress(0);
+      return;
+    }
+
+    setManualAnalysisProgress(8);
+    const id = setInterval(() => {
+      setManualAnalysisProgress((current) => {
+        if (current < 55) return current + 7;
+        if (current < 82) return current + 4;
+        if (current < 94) return current + 2;
+        return current;
+      });
+    }, 450);
+
+    return () => clearInterval(id);
+  }, [isAnalyzing]);
 
   const handleManualAdd = async () => {
     if (!manualFoodName.trim() || isAnalyzing) return;
@@ -160,6 +180,7 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
           balancerSuggestions: analysis.balancerSuggestions,
           biochemicals: analysis.biochemicals,
           refs: analysis.refs,
+          longevityData: analysis.longevityData,
         }
       );
 
@@ -743,6 +764,7 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
 
   const handleMealPress = (item: FoodLog) => {
     Haptics.selectionAsync();
+    const imageUri = item.image_url || (item.image_base64 ? `data:image/jpeg;base64,${item.image_base64}` : undefined);
     // Reconstruct FoodScanResult from stored FoodLog fields
     const result = {
       foodName: item.food_name,
@@ -753,10 +775,12 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
       balancerSuggestions: item.balancer_suggestions,
       biochemicals: item.biochemicals,
       refs: item.refs,
+      longevityData: item.longevity_data,
     };
     navigateFromTabs(navigation, 'Results', {
       result,
-      originalImage: item.image_base64 ?? null,
+      originalImage: item.image_base64 ?? undefined,
+      originalImageUri: imageUri,
       isPersonalized: false,
       isReplay: true,
     });
@@ -766,6 +790,7 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
     const date = new Date(item.created_at);
     const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const scoreColor = getScoreColor(item.vitality_score);
+    const imageUri = item.image_url || (item.image_base64 ? `data:image/jpeg;base64,${item.image_base64}` : undefined);
     return (
       <TouchableOpacity
         style={styles.logCard}
@@ -773,8 +798,8 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
         activeOpacity={0.75}
       >
         <View style={styles.logImageContainer}>
-          {item.image_base64 ? (
-            <Image source={{ uri: `data:image/jpeg;base64,${item.image_base64}` }} style={styles.logImage} />
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.logImage} />
           ) : (
             <View style={styles.placeholderImage}><HistoryIcon size={20} weight="bold" color={C.textTertiary} /></View>
           )}
@@ -1156,7 +1181,10 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
                 disabled={!manualFoodName.trim() || isAnalyzing}
               >
                 {isAnalyzing ? (
-                  <ActivityIndicator color="#FFF" />
+                  <View style={styles.saveBtnLoadingContent}>
+                    <ActivityIndicator color="#FFF" size="small" />
+                    <Text style={styles.saveBtnText}>Analyzing {manualAnalysisProgress}%</Text>
+                  </View>
                 ) : (
                   <Text style={styles.saveBtnText}>Analyze & Log Meal</Text>
                 )}
@@ -1574,6 +1602,7 @@ function makeStyles(C: AppColors) {
       marginTop: 10,
       marginBottom: 30,
     },
+    saveBtnLoadingContent: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
     saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
     aiNotice: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.primaryMuted, padding: 12, borderRadius: 12, marginBottom: 20 },
     aiNoticeText: { fontSize: 12, color: C.primary, fontWeight: '600', flex: 1 },

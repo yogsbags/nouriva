@@ -6,10 +6,10 @@ import {
   copyAsync,
   deleteAsync,
   getInfoAsync,
-  readAsStringAsync,
 } from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserId, saveUserProfile } from './userProfile';
+import { supabase } from './supabase';
 
 const LOCAL_URI_KEY = 'profile_avatar_local_uri';
 /** Backup when DB `avatar_url` column is missing or upsert fails — still show photo across restarts */
@@ -77,11 +77,22 @@ export async function uploadAvatarToCloud(localUri: string): Promise<UploadAvata
   const userId = await getUserId();
   if (!userId) return { url: null, error: 'Not signed in' };
   try {
-    const base64 = await readAsStringAsync(localUri, { encoding: 'base64' });
-    const dataUri = `data:image/jpeg;base64,${base64}`;
-    await AsyncStorage.setItem(REMOTE_URL_CACHE_KEY, dataUri);
-    await saveUserProfile({ avatar_url: dataUri });
-    return { url: dataUri, error: null };
+    const response = await fetch(localUri);
+    const blob = await response.blob();
+    const path = `avatars/${userId}/profile.jpg`;
+
+    const { error } = await supabase.storage
+      .from('food-scans')
+      .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+
+    if (error) return { url: null, error: error.message };
+
+    const { data } = supabase.storage.from('food-scans').getPublicUrl(path);
+    const publicUrl = `${data.publicUrl}?v=${Date.now()}`;
+
+    await AsyncStorage.setItem(REMOTE_URL_CACHE_KEY, publicUrl);
+    await saveUserProfile({ avatar_url: publicUrl });
+    return { url: publicUrl, error: null };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Upload failed';
     console.error('uploadAvatarToCloud', e);
@@ -98,6 +109,10 @@ export async function removeAvatarEverywhere(): Promise<void> {
     await AsyncStorage.removeItem(LOCAL_URI_KEY);
     await AsyncStorage.removeItem(REMOTE_URL_CACHE_KEY);
     await saveUserProfile({ avatar_url: '' });
+    const userId = await getUserId();
+    if (userId) {
+      await supabase.storage.from('food-scans').remove([`avatars/${userId}/profile.jpg`]).catch(() => {});
+    }
   } catch (e) {
     console.error('removeAvatarEverywhere', e);
   }

@@ -48,6 +48,26 @@ export default function ScannerScreen({ navigation }: any) {
   const [manualFoodName, setManualFoodName] = useState('');
   const [manualQuantity, setManualQuantity] = useState('1 serving');
   const [isAnalyzingManual, setIsAnalyzingManual] = useState(false);
+  const [manualAnalysisProgress, setManualAnalysisProgress] = useState(0);
+
+  useEffect(() => {
+    if (!isAnalyzingManual) {
+      setManualAnalysisProgress(0);
+      return;
+    }
+
+    setManualAnalysisProgress(8);
+    const id = setInterval(() => {
+      setManualAnalysisProgress((current) => {
+        if (current < 55) return current + 7;
+        if (current < 82) return current + 4;
+        if (current < 94) return current + 2;
+        return current;
+      });
+    }, 450);
+
+    return () => clearInterval(id);
+  }, [isAnalyzingManual]);
 
   const handleManualLog = async () => {
     if (!manualFoodName.trim() || isAnalyzingManual) return;
@@ -101,10 +121,10 @@ export default function ScannerScreen({ navigation }: any) {
         if (conditions) {
           try {
             const parsed = JSON.parse(conditions);
-            if (Array.isArray(parsed)) profileContext = [...parsed];
+            if (Array.isArray(parsed)) profileContext = parsed.map((condition) => `SELECTED_CONDITION: ${condition}`);
           } catch (e) { console.warn('Manual Log: Conditions parse error', e); }
         }
-        if (bio) profileContext.push(bio);
+        if (bio) profileContext.push(`FREE_TEXT_PROFILE_NOTES: ${bio}`);
         if (insights) profileContext.push(`AUTO_EXTRACTED_FROM_MEDICAL_REPORTS: ${insights}`);
       }
       const fullText = `${manualQuantity} of ${manualFoodName}`;
@@ -301,9 +321,9 @@ export default function ScannerScreen({ navigation }: any) {
             ]);
             if (storedConditions) {
               const parsed = JSON.parse(storedConditions);
-              if (Array.isArray(parsed)) profileContext = [...parsed];
+              if (Array.isArray(parsed)) profileContext = parsed.map((condition) => `SELECTED_CONDITION: ${condition}`);
             }
-            if (storedBio) profileContext.push(storedBio);
+            if (storedBio) profileContext.push(`FREE_TEXT_PROFILE_NOTES: ${storedBio}`);
             if (storedInsights) profileContext.push(`AUTO_EXTRACTED_FROM_MEDICAL_REPORTS: ${storedInsights}`);
           }
         } catch (e) { console.error('Profile Context Error:', e); }
@@ -315,7 +335,7 @@ export default function ScannerScreen({ navigation }: any) {
         await new Promise(r => setTimeout(r, 420));
         navigateFromTabs(navigation, 'Results', {
           result: analysisResult,
-          originalImage: manipResult.base64,
+          originalImageUri: manipResult.uri,
           isPersonalized: profileContext.length > 0,
         });
       }
@@ -479,7 +499,14 @@ export default function ScannerScreen({ navigation }: any) {
                 onPress={handleManualLog}
                 disabled={!manualFoodName.trim() || isAnalyzingManual}
               >
-                {isAnalyzingManual ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveBtnText}>Analyze & View Results</Text>}
+                {isAnalyzingManual ? (
+                  <View style={styles.saveBtnLoadingContent}>
+                    <ActivityIndicator color="#FFF" size="small" />
+                    <Text style={styles.saveBtnText}>Analyzing {manualAnalysisProgress}%</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.saveBtnText}>Analyze & View Results</Text>
+                )}
               </TouchableOpacity>
             </ScrollView>
           </KeyboardAvoidingView>
@@ -506,7 +533,7 @@ function makeStyles(C: AppColors) {
     permissionTitle: {
       fontSize: 22,
       fontWeight: '800',
-      color: '#FFF',
+      color: C.textPrimary,
       marginBottom: 12,
       textAlign: 'center',
     },
@@ -933,6 +960,12 @@ function makeStyles(C: AppColors) {
       padding: 16,
       alignItems: 'center',
       marginTop: 20,
+    },
+    saveBtnLoadingContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
     },
     saveBtnText: {
       color: C.textOnPrimary,

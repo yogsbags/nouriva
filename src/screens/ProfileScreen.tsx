@@ -66,6 +66,7 @@ import {
 import { generateAndShareWeeklyReport } from '../utils/weeklyReport';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
+import * as Haptics from 'expo-haptics';
 import {
   getStoredAvatarUri,
   getCachedRemoteAvatarUrl,
@@ -78,6 +79,7 @@ import {
 } from '../utils/profileAvatar';
 import * as Linking from 'expo-linking';
 import { clearBiometricLoginSnapshot } from '../utils/biometricLogin';
+import { signOutCompletely } from '../utils/authRecovery';
 import { navigateFromTabs } from '../navigation/rootNavigation';
 import { requestHealthPermissions, fetchLatestWeightKg, getHealthDebugInfo } from '../utils/health';
 import {
@@ -92,6 +94,8 @@ import {
   type Sex,
   type MetabolicInputs,
 } from '../utils/tdee';
+import { computeDietaryAge, buildLongevityShareMessage, type DietaryAgeResult } from '../utils/longevity';
+import DietaryAgeCard from '../components/DietaryAgeCard';
 
 interface ProfileScreenProps {
   navigation: any;
@@ -132,6 +136,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   /** True after cache read and fresh load — avoids placeholder name/email/stats flash. */
   const [headerHydrated, setHeaderHydrated] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [healthSyncBusy, setHealthSyncBusy] = useState(false);
   const [healthConnected, setHealthConnected] = useState(false);
@@ -143,6 +148,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const [tdeeWeightKg, setTdeeWeightKg] = useState('75');
   const [tdeeActivity, setTdeeActivity] = useState<ActivityKey>('moderate');
   const [tdeeGoal, setTdeeGoal] = useState<CalorieGoalMode>('mild_loss');
+  const [dietaryAgeResult, setDietaryAgeResult] = useState<DietaryAgeResult | null>(null);
 
   const tdeeWeightKgNumber = useMemo(() => {
     const w = parseFloat(String(tdeeWeightKg).replace(',', '.'));
@@ -200,6 +206,10 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     }, [])
   );
 
+  useEffect(() => {
+    setAvatarLoadFailed(false);
+  }, [avatarUri]);
+
   const loadProfileData = async () => {
     // Device preferences (notif, biometrics) stay in SecureStore only
     try {
@@ -211,6 +221,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       if (bioPref !== null) setBiometricsEnabled(bioPref === 'true');
     } catch (e) { console.error(e); }
 
+    let resolvedAge = 30; // fallback
     try {
       const rawMeta = await SecureStore.getItemAsync(METABOLIC_INPUTS_KEY);
       if (rawMeta) {
@@ -222,11 +233,17 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           setTdeeWeightKg(String(p.weightKg));
           setTdeeActivity(p.activity);
           setTdeeGoal(p.calorieGoal);
+          const parsed = typeof p.ageYears === 'number' ? p.ageYears : parseInt(String(p.ageYears), 10);
+          if (Number.isFinite(parsed) && parsed > 0) resolvedAge = parsed;
         }
       }
     } catch {
       /* ignore */
     }
+    // Always attempt dietary age computation — shows teaser if no longevity scans yet
+    computeDietaryAge(resolvedAge).then((result) => {
+      if (result) setDietaryAgeResult(result);
+    }).catch(() => { /* non-fatal */ });
 
     // Load profile + subscription flags: prefer Supabase, fall back to SecureStore cache
     try {
@@ -559,6 +576,17 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
 
   const shareAppUrl = process.env.EXPO_PUBLIC_APP_SHARE_URL || 'https://productverse.in';
 
+  const handleShareLongevity = useCallback(() => {
+    if (!dietaryAgeResult) return;
+    void Haptics.selectionAsync();
+    const message = buildLongevityShareMessage(dietaryAgeResult, { appUrl: shareAppUrl });
+    const payload =
+      Platform.OS === 'ios'
+        ? { message }
+        : { message, title: 'Nouriva AI · Longevity' };
+    void Share.share(payload);
+  }, [dietaryAgeResult, shareAppUrl]);
+
   const handleShareApp = () => {
     const line =
       'Check out Nouriva AI — deep meal scans, organ-level insights, and personalised recovery ideas.';
@@ -581,7 +609,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           `${error}\n\nYour photo is saved on this device. Check your connection, Supabase Storage (food-scans bucket), and that user_profiles has an avatar_url column.`,
         );
       } else if (url) {
-        setAvatarUri(url);
+        void setCachedRemoteAvatarUrl(url);
       }
     } finally {
       setAvatarSaving(false);
@@ -657,7 +685,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           await clearBiometricLoginSnapshot();
           setAvatarUri(null);
           await clearProfileHeaderCache();
-          await supabase.auth.signOut();
+          await signOutCompletely();
         }
       },
     ]);
@@ -687,7 +715,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               await clearBiometricLoginSnapshot();
               setAvatarUri(null);
               await clearProfileHeaderCache();
-              await supabase.auth.signOut();
+              await signOutCompletely();
               
               Alert.alert('Account Deleted', 'Your data has been removed and you have been signed out.');
             } catch (e: any) {
@@ -725,8 +753,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             accessibilityLabel="Edit profile photo"
           >
             <View style={styles.avatar}>
-              {avatarUri ? (
-                <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+              {avatarUri && !avatarLoadFailed ? (
+                <Image
+                  source={{ uri: avatarUri }}
+                  style={styles.avatarImage}
+                  onError={() => setAvatarLoadFailed(true)}
+                />
               ) : (
                 <User size={40} weight="duotone" color={C.primary} />
               )}
@@ -789,6 +821,31 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
                 ))}
               </View>
             </>
+          )}
+        </View>
+
+        {/* Dietary Biological Age card */}
+        <View style={{ marginHorizontal: 16, marginTop: 14 }}>
+          {dietaryAgeResult ? (
+            <DietaryAgeCard result={dietaryAgeResult} onSharePress={handleShareLongevity} />
+          ) : (
+            <View style={{
+              backgroundColor: C.surface, borderRadius: 24, padding: 20,
+              borderWidth: 1, borderColor: C.border,
+              shadowColor: C.shadowColor, shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.06, shadowRadius: 16,
+              alignItems: 'center', gap: 8,
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginBottom: 4 }}>
+                <Dna size={14} color={C.primary} weight="fill" />
+                <Text style={{ fontSize: 12, fontWeight: '800', color: C.textTertiary, textTransform: 'uppercase', letterSpacing: 0.8 }}>Dietary Biological Age</Text>
+              </View>
+              <Dna size={36} color={C.primary + '40'} weight="duotone" />
+              <Text style={{ fontSize: 15, fontWeight: '800', color: C.textPrimary, textAlign: 'center' }}>Start scanning meals</Text>
+              <Text style={{ fontSize: 13, color: C.textTertiary, textAlign: 'center', lineHeight: 19, fontWeight: '500' }}>
+                Scan your food to reveal your dietary biological age — based on NAD⁺, sirtuins, mTOR, autophagy & inflammation across your last 30 days.
+              </Text>
+            </View>
           )}
         </View>
 

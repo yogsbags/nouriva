@@ -12,9 +12,13 @@ type Variant = 'fade' | 'fadeDown';
 export function ScreenEnterAnimation({
   children,
   variant = 'fadeDown',
+  delayMs = 0,
+  durationMs = DURATION_MS,
 }: {
   children: React.ReactNode;
   variant?: Variant;
+  delayMs?: number;
+  durationMs?: number;
 }) {
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -30,8 +34,8 @@ export function ScreenEnterAnimation({
 
   const entering =
     variant === 'fade'
-      ? FadeIn.duration(DURATION_MS)
-      : FadeInDown.duration(DURATION_MS);
+      ? FadeIn.duration(durationMs).delay(delayMs)
+      : FadeInDown.duration(durationMs).delay(delayMs);
 
   return (
     <Animated.View entering={entering} style={{ flex: 1 }} pointerEvents="box-none">

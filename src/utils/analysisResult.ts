@@ -25,12 +25,10 @@ export function isAnalysisIncomplete(result: unknown): boolean {
   return !isAnalysisResultActionable(result);
 }
 
-export function getAnalysisFailureMessage(result: unknown): string {
-  if (!result || typeof result !== 'object') {
-    return 'Something went wrong. Try scanning again.';
-  }
-  const r = result as Record<string, unknown>;
-  if (typeof r.analysisError === 'string' && r.analysisError.trim()) return r.analysisError.trim();
-  if (typeof r.error === 'string' && r.error.trim()) return r.error.trim();
-  return 'We could not read this scan well enough to score it. Try better light, hold steady, and fill the frame with your food.';
+/** Copy for any failed scan. Never surface raw API errors, block reasons, or model safety strings. */
+export const ANALYSIS_FAILURE_USER_MESSAGE =
+  'Tap Re-scan to try again with good light, a steady shot, and your meal filling the frame.';
+
+export function getAnalysisFailureMessage(_result: unknown): string {
+  return ANALYSIS_FAILURE_USER_MESSAGE;
 }
