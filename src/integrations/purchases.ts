@@ -8,12 +8,54 @@ const IOS_API_KEY = 'appl_uXWKxIPvlyFfCQBmXbXOwONFlBQ';
 const ANDROID_API_KEY = 'goog_HBLkBgTamZlEzkgFQVuVXuIErtZ';
 const ENTITLEMENT_ID = 'Nouriva AI Pro';
 
+let revenueCatLogHandlerInstalled = false;
+
+/** Downgrade expected “no Play Store / emulator” billing noise so LogBox doesn’t show a red error. */
+function installRevenueCatLogHandler() {
+  if (revenueCatLogHandlerInstalled || Platform.OS === 'web') return;
+  revenueCatLogHandlerInstalled = true;
+  Purchases.setLogHandler((level, message) => {
+    const billingUnavailableAndroid =
+      Platform.OS === 'android' &&
+      __DEV__ &&
+      level === LOG_LEVEL.ERROR &&
+      (message.includes('BILLING_UNAVAILABLE') ||
+        message.includes('Billing is not available') ||
+        message.includes('Billing service unavailable') ||
+        message.includes('PurchaseNotAllowedError'));
+    if (billingUnavailableAndroid) {
+      console.warn(
+        '[RevenueCat] Google Play Billing is unavailable on this device (typical on emulators without Google Play). IAP will not work until you use a Play-enabled image or a real device.'
+      );
+      return;
+    }
+    switch (level) {
+      case LOG_LEVEL.VERBOSE:
+      case LOG_LEVEL.DEBUG:
+        console.debug(`[RevenueCat] ${message}`);
+        break;
+      case LOG_LEVEL.INFO:
+        console.info(`[RevenueCat] ${message}`);
+        break;
+      case LOG_LEVEL.WARN:
+        console.warn(`[RevenueCat] ${message}`);
+        break;
+      case LOG_LEVEL.ERROR:
+        console.error(`[RevenueCat] ${message}`);
+        break;
+      default:
+        console.log(`[RevenueCat] ${message}`);
+    }
+  });
+}
+
 /**
  * Ensure RC is configured — safe to call multiple times.
  * Configures without a userId if none is available (anonymous).
  */
 async function ensureConfigured(userId?: string): Promise<boolean> {
   if (Platform.OS === 'web') return false;
+  installRevenueCatLogHandler();
   try {
     const already = await Purchases.isConfigured();
     if (already) return true;
@@ -21,7 +63,7 @@ async function ensureConfigured(userId?: string): Promise<boolean> {
     // isConfigured can throw if native module isn't ready; fall through to configure
   }
   try {
-    Purchases.setLogLevel(LOG_LEVEL.VERBOSE);
+    Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.WARN : LOG_LEVEL.ERROR);
     const apiKey = Platform.OS === 'ios' ? IOS_API_KEY : ANDROID_API_KEY;
     Purchases.configure({ apiKey, appUserID: userId });
     return true;
