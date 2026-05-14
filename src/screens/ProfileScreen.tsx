@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -41,6 +41,7 @@ import {
   QuestionIcon as Question,
   LightningIcon as Lightning,
   DnaIcon as Dna,
+  BarbellIcon as Barbell,
   DropIcon as Drop,
   GrainsIcon as Grains,
   LockSimpleIcon as LockSimple,
@@ -51,7 +52,7 @@ import ClinicalSelector from '../components/ClinicalSelector';
 import * as DocumentPicker from 'expo-document-picker';
 import { analyzeMedicalReport } from '../utils/reports';
 import { useColors, useTheme, AppColors } from '../theme';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
 import { supabase } from '../utils/supabase';
 import { getFoodLogs } from '../utils/history';
@@ -89,17 +90,22 @@ import {
   METABOLIC_INPUTS_KEY,
   ACTIVITY_LABELS,
   GOAL_LABELS,
+  parseMetabolicInputs,
   type ActivityKey,
   type CalorieGoalMode,
   type Sex,
   type MetabolicInputs,
 } from '../utils/tdee';
-import { computeDietaryAge, buildLongevityShareMessage, type DietaryAgeResult } from '../utils/longevity';
+import { computeDietaryAge, type DietaryAgeResult } from '../utils/longevity';
 import DietaryAgeCard from '../components/DietaryAgeCard';
+import LongevityShareSheet from '../components/LongevityShareSheet';
 
 interface ProfileScreenProps {
   navigation: any;
 }
+
+/** Default age in Smart goals when metabolic inputs were never applied; must match dietary-age fallback in `loadProfileData`. */
+const DEFAULT_SMART_GOALS_AGE = 35;
 
 /** Vitality is scored /10; tie colors to the same bands used elsewhere in the app. */
 function colorForAvgVitality(avg: string, C: AppColors): string | undefined {
@@ -112,6 +118,9 @@ function colorForAvgVitality(avg: string, C: AppColors): string | undefined {
 }
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
+  const route = useRoute<any>();
+  const scrollRef = useRef<ScrollView>(null);
+  const personalizationAnchorY = useRef(0);
   const C = useColors();
   const { isDark, setThemeOverride, themeOverride } = useTheme();
   const styles = useMemo(() => makeStyles(C), [C]);
@@ -143,12 +152,13 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const [tdeeModalVisible, setTdeeModalVisible] = useState(false);
   const [tdeeWeightLoading, setTdeeWeightLoading] = useState(false);
   const [tdeeSex, setTdeeSex] = useState<Sex>('male');
-  const [tdeeAge, setTdeeAge] = useState('35');
+  const [tdeeAge, setTdeeAge] = useState(String(DEFAULT_SMART_GOALS_AGE));
   const [tdeeHeightCm, setTdeeHeightCm] = useState('175');
   const [tdeeWeightKg, setTdeeWeightKg] = useState('75');
   const [tdeeActivity, setTdeeActivity] = useState<ActivityKey>('moderate');
   const [tdeeGoal, setTdeeGoal] = useState<CalorieGoalMode>('mild_loss');
   const [dietaryAgeResult, setDietaryAgeResult] = useState<DietaryAgeResult | null>(null);
+  const [longevityShareVisible, setLongevityShareVisible] = useState(false);
 
   const tdeeWeightKgNumber = useMemo(() => {
     const w = parseFloat(String(tdeeWeightKg).replace(',', '.'));
@@ -179,6 +189,34 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     const stats = computeStatsFromLogs(logs);
     await writeProfileHeaderCache({ userName: name, userEmail: email, ...stats });
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.scrollToSection !== 'personalization') return undefined;
+      const t = setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          y: Math.max(0, personalizationAnchorY.current - 24),
+          animated: true,
+        });
+        navigation.setParams({ scrollToSection: undefined } as any);
+      }, 450);
+      return () => clearTimeout(t);
+    }, [route.params?.scrollToSection, navigation]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.scrollToSection !== 'personalization') return undefined;
+      const t = setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          y: Math.max(0, personalizationAnchorY.current - 24),
+          animated: true,
+        });
+        navigation.setParams({ scrollToSection: undefined } as any);
+      }, 480);
+      return () => clearTimeout(t);
+    }, [route.params?.scrollToSection, navigation]),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -221,33 +259,49 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       if (bioPref !== null) setBiometricsEnabled(bioPref === 'true');
     } catch (e) { console.error(e); }
 
-    let resolvedAge = 30; // fallback
+    let remote: Awaited<ReturnType<typeof loadUserProfile>> = null;
+    try {
+      remote = await loadUserProfile();
+    } catch (e) {
+      console.error(e);
+    }
+
+    let resolvedAge = DEFAULT_SMART_GOALS_AGE;
+    let localMeta: MetabolicInputs | null = null;
     try {
       const rawMeta = await SecureStore.getItemAsync(METABOLIC_INPUTS_KEY);
-      if (rawMeta) {
-        const p = JSON.parse(rawMeta) as MetabolicInputs;
-        if (p.sex && p.ageYears && p.heightCm && p.weightKg && p.activity && p.calorieGoal) {
-          setTdeeSex(p.sex);
-          setTdeeAge(String(p.ageYears));
-          setTdeeHeightCm(String(Math.round(p.heightCm)));
-          setTdeeWeightKg(String(p.weightKg));
-          setTdeeActivity(p.activity);
-          setTdeeGoal(p.calorieGoal);
-          const parsed = typeof p.ageYears === 'number' ? p.ageYears : parseInt(String(p.ageYears), 10);
-          if (Number.isFinite(parsed) && parsed > 0) resolvedAge = parsed;
-        }
-      }
+      if (rawMeta) localMeta = parseMetabolicInputs(JSON.parse(rawMeta));
     } catch {
       /* ignore */
     }
-    // Always attempt dietary age computation — shows teaser if no longevity scans yet
-    computeDietaryAge(resolvedAge).then((result) => {
-      if (result) setDietaryAgeResult(result);
-    }).catch(() => { /* non-fatal */ });
+    const remoteMeta = remote?.metabolic_inputs ? parseMetabolicInputs(remote.metabolic_inputs) : null;
+    const chosenMeta = remoteMeta ?? localMeta;
+    if (chosenMeta) {
+      setTdeeSex(chosenMeta.sex);
+      setTdeeAge(String(chosenMeta.ageYears));
+      setTdeeHeightCm(String(Math.round(chosenMeta.heightCm)));
+      setTdeeWeightKg(String(chosenMeta.weightKg));
+      setTdeeActivity(chosenMeta.activity);
+      setTdeeGoal(chosenMeta.calorieGoal);
+      if (Number.isFinite(chosenMeta.ageYears) && chosenMeta.ageYears > 0) {
+        resolvedAge = chosenMeta.ageYears;
+      }
+      if (remoteMeta) {
+        try {
+          await SecureStore.setItemAsync(METABOLIC_INPUTS_KEY, JSON.stringify(chosenMeta));
+        } catch {
+          /* ignore */
+        }
+      }
+    }
 
-    // Load profile + subscription flags: prefer Supabase, fall back to SecureStore cache
+    computeDietaryAge(resolvedAge)
+      .then((result) => {
+        if (result) setDietaryAgeResult(result);
+      })
+      .catch(() => { /* non-fatal */ });
+
     try {
-      const remote = await loadUserProfile();
       if (remote) {
         if (typeof remote.is_pro === 'boolean') {
           console.log('[Profile] Setting isPro from Supabase:', remote.is_pro);
@@ -262,8 +316,9 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           setHealthConnected(remote.health_sync_enabled);
           await SecureStore.setItemAsync('healthSyncEnabled', remote.health_sync_enabled ? 'true' : 'false');
         } else {
-          const h = await SecureStore.getItemAsync('healthSyncEnabled');
-          if (h === 'true') setHealthConnected(true);
+          // Row exists but flag unset (NULL / legacy): do not reuse another account's SecureStore value.
+          setHealthConnected(false);
+          await SecureStore.setItemAsync('healthSyncEnabled', 'false');
         }
         if (remote.health_context) setHealthContext(remote.health_context);
         if (remote.medical_conditions) setMedicalConditions(remote.medical_conditions);
@@ -474,7 +529,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const handleHowWeAnalyze = () => {
     Alert.alert(
       'How we analyze',
-      'Nouriva AI uses advanced healthcare LLMs to perform multi-system analysis across metabolic, inflammatory, neurological, hepatic, renal, and cardiovascular pathways.\n\nAll analysis is for informational purposes only and does not constitute medical advice.',
+      'Nouriva AI analyses your meals using Google Gemini, a large-language-model AI service. Your meal photo or description — and any health context you've added — is sent to Gemini for multi-system analysis across metabolic, inflammatory, neurological, hepatic, renal, and cardiovascular pathways.\n\nCitations in the Sources section are retrieved via Google Search Grounding, providing real, verifiable links from sources like PubMed, NIH, and Harvard Health instead of generated references.\n\nNo data is stored by Google beyond processing your request. All analysis is for informational purposes only and does not constitute medical advice.',
       [{ text: 'Understood' }]
     );
   };
@@ -512,8 +567,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       fats: String(parsed.fats),
     });
     await saveDailyGoals(parsed);
-    await saveUserProfile({ daily_goals: parsed });
-    await SecureStore.setItemAsync(METABOLIC_INPUTS_KEY, JSON.stringify(input));
+    await saveUserProfile({ daily_goals: parsed, metabolic_inputs: input });
+    computeDietaryAge(age)
+      .then((result) => {
+        if (result) setDietaryAgeResult(result);
+      })
+      .catch(() => { /* non-fatal */ });
     setTdeeModalVisible(false);
     Alert.alert(
       'Targets updated',
@@ -579,13 +638,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const handleShareLongevity = useCallback(() => {
     if (!dietaryAgeResult) return;
     void Haptics.selectionAsync();
-    const message = buildLongevityShareMessage(dietaryAgeResult, { appUrl: shareAppUrl });
-    const payload =
-      Platform.OS === 'ios'
-        ? { message }
-        : { message, title: 'Nouriva AI · Longevity' };
-    void Share.share(payload);
-  }, [dietaryAgeResult, shareAppUrl]);
+    setLongevityShareVisible(true);
+  }, [dietaryAgeResult]);
 
   const handleShareApp = () => {
     const line =
@@ -742,7 +796,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         <View style={styles.headerSide} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Profile card */}
         <View style={styles.profileCard}>
           <TouchableOpacity
@@ -830,11 +884,18 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <DietaryAgeCard result={dietaryAgeResult} onSharePress={handleShareLongevity} />
           ) : (
             <View style={{
-              backgroundColor: C.surface, borderRadius: 24, padding: 20,
-              borderWidth: 1, borderColor: C.border,
-              shadowColor: C.shadowColor, shadowOffset: { width: 0, height: 6 },
-              shadowOpacity: 0.06, shadowRadius: 16,
-              alignItems: 'center', gap: 8,
+              backgroundColor: C.dietaryFeatureBg,
+              borderRadius: 24,
+              padding: 20,
+              borderWidth: 2,
+              borderColor: C.dietaryFeatureBorder,
+              shadowColor: C.dietaryFeatureBorder,
+              shadowOffset: { width: 0, height: 6 },
+              shadowOpacity: 0.22,
+              shadowRadius: 20,
+              elevation: 4,
+              alignItems: 'center',
+              gap: 8,
             }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginBottom: 4 }}>
                 <Dna size={14} color={C.primary} weight="fill" />
@@ -876,6 +937,11 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           </View>
         )}
 
+        <View
+          onLayout={(e) => {
+            personalizationAnchorY.current = e.nativeEvent.layout.y;
+          }}
+        >
         {/* Personalization Hub */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -925,6 +991,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               ) : null}
             </View>
           </TouchableOpacity>
+        </View>
         </View>
 
         {/* Medical & Metabolic Profile */}
@@ -994,7 +1061,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
           <View style={styles.menuCard}>
             {([
               { key: 'calories', Icon: Lightning, label: 'Calories', unit: 'kcal', color: C.energy },
-              { key: 'protein', Icon: Dna, label: 'Protein', unit: 'g', color: C.primary },
+              { key: 'protein', Icon: Barbell, label: 'Protein', unit: 'g', color: C.primary },
               { key: 'fats', Icon: Drop, label: 'Fats', unit: 'g', color: C.danger },
               { key: 'carbs', Icon: Grains, label: 'Carbs', unit: 'g', color: C.vitality },
             ] as const).map(({ key, Icon, label, unit, color }, i, arr) => (
@@ -1185,6 +1252,13 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       </ScrollView>
     </SafeAreaView>
     </ScreenEnterAnimation>
+
+    <LongevityShareSheet
+      visible={longevityShareVisible}
+      onClose={() => setLongevityShareVisible(false)}
+      result={dietaryAgeResult}
+      appShareUrl={shareAppUrl}
+    />
 
     <Modal
       visible={tdeeModalVisible}

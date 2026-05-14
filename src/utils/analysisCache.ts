@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isAnalysisResultActionable } from './analysisResult';
 
 const CACHE_KEY_PREFIX = 'food_analysis_cache_v1';
 const CACHE_INDEX_KEY = 'food_analysis_cache_index_v1';
@@ -11,13 +12,15 @@ type CachedAnalysisEntry = {
   value: Record<string, unknown>;
 };
 
-function normalizeWhitespace(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+function normalizeWhitespace(value: unknown): string {
+  if (value == null) return '';
+  const s = typeof value === 'string' ? value : String(value);
+  return s.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
 function normalizeMedicalConditions(medicalConditions: string[]): string {
   return medicalConditions
-    .map(condition => normalizeWhitespace(condition))
+    .map((condition) => normalizeWhitespace(condition))
     .filter(Boolean)
     .sort()
     .join('|');
@@ -80,6 +83,15 @@ export async function getCachedFoodTextAnalysis(
 
     if (Date.now() > parsed.expiresAt) {
       await AsyncStorage.multiRemove([key]).catch(() => {});
+      const keys = await readIndex();
+      if (keys.includes(key)) {
+        await writeIndex(keys.filter(item => item !== key));
+      }
+      return null;
+    }
+
+    if (!isAnalysisResultActionable(parsed.value)) {
+      await AsyncStorage.removeItem(key).catch(() => {});
       const keys = await readIndex();
       if (keys.includes(key)) {
         await writeIndex(keys.filter(item => item !== key));

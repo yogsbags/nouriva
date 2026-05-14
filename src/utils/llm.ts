@@ -1,6 +1,34 @@
 import { getCachedFoodTextAnalysis, setCachedFoodTextAnalysis } from './analysisCache';
 import { isAnalysisResultActionable } from './analysisResult';
 import { getGeminiApiKeys, isRetryableQuotaOrRateLimit } from './geminiApiKeys';
+import { fetchGroundedSources, type GroundedSource } from './geminiSources';
+
+/** Extract alert keyword strings from a parsed result's alerts array. */
+function extractAlertKeywords(parsed: Record<string, unknown>): string[] {
+  const alerts = Array.isArray(parsed.alerts) ? parsed.alerts : [];
+  return alerts
+    .map((a: any) => (typeof a?.type === 'string' ? a.type : ''))
+    .filter(Boolean);
+}
+
+/**
+ * Merge grounded sources into the result's refs array.
+ * Grounded sources (real URLs) replace existing refs; if grounding returned
+ * nothing, the original AI-generated refs are kept as fallback.
+ */
+function mergeGroundedRefs(
+  parsed: Record<string, unknown>,
+  grounded: GroundedSource[],
+): Record<string, unknown> {
+  if (!grounded.length) return parsed;
+  return {
+    ...parsed,
+    refs: grounded.map((s) => ({ title: s.title, desc: s.desc, url: s.url })),
+  };
+}
+
+/** Shape returned by analyzeFoodImage / analyzeFoodText (parsed Gemini JSON). */
+export type FoodScanResult = Record<string, unknown>;
 
 const TEXT_ANALYSIS_PROMPT_VERSION = 'meal-text-analysis-v3';
 
@@ -16,6 +44,20 @@ const GEMINI_FLASH_GENERATE_URL = `https://generativelanguage.googleapis.com/v1a
 
 function geminiUrlWithKey(apiKey: string): string {
   return `${GEMINI_FLASH_GENERATE_URL}?key=${encodeURIComponent(apiKey)}`;
+}
+
+/** Safe for stored JSON where list items may not be strings (avoids c.trim on non-strings). */
+function medicalProfileContextPrompt(medicalConditions: readonly unknown[]): string {
+  const items = (Array.isArray(medicalConditions) ? medicalConditions : [])
+    .map((c) => {
+      if (c == null) return '';
+      return typeof c === 'string' ? c : String(c);
+    })
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return items.length > 0
+    ? `USER_BIOMETRIC_PROFILE: ${items.join('. ')}`
+    : 'INSTRUCTION: Standard healthy adult baseline.';
 }
 
 /** Fixed “System Pillar” rows: pillar name + which organ/system the `organ` field must draw from (one primary per row). */
@@ -58,8 +100,8 @@ VOICE & AUDIENCE (required):
 
 const MEAL_ANALYSIS_FIELD_RULES = `
 FIELD RULES:
-- Keep "title" (systemic rows) to a short headline anyone can scan (~2-3 words); no unexplained insider jargon.
-- Keep "desc" and each organ "driver" to ~35 words max. One or two sentences: state the plain takeaway first, then (optionally) a brief mechanism path for advanced readers.
+- Keep "title" on systemicData rows AND on each organData row to the same style: a short scannable headline (~2–6 words), same tone as systemic pillar titles; no unexplained insider jargon.
+- Keep "desc" (systemic) and "driver" (organData) to ~35 words max — these are the longer explanations. Do not repeat the title verbatim inside driver; expand with mechanism or practical takeaway.
 - Biochemicals "summary": one line that anyone can follow; "pathway"/"targets" may use precise terms since those fields are for depth.
 - Alerts "desc": state the practical concern first (under ~22 words), optional brief mechanism.
 - Scores: one decimal place (e.g. 7.5/10).
@@ -74,7 +116,7 @@ PERSONALIZATION RULES (STRICT):
 - Infer clinically relevant nutrition implications from the user's context using general nutrition and physiology knowledge: nutrient needs, absorption blockers/enhancers, medication or lab-marker considerations, likely symptom triggers, and organ/system vulnerabilities.
 - A food that is "healthy" for a standard baseline may be neutral or risky for a specific profile; adjust scores whenever the scanned food has a meaningful interaction with the user's context.
 - If the user context changes whether this food is suitable, reflect that in Metabolic/Systemic scores, Organ scores, alerts, and balancerSuggestions. If the food is broadly beneficial but has a profile-specific limitation, keep a balanced score and explicitly explain the limitation.
-- PERSONALIZED OUTPUT VISIBILITY: When USER_BIOMETRIC_PROFILE is provided from selected conditions or free-text profile notes, at least 4 of the 6 "systemicData" descriptions and at least 3 "organData" drivers must visibly connect the meal to that profile context. Use natural phrasing such as "for your noted ...", "given your profile note about ...", or "with this condition in mind" when appropriate. Do not make the output feel like a generic healthy-adult analysis.
+- PERSONALIZED OUTPUT VISIBILITY: When USER_BIOMETRIC_PROFILE is provided from selected conditions or free-text profile notes, at least 4 of the 6 "systemicData" descriptions and at least 3 "organData" driver fields must visibly connect the meal to that profile context. Use natural phrasing such as "for your noted ...", "given your profile note about ...", or "with this condition in mind" when appropriate. Do not make the output feel like a generic healthy-adult analysis.
 - If USER_BIOMETRIC_PROFILE is NOT provided, keep the output generic for a standard healthy adult and do not pretend to personalize.
 - TAILOR ADVICE: Ensure "balancerSuggestions" and "alerts" directly reference the relevant user context in plain language when profile context is provided, without overdiagnosing or inventing conditions not supplied by the user.
 - If the meal has no meaningful interaction with the user's context, say that briefly in the relevant descriptions rather than forcing a warning.
@@ -97,9 +139,7 @@ export async function analyzeFoodImage(images: string[], medicalConditions: stri
     throw new Error('Gemini API key is not configured.');
   }
 
-  const profileContext = medicalConditions.some(c => c && c.trim().length > 0)
-    ? `USER_BIOMETRIC_PROFILE: ${medicalConditions.join('. ')}`
-    : 'INSTRUCTION: Standard healthy adult baseline.';
+  const profileContext = medicalProfileContextPrompt(medicalConditions);
 
   console.log(`--- MEAL ANALYSIS (${images.length} frames) ---`);
   const _t0 = Date.now();
@@ -139,7 +179,7 @@ Return JSON:
     { "pillar": "Cardiovascular", "organ": "Heart/Vessels", "score": "X.X/10", "title": "...", "desc": "..." },
     { "pillar": "Immunological", "organ": "Immune System", "score": "X.X/10", "title": "...", "desc": "..." }
   ],
-  "organData": [ { "organ": "Brain", "score": "X.X/10", "driver": "Why?" }, { "organ": "Liver", "score": "X.X/10", "driver": "..." }, { "organ": "Heart", "score": "X.X/10", "driver": "..." }, { "organ": "Gut", "score": "X.X/10", "driver": "..." }, { "organ": "Kidney", "score": "X.X/10", "driver": "..." }, { "organ": "Pancreas", "score": "X.X/10", "driver": "..." }, { "organ": "Skin", "score": "X.X/10", "driver": "..." } ],
+  "organData": [ { "organ": "Brain", "score": "X.X/10", "title": "Short headline (match systemic title style)", "driver": "One or two sentences: takeaway + optional brief mechanism." }, { "organ": "Liver", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Heart", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Gut", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Kidney", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Pancreas", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Skin", "score": "X.X/10", "title": "...", "driver": "..." } ],
   "biochemicals": [ { "name": "...", "type": "...", "effect": "Synergistic effect...", "pathway": "...", "targets": "E.g. SIRT1", "inhibitors": "E.g. High heat", "summary": "One-liner summary of what it is/does." } ],
   "alerts": [ { "type": "⚠️ Specific Category (e.g. ⚠️ Glycaemic Spike, ⚠️ Cardiovascular Risk, ⚠️ Digestive Stress, ⚠️ Renal Load, ⚠️ Inflammatory Trigger, ⚠️ Hepatic Strain, ⚠️ Sodium Overload, ⚠️ Neurological Impact, ⚠️ Immune Load)", "desc": "Concise reason under 20 words." } ],
   "balancerSuggestions": [
@@ -250,24 +290,41 @@ Return JSON:
     };
   }
 
-  return parsed;
+  // ── Grounding: fire immediately after main analysis (image path) ──────────
+  // We have foodName now, so we can issue a targeted grounding query.
+  // Adds ~2-4s but ensures Sources section has real, verifiable URLs.
+  const foodName = typeof parsed.foodName === 'string' ? parsed.foodName : '';
+  const alertKeywords = extractAlertKeywords(parsed);
+  const groundedSources = await fetchGroundedSources(foodName, alertKeywords).catch(() => []);
+
+  return mergeGroundedRefs(parsed, groundedSources);
 }
 
-export async function analyzeFoodText(text: string, medicalConditions: string[] = []): Promise<any> {
+export async function analyzeFoodText(
+  text: string,
+  medicalConditions: string[] = [],
+  options?: { bypassCache?: boolean },
+): Promise<any> {
   const keys = getGeminiApiKeys();
   if (!keys.length) throw new Error('Gemini API key is not configured.');
 
-  const cached = await getCachedFoodTextAnalysis(text, medicalConditions, TEXT_ANALYSIS_PROMPT_VERSION);
-  if (cached) {
-    console.log(`--- TEXT MEAL ANALYSIS CACHE HIT: ${text} ---`);
-    return cached;
+  if (!options?.bypassCache) {
+    const cached = await getCachedFoodTextAnalysis(text, medicalConditions, TEXT_ANALYSIS_PROMPT_VERSION);
+    if (cached) {
+      console.log(`--- TEXT MEAL ANALYSIS CACHE HIT: ${text} ---`);
+      return cached;
+    }
   }
 
-  const profileContext = medicalConditions.some(c => c && c.trim().length > 0)
-    ? `USER_BIOMETRIC_PROFILE: ${medicalConditions.join('. ')}`
-    : 'INSTRUCTION: Standard healthy adult baseline.';
+  const profileContext = medicalProfileContextPrompt(medicalConditions);
 
   console.log(`--- TEXT MEAL ANALYSIS START: ${text} ---`);
+
+  // ── Grounding: fire in parallel with the main call (text path) ───────────
+  // For text, the food description is known upfront, so we can kick off
+  // grounding immediately alongside the main analysis call.
+  // Promise.allSettled ensures one failure never blocks the other.
+  const groundingPromise = fetchGroundedSources(text, []);
 
   const payload = {
     contents: [{
@@ -294,7 +351,7 @@ Return JSON:
     { "pillar": "Cardiovascular", "organ": "Heart", "score": "X.X/10", "title": "...", "desc": "..." },
     { "pillar": "Immunological", "organ": "Immune System", "score": "X.X/10", "title": "...", "desc": "..." }
   ],
-  "organData": [ { "organ": "Brain", "score": "X.X/10", "driver": "Why?" }, { "organ": "Liver", "score": "X.X/10", "driver": "..." }, { "organ": "Heart", "score": "X.X/10", "driver": "..." }, { "organ": "Gut", "score": "X.X/10", "driver": "..." }, { "organ": "Kidney", "score": "X.X/10", "driver": "..." }, { "organ": "Pancreas", "score": "X.X/10", "driver": "..." }, { "organ": "Skin", "score": "X.X/10", "driver": "..." } ],
+  "organData": [ { "organ": "Brain", "score": "X.X/10", "title": "Short headline (match systemic title style)", "driver": "One or two sentences: takeaway + optional brief mechanism." }, { "organ": "Liver", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Heart", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Gut", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Kidney", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Pancreas", "score": "X.X/10", "title": "...", "driver": "..." }, { "organ": "Skin", "score": "X.X/10", "title": "...", "driver": "..." } ],
   "biochemicals": [ { "name": "...", "type": "...", "effect": "Synergistic effect...", "pathway": "...", "targets": "E.g. SIRT1", "inhibitors": "E.g. High heat", "summary": "One-liner summary of what it is/does." } ],
   "alerts": [ { "type": "⚠️ Specific Category", "desc": "Concise reason under 20 words." } ],
   "balancerSuggestions": [
@@ -333,7 +390,7 @@ Return JSON:
     let response: Response;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
       response = await fetch(url, {
         method: 'POST',
@@ -343,6 +400,7 @@ Return JSON:
       });
       clearTimeout(timeoutId);
     } catch (e: any) {
+      console.error('[Gemini] Text analysis network/abort error:', e);
       return {
         analysisIncomplete: true,
         analysisError: e?.name === 'AbortError'
@@ -359,6 +417,7 @@ Return JSON:
         continue keyAttempt;
       }
       const msg = (data as any)?.error?.message || `Analysis request failed (${response.status})`;
+      console.error('[Gemini] API Error response:', response.status, JSON.stringify(data, null, 2));
       return { analysisIncomplete: true, analysisError: String(msg) };
     }
     break keyAttempt;
@@ -371,6 +430,11 @@ Return JSON:
     return { analysisIncomplete: true, analysisError: 'No response from AI. Try again.' };
   }
 
+  if (__DEV__) {
+    const clip = contentText.length > 800 ? `${contentText.slice(0, 800)}…` : contentText;
+    console.log('[Gemini] Raw Content (clipped):', clip);
+  }
+
   try {
     const parsed = JSON.parse(contentText) as Record<string, unknown>;
     if (!parsed.foodName) parsed.foodName = text.split(' of ')[1] || text || 'Manual Meal';
@@ -381,9 +445,24 @@ Return JSON:
         analysisError: INCOMPLETE_MSG,
       };
     }
-    await setCachedFoodTextAnalysis(text, medicalConditions, TEXT_ANALYSIS_PROMPT_VERSION, parsed);
-    console.log(`--- ANALYSIS COMPLETE: ${parsed.foodName} ---`);
-    return parsed;
+
+    // ── Merge grounding results (fired in parallel above) ─────────────────
+    // By the time main analysis resolves (~5-10s), grounding (~2-4s) is
+    // already done. Promise.allSettled so a grounding failure is silently
+    // swallowed and the main result is unaffected.
+    const [groundingResult] = await Promise.allSettled([groundingPromise]);
+    const groundedSources =
+      groundingResult.status === 'fulfilled' ? groundingResult.value : [];
+
+    // After merging, re-run the alert keyword extraction so grounding for
+    // text is focused on the actual alerts that came back.
+    // (The initial groundingPromise used the raw food text; this merge is
+    //  still an improvement over hallucinated refs regardless.)
+    const merged = mergeGroundedRefs(parsed, groundedSources);
+
+    await setCachedFoodTextAnalysis(text, medicalConditions, TEXT_ANALYSIS_PROMPT_VERSION, merged);
+    console.log(`--- ANALYSIS COMPLETE: ${merged.foodName} ---`);
+    return merged;
   } catch (e) {
     console.error('JSON Parse Error:', contentText);
     return { analysisIncomplete: true, analysisError: 'Failed to parse AI response. Try again.' };

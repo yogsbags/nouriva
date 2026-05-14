@@ -29,7 +29,7 @@ import {
   TrendUpIcon as TrendUp,
   PulseIcon as Pulse,
   LightningIcon as Lightning,
-  DnaIcon as Dna,
+  BarbellIcon as Barbell,
   DropIcon as Drop,
   GrainsIcon as Grains,
   SparkleIcon as Sparkle,
@@ -48,6 +48,7 @@ import { Svg, Path, Defs, LinearGradient as SvgGradient, Stop, Circle as SvgCirc
 import { getFoodLogs, FoodLog, deleteFoodLog, saveFoodLog } from '../utils/history';
 import { sumMacroTotalsFromLogs } from '../utils/macroTotals';
 import { analyzeFoodText } from '../utils/llm';
+import { checkFreeTierScanAllowed } from '../utils/scanEntitlements';
 import { getAnalysisFailureMessage, isAnalysisIncomplete } from '../utils/analysisResult';
 import { getDailyGoals, DailyGoals } from '../utils/goals';
 import { fetchHealthStats } from '../utils/health';
@@ -123,7 +124,8 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
       setManualAnalysisProgress((current) => {
         if (current < 55) return current + 7;
         if (current < 82) return current + 4;
-        if (current < 94) return current + 2;
+        if (current < 97) return current + 2;
+        if (current < 99) return current + 1;
         return current;
       });
     }, 450);
@@ -135,7 +137,16 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
     if (!manualFoodName.trim() || isAnalyzing) return;
     
     setIsAnalyzing(true);
+    let entitlementBlocked = false;
     try {
+      const gate = await checkFreeTierScanAllowed();
+      if (!gate.allowed) {
+        entitlementBlocked = true;
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        navigateFromTabs(navigation, 'Upgrade', { paywallContext: gate.paywallContext });
+        return;
+      }
+
       // Get medical conditions from secure store
       const profileStr = await SecureStore.getItemAsync('user_profile');
       const profile = profileStr ? JSON.parse(profileStr) : {};
@@ -196,7 +207,9 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
       Alert.alert('Error', error.message || 'Failed to analyze food. Please try again.');
     } finally {
       setIsAnalyzing(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (!entitlementBlocked) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     }
   };
 
@@ -814,7 +827,7 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
             <View style={styles.logStatsRow}>
               {[
                 { icon: <Lightning size={9} color={C.energy} weight="fill" />, val: item.macros.calories },
-                { icon: <Dna size={9} weight="fill" color={C.primary} />, val: item.macros.protein },
+                { icon: <Barbell size={9} weight="duotone" color={C.primary} />, val: item.macros.protein },
                 { icon: <Drop size={9} weight="fill" color={C.danger} />, val: item.macros.fats },
                 { icon: <Grains size={9} weight="fill" color={C.vitality} />, val: item.macros.carbs },
               ].map(({ icon, val }, idx) => (

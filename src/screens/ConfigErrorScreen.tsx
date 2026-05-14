@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ExpoSplashScreen from 'expo-splash-screen';
 import { useColors } from '../theme';
 
 /**
@@ -9,6 +10,11 @@ import { useColors } from '../theme';
  */
 export default function ConfigErrorScreen() {
   const C = useColors();
+
+  useLayoutEffect(() => {
+    void ExpoSplashScreen.hideAsync();
+  }, []);
+
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: C.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>

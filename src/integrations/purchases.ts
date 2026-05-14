@@ -2,13 +2,30 @@ import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL, type CustomerInfo, type PurchasesPackage } from 'react-native-purchases';
 import RevenueCatUI from 'react-native-purchases-ui';
 import * as SecureStore from 'expo-secure-store';
-import { saveUserProfile } from '../utils/userProfile';
+import { saveUserProfile, loadUserProfile } from '../utils/userProfile';
+import { isIosSimulator } from '../utils/iosSimulator';
 
 const IOS_API_KEY = 'appl_uXWKxIPvlyFfCQBmXbXOwONFlBQ';
 const ANDROID_API_KEY = 'goog_HBLkBgTamZlEzkgFQVuVXuIErtZ';
 const ENTITLEMENT_ID = 'Nouriva AI Pro';
 
+/**
+ * iOS Simulator + StoreKit often throws native NSExceptions; RN's Turbo path can then
+ * crash inside Hermes while converting that exception to JS. Skip all Purchases native calls
+ * on simulator unless explicitly overridden (e.g. Xcode StoreKit Configuration testing).
+ */
+const forceRevenueCatOnIosSimulator =
+  process.env.EXPO_PUBLIC_REVENUECAT_ON_IOS_SIMULATOR === '1';
+
+function shouldSkipRevenueCatNative(): boolean {
+  if (Platform.OS === 'web') return true;
+  if (!isIosSimulator()) return false;
+  if (forceRevenueCatOnIosSimulator) return false;
+  return true;
+}
+
 let revenueCatLogHandlerInstalled = false;
+let iosSimulatorRevenueCatNoticeLogged = false;
 
 /** Downgrade expected “no Play Store / emulator” billing noise so LogBox doesn’t show a red error. */
 function installRevenueCatLogHandler() {
@@ -54,7 +71,15 @@ function installRevenueCatLogHandler() {
  * Configures without a userId if none is available (anonymous).
  */
 async function ensureConfigured(userId?: string): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  if (shouldSkipRevenueCatNative()) {
+    if (__DEV__ && !iosSimulatorRevenueCatNoticeLogged) {
+      iosSimulatorRevenueCatNoticeLogged = true;
+      console.warn(
+        '[RevenueCat] Skipping native SDK on iOS Simulator (unstable StoreKit). Pro state uses SecureStore / Supabase. Physical device or EXPO_PUBLIC_REVENUECAT_ON_IOS_SIMULATOR=1 to force.'
+      );
+    }
+    return false;
+  }
   installRevenueCatLogHandler();
   try {
     const already = await Purchases.isConfigured();
@@ -120,7 +145,6 @@ export async function syncProStatus(customerInfo: CustomerInfo) {
 
   // Final fallback: check Supabase directly one more time to be sure
   try {
-    const { loadUserProfile } = await import('../utils/userProfile');
     const profile = await loadUserProfile();
     if (profile?.is_pro) {
       console.log('[RevenueCat] Using Supabase Pro override for user');
@@ -134,6 +158,33 @@ export async function syncProStatus(customerInfo: CustomerInfo) {
   console.log('[RevenueCat] User is FREE (no RC sub, no local override, no Supabase override)');
   await SecureStore.setItemAsync('isPro', 'false');
   return false;
+}
+
+/**
+ * Reconcile Pro for entitlements: RevenueCat when available, then always Supabase `user_profiles.is_pro`
+ * (simulator / RC failures / admin grants). Call before enforcing trial or daily scan caps.
+ */
+export async function refreshProFromRemote(): Promise<boolean> {
+  if (Platform.OS === 'web') return (await SecureStore.getItemAsync('isPro')) === 'true';
+
+  const configured = await ensureConfigured();
+  if (configured) {
+    try {
+      const info = await Purchases.getCustomerInfo();
+      if (await syncProStatus(info)) return true;
+    } catch (e) {
+      console.warn('[RevenueCat] refreshProFromRemote RC path failed:', e);
+    }
+  }
+
+  try {
+    const profile = await loadUserProfile();
+    if (profile?.is_pro) return true;
+  } catch (e) {
+    console.warn('[RevenueCat] refreshProFromRemote Supabase profile read failed:', e);
+  }
+
+  return (await SecureStore.getItemAsync('isPro')) === 'true';
 }
 
 /**

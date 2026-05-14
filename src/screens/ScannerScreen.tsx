@@ -13,6 +13,8 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
+  Keyboard,
+  InteractionManager,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
@@ -23,13 +25,78 @@ import * as SecureStore from 'expo-secure-store';
 import { CameraIcon as Camera, ScanIcon as Scan, LightningIcon as Lightning, ImageIcon as PhosphorImage, PlusIcon as Plus, SparkleIcon as Sparkle } from 'phosphor-react-native';
 import { analyzeFoodImage, analyzeFoodText } from '../utils/llm';
 import { isTrialActive } from '../utils/trialStatus';
-import { isAnalysisIncomplete, getAnalysisFailureMessage } from '../utils/analysisResult';
+import { isAnalysisIncomplete, getAnalysisFailureMessage, isAnalysisResultActionable } from '../utils/analysisResult';
 import { useColors, AppColors } from '../theme';
 import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
 import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { navigateFromTabs } from '../navigation/rootNavigation';
-import { getTodayScanCount } from '../utils/history';
-import { presentPaywall } from '../integrations/purchases';
+import { setPendingResult } from '../utils/pendingResult';
+import {
+  resolveIsProForScan,
+  checkFreeTierScanAllowed,
+  type ScanPaywallContext,
+} from '../utils/scanEntitlements';
+
+/** Opens in-app Nouriva paywall (UpgradeScreen). Never use RevenueCat `presentPaywall` here. */
+function openNourivaPaywall(
+  navigation: { getParent?: () => any },
+  context: ScanPaywallContext
+) {
+  navigateFromTabs(navigation, 'Upgrade', { paywallContext: context });
+}
+
+/** Only pass plain JSON-safe meal fields through the root navigator (avoids bridge / serialization issues). */
+const MEAL_RESULT_NAV_KEYS = [
+  'foodName',
+  'macros',
+  'systemicData',
+  'organData',
+  'biochemicals',
+  'alerts',
+  'balancerSuggestions',
+  'glucoseData',
+  'refs',
+  'vision',
+  'longevityData',
+  'analysisIncomplete',
+  'analysisError',
+  'rawText',
+  'error',
+] as const;
+
+/** Wait until modals / transitions finish before stack push (avoids iOS New-Arch UINavigationController + TurboModule aborts). */
+function afterInteractions(): Promise<void> {
+  return new Promise((resolve) => InteractionManager.runAfterInteractions(() => resolve()));
+}
+
+/** Extra frame + tick on iOS so Fabric layout and TurboModule queue drain before stack push. */
+async function beforeNavigateToResults(): Promise<void> {
+  await afterInteractions();
+  await new Promise<void>((r) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => r());
+    });
+  });
+  if (Platform.OS === 'ios') {
+    await new Promise<void>((r) => setTimeout(r, 120));
+  }
+}
+
+function pickMealResultForNavigation(analysis: any, opts?: { omitVision?: boolean }): any {
+  try {
+    if (!analysis || typeof analysis !== 'object') return {};
+    const keys = opts?.omitVision
+      ? MEAL_RESULT_NAV_KEYS.filter((k) => k !== 'vision')
+      : [...MEAL_RESULT_NAV_KEYS];
+    const out: Record<string, unknown> = {};
+    for (const k of keys) {
+      if (k in analysis) out[k] = (analysis as any)[k];
+    }
+    return JSON.parse(JSON.stringify(out));
+  } catch {
+    return analysis;
+  }
+}
 
 export default function ScannerScreen({ navigation }: any) {
   const route = useRoute<any>();
@@ -49,6 +116,8 @@ export default function ScannerScreen({ navigation }: any) {
   const [manualQuantity, setManualQuantity] = useState('1 serving');
   const [isAnalyzingManual, setIsAnalyzingManual] = useState(false);
   const [manualAnalysisProgress, setManualAnalysisProgress] = useState(0);
+  /** Fullscreen "opening results" — only after successful text analysis (not on Cancel). */
+  const [manualLogHandoffVisible, setManualLogHandoffVisible] = useState(false);
 
   useEffect(() => {
     if (!isAnalyzingManual) {
@@ -71,44 +140,30 @@ export default function ScannerScreen({ navigation }: any) {
 
   const handleManualLog = async () => {
     if (!manualFoodName.trim() || isAnalyzingManual) return;
+
+    Keyboard.dismiss();
+
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+
     setIsAnalyzingManual(true);
+    setManualLogHandoffVisible(false);
+
+    // Track whether we successfully navigated away so the finally block
+    // doesn't attempt state updates on an unmounted/navigated screen.
+    let navigatedAway = false;
+
     try {
-      const isPro = (await SecureStore.getItemAsync('isPro')) === 'true';
-      const trialActive = await isTrialActive();
-      
-      if (!isPro) {
-        if (trialActive) {
-          // Trial limit: 20 total
-          const totalCount = await import('../utils/history').then(m => m.getScanCount());
-          if (totalCount >= 20) {
-            setIsAnalyzingManual(false);
-            Alert.alert(
-              'Trial Limit Reached',
-              'You have reached the 20-scan limit for your 3-day trial. Upgrade to Pro for unlimited metabolic intelligence.',
-              [
-                { text: 'Maybe Later', style: 'cancel' },
-                { text: 'Upgrade to Pro', onPress: () => void presentPaywall() },
-              ]
-            );
-            return;
-          }
-        } else {
-          // Post-trial limit: 1 per day
-          const todayCount = await getTodayScanCount();
-          if (todayCount >= 1) {
-            setIsAnalyzingManual(false);
-            Alert.alert(
-              'Daily Limit Reached',
-              'Free users can log 1 meal per day after the trial. Upgrade to Pro for unlimited metabolic scans.',
-              [
-                { text: 'Maybe Later', style: 'cancel' },
-                { text: 'Upgrade to Pro', onPress: () => void presentPaywall() },
-              ]
-            );
-            return;
-          }
-        }
+      const gate = await checkFreeTierScanAllowed();
+      if (!gate.allowed) {
+        setManualLogHandoffVisible(false);
+        setIsAnalyzingManual(false);
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        openNourivaPaywall(navigation, gate.paywallContext);
+        return;
       }
+
+      let isPro = await resolveIsProForScan();
+      const trialActive = await isTrialActive();
 
       let profileContext: string[] = [];
 
@@ -128,27 +183,75 @@ export default function ScannerScreen({ navigation }: any) {
         if (insights) profileContext.push(`AUTO_EXTRACTED_FROM_MEDICAL_REPORTS: ${insights}`);
       }
       const fullText = `${manualQuantity} of ${manualFoodName}`;
-      const analysis = await analyzeFoodText(fullText, profileContext);
+      // Always fetch from Gemini for Quick Log (cache would feel instant and can hold stale / huge payloads).
+      const analysis = await analyzeFoodText(fullText, profileContext, { bypassCache: true });
+      if (__DEV__) {
+        console.log('[Scanner] Quick Log analysis:', (analysis as any)?.foodName ?? '—', 'keys:', Object.keys(analysis ?? {}));
+      }
       if (isAnalysisIncomplete(analysis)) {
+        console.warn('[Scanner] Analysis marked incomplete:', {
+          isIncomplete: isAnalysisIncomplete(analysis),
+          isActionable: isAnalysisResultActionable(analysis)
+        });
         Alert.alert('Could not analyse', getAnalysisFailureMessage(analysis));
+        setManualLogHandoffVisible(false);
+        setIsAnalyzingManual(false);
         return;
       }
+
+      setManualAnalysisProgress(100);
+
+      try {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch {
+        /* simulator / unavailable */
+      }
+
+      // Close form sheet; handoff overlay keeps progress visible until Results opens.
+      setManualLogHandoffVisible(true);
       setManualModalVisible(false);
       setManualFoodName('');
       setManualQuantity('1 serving');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      
-      // Brief delay to allow modal close animation to finish before navigation
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      navigateFromTabs(navigation, 'Results', {
-        result: analysis,
+
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+      // iOS RN Fabric: modal dismiss + parallax stack push in the same window tick can recurse
+      // _didMoveFromWindow (RCT border layers). Give the modal time to unmount.
+      await new Promise<void>((r) => setTimeout(r, Platform.OS === 'ios' ? 420 : 220));
+
+      // Store the large result in the module-level singleton so React Navigation
+      // never has to JSON.stringify it as route params (which crashes Hermes on iOS
+      // due to GC scope exhaustion in stringPrototypeCharCodeAt on large payloads).
+      // We pass the full analysis object directly.
+      setPendingResult(analysis, {
         isPersonalized: profileContext.length > 0,
       });
+
+      // Remove fullscreen handoff before pushing — stacking this overlay with the stack
+      // transition contributed to main-thread _didMoveFromWindow recursion (May 2026 .ips).
+      setManualLogHandoffVisible(false);
+      setIsAnalyzingManual(false);
+
+      // Defer stack push until modal dismiss + layout settle. Pushing Results during
+      // the same transition as closing Quick Log triggered SIGABRT in ObjCTurboModule
+      // (see DiagnosticReports NourivaAI *.ips, thread com.meta.react.turbomodulemanager.queue).
+      await beforeNavigateToResults();
+
+      navigateFromTabs(navigation, 'Results', {
+        _hasPending: true,
+      });
+      navigatedAway = true;
     } catch (error: any) {
+      setManualLogHandoffVisible(false);
       Alert.alert('Error', error.message || 'Failed to analyse. Please try again.');
     } finally {
-      setIsAnalyzingManual(false);
+      // Only reset local state if we did NOT navigate away. After navigation
+      // the screen is either unmounted or in the background; setState calls
+      // on it cause the "Can't perform a React state update on an unmounted
+      // component" crash (shows at ~95% progress just before Results opens).
+      if (!navigatedAway) {
+        setManualLogHandoffVisible(false);
+        setIsAnalyzingManual(false);
+      }
     }
   };
 
@@ -250,9 +353,11 @@ export default function ScannerScreen({ navigation }: any) {
   };
 
   const handleScan = async () => {
-    if (!cameraRef.current) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsScanning(true);
+    setScanProgress(5);
+    setScanStage('Analyzing Image');
+    let navigatedAway = false;
     try {
       if (!cameraRef.current || typeof cameraRef.current.takePictureAsync !== 'function') {
         throw new Error('Camera not ready. Please try again.');
@@ -267,6 +372,7 @@ export default function ScannerScreen({ navigation }: any) {
 
   const processImage = async (uri: string) => {
     setIsScanning(true);
+    let navigatedAway = false;
     try {
       const manipResult = await manipulateAsync(
         uri,
@@ -276,42 +382,16 @@ export default function ScannerScreen({ navigation }: any) {
       if (manipResult.base64) {
         let profileContext: string[] = [];
         try {
-          const isPro = (await SecureStore.getItemAsync('isPro')) === 'true';
-          const trialActive = await isTrialActive();
-          
-          if (!isPro) {
-            if (trialActive) {
-              // Trial limit: 20 total
-              const totalCount = await import('../utils/history').then(m => m.getScanCount());
-              if (totalCount >= 20) {
-                setIsScanning(false);
-                Alert.alert(
-                  'Trial Limit Reached',
-                  'You have reached the 20-scan limit for your 3-day trial. Upgrade to Pro for unlimited metabolic intelligence.',
-                  [
-                    { text: 'Maybe Later', style: 'cancel' },
-                    { text: 'Upgrade to Pro', onPress: () => void presentPaywall() },
-                  ]
-                );
-                return;
-              }
-            } else {
-              // Post-trial limit: 1 per day
-              const todayCount = await getTodayScanCount();
-              if (todayCount >= 1) {
-                setIsScanning(false);
-                Alert.alert(
-                  'Daily Limit Reached',
-                  'Free users can log 1 meal per day after the trial. Upgrade to Pro for unlimited metabolic scans.',
-                  [
-                    { text: 'Maybe Later', style: 'cancel' },
-                    { text: 'Upgrade to Pro', onPress: () => void presentPaywall() },
-                  ]
-                );
-                return;
-              }
-            }
+          const gate = await checkFreeTierScanAllowed();
+          if (!gate.allowed) {
+            setIsScanning(false);
+            void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            openNourivaPaywall(navigation, gate.paywallContext);
+            return;
           }
+
+          let isPro = await resolveIsProForScan();
+          const trialActive = await isTrialActive();
 
           if (isPro || trialActive) {
             const [storedConditions, storedBio, storedInsights] = await Promise.all([
@@ -333,17 +413,29 @@ export default function ScannerScreen({ navigation }: any) {
         setScanStage('Ready');
         setScanDone(true);
         await new Promise(r => setTimeout(r, 420));
-        navigateFromTabs(navigation, 'Results', {
-          result: analysisResult,
-          originalImageUri: manipResult.uri,
+        // Store result in module singleton — avoids Hermes crash from large
+        // JSON serialization inside React Navigation route params.
+        // We pass the full analysisResult directly.
+        setPendingResult(analysisResult, {
+          imageUri: manipResult.uri,
           isPersonalized: profileContext.length > 0,
         });
+        // Hide scan overlay before root stack push — same Fabric/navigation interaction as Quick Log.
+        setIsScanning(false);
+        setScanDone(false);
+        await beforeNavigateToResults();
+        navigateFromTabs(navigation, 'Results', {
+          _hasPending: true,
+        });
+        navigatedAway = true;
       }
     } catch (error: any) {
       Alert.alert('Processing Failed', error.message || 'Could not analyse the provided image');
     } finally {
-      setIsScanning(false);
-      setScanDone(false);
+      if (!navigatedAway) {
+        setIsScanning(false);
+        setScanDone(false);
+      }
     }
   };
 
@@ -463,12 +555,32 @@ export default function ScannerScreen({ navigation }: any) {
           </Text>
         </View>
       )}
+      {manualLogHandoffVisible ? (
+        <View style={[styles.scanningOverlay, styles.manualHandoffOverlay]} pointerEvents="auto">
+          <View style={styles.progressCircleContainer}>
+            <ActivityIndicator color="#34D399" size="large" style={styles.spinner} />
+            <View style={styles.percentageContainer}>
+              <Text style={styles.percentageText}>
+                {Math.min(100, Math.max(manualAnalysisProgress, 8))}%
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.scanningText}>Preparing your results…</Text>
+          <Text style={styles.scanningDisclaimer}>OPENING RESULTS</Text>
+        </View>
+      ) : null}
       <Modal visible={manualModalVisible} animationType="slide" transparent statusBarTranslucent>
         <View style={styles.modalOverlay}>
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Quick Log Meal</Text>
-              <TouchableOpacity onPress={() => setManualModalVisible(false)} style={{ padding: 4 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  if (isAnalyzingManual) return;
+                  setManualModalVisible(false);
+                }}
+                style={{ padding: 4 }}
+              >
                 <Text style={styles.modalCancel}>Cancel</Text>
               </TouchableOpacity>
             </View>
@@ -850,6 +962,10 @@ function makeStyles(C: AppColors) {
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 10,
+    },
+    manualHandoffOverlay: {
+      zIndex: 100,
+      elevation: 24,
     },
     progressCircleContainer: {
       width: 152,

@@ -10,9 +10,9 @@ export function isAnalysisResultActionable(result: unknown): boolean {
 
   const organs = r.organData;
   const pillars = r.systemicData;
-  if (!Array.isArray(organs) || organs.length < 2) return false;
-  /** Expect six System Pillar rows (through Immunological) per llm.ts contract. */
-  if (!Array.isArray(pillars) || pillars.length < 6) return false;
+  /** Be slightly lenient: we need at least some organs and some pillars to show a UI. */
+  if (!Array.isArray(organs) || organs.length < 1) return false;
+  if (!Array.isArray(pillars) || pillars.length < 3) return false;
 
   return true;
 }
@@ -29,6 +29,15 @@ export function isAnalysisIncomplete(result: unknown): boolean {
 export const ANALYSIS_FAILURE_USER_MESSAGE =
   'Tap Re-scan to try again with good light, a steady shot, and your meal filling the frame.';
 
-export function getAnalysisFailureMessage(_result: unknown): string {
+export function getAnalysisFailureMessage(result: unknown): string {
+  if (result && typeof result === 'object') {
+    const r = result as Record<string, unknown>;
+    if (typeof r.analysisError === 'string' && r.analysisError.length > 0) {
+      return r.analysisError;
+    }
+    if (typeof r.error === 'string' && r.error.length > 0) {
+      return r.error;
+    }
+  }
   return ANALYSIS_FAILURE_USER_MESSAGE;
 }

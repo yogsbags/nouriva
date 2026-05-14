@@ -4,6 +4,7 @@
  * ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS is_pro boolean DEFAULT false;
  * ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS pro_plan text;
  * ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS health_sync_enabled boolean DEFAULT false;
+ * ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS metabolic_inputs jsonb DEFAULT NULL;
  *
  * Note: `is_pro` from the client is for UX / cross-device sync only. For fraud-proof billing,
  * validate App Store / Play receipts on a backend and set entitlement server-side.
@@ -11,6 +12,7 @@
 import { supabase } from './supabase';
 import * as SecureStore from 'expo-secure-store';
 import { DailyGoals } from './goals';
+import { METABOLIC_INPUTS_KEY, parseMetabolicInputs, type MetabolicInputs } from './tdee';
 
 export type ProPlan = 'annual' | 'monthly';
 
@@ -20,6 +22,8 @@ export interface UserProfile {
   health_context?: string;
   report_insights?: string;
   daily_goals?: DailyGoals;
+  /** Smart goals / TDEE inputs; synced via `metabolic_inputs` on user_profiles. */
+  metabolic_inputs?: MetabolicInputs;
   /** Public URL from Supabase Storage (optional; local file is primary on device). */
   avatar_url?: string | null;
   /** Mirrored from purchases; also see SecureStore `isPro`. */
@@ -48,6 +52,9 @@ export async function loadUserProfile(): Promise<UserProfile | null> {
 
   if (error || !data) return null;
 
+  const metabolicRaw = (data as { metabolic_inputs?: unknown }).metabolic_inputs;
+  const metabolic_inputs = parseMetabolicInputs(metabolicRaw) ?? undefined;
+
   const isPro = typeof data.is_pro === 'boolean' ? data.is_pro : false;
   const proPlan = data.pro_plan === 'annual' || data.pro_plan === 'monthly' ? data.pro_plan : null;
   const createdAt = data.created_at || new Date().toISOString();
@@ -64,6 +71,7 @@ export async function loadUserProfile(): Promise<UserProfile | null> {
     health_context: data.health_context ?? undefined,
     report_insights: data.report_insights ?? undefined,
     daily_goals: data.daily_goals ?? undefined,
+    metabolic_inputs,
     avatar_url: data.avatar_url ?? undefined,
     is_pro: isPro,
     pro_plan: proPlan,
@@ -85,6 +93,7 @@ export async function saveUserProfile(profile: Partial<UserProfile>): Promise<vo
   if (profile.health_context !== undefined) payload.health_context = profile.health_context;
   if (profile.report_insights !== undefined) payload.report_insights = profile.report_insights;
   if (profile.daily_goals !== undefined) payload.daily_goals = profile.daily_goals;
+  if (profile.metabolic_inputs !== undefined) payload.metabolic_inputs = profile.metabolic_inputs;
   if (profile.avatar_url !== undefined) payload.avatar_url = profile.avatar_url === '' ? null : profile.avatar_url;
   if (profile.is_pro !== undefined) payload.is_pro = profile.is_pro;
   if (profile.pro_plan !== undefined) payload.pro_plan = profile.pro_plan;
@@ -109,4 +118,7 @@ export async function saveUserProfile(profile: Partial<UserProfile>): Promise<vo
     await SecureStore.setItemAsync('proplan', profile.pro_plan ?? '');
   if (profile.health_sync_enabled !== undefined)
     await SecureStore.setItemAsync('healthSyncEnabled', profile.health_sync_enabled ? 'true' : 'false');
+  if (profile.metabolic_inputs !== undefined) {
+    await SecureStore.setItemAsync(METABOLIC_INPUTS_KEY, JSON.stringify(profile.metabolic_inputs));
+  }
 }

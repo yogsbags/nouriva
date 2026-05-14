@@ -85,4 +85,32 @@ export function computeDailyGoalsFromMetabolicInputs(input: MetabolicInputs): Da
   return { calories, protein, carbs, fats };
 }
 
+const ACTIVITY_KEYS: ActivityKey[] = ['sedentary', 'light', 'moderate', 'active', 'very_active'];
+const CALORIE_GOAL_KEYS: CalorieGoalMode[] = ['maintain', 'mild_loss', 'moderate_loss'];
+
+/**
+ * Parse Supabase jsonb / SecureStore JSON into MetabolicInputs, or null if invalid.
+ */
+export function parseMetabolicInputs(raw: unknown): MetabolicInputs | null {
+  if (raw == null || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const sex = o.sex === 'male' || o.sex === 'female' ? o.sex : null;
+  const ageYears = typeof o.ageYears === 'number' ? o.ageYears : parseInt(String(o.ageYears ?? ''), 10);
+  const heightCm = typeof o.heightCm === 'number' ? o.heightCm : parseFloat(String(o.heightCm ?? ''));
+  const weightKg = typeof o.weightKg === 'number' ? o.weightKg : parseFloat(String(o.weightKg ?? ''));
+  const activity =
+    typeof o.activity === 'string' && ACTIVITY_KEYS.includes(o.activity as ActivityKey)
+      ? (o.activity as ActivityKey)
+      : null;
+  const calorieGoal =
+    typeof o.calorieGoal === 'string' && CALORIE_GOAL_KEYS.includes(o.calorieGoal as CalorieGoalMode)
+      ? (o.calorieGoal as CalorieGoalMode)
+      : null;
+  if (!sex || !Number.isFinite(ageYears) || ageYears < 10 || ageYears > 120) return null;
+  if (!Number.isFinite(heightCm) || heightCm < 100 || heightCm > 250) return null;
+  if (!Number.isFinite(weightKg) || weightKg < 30 || weightKg > 300) return null;
+  if (!activity || !calorieGoal) return null;
+  return { sex, ageYears, heightCm, weightKg, activity, calorieGoal };
+}
+
 export const METABOLIC_INPUTS_KEY = 'metabolicInputs';

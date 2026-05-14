@@ -1,21 +1,41 @@
 import * as SecureStore from 'expo-secure-store';
+import { supabase } from './supabase';
+import { loadUserProfile } from './userProfile';
 
 /**
- * Checks if the user's 3-day free trial is currently active.
- * A trial is active if:
- * 1. User is NOT Pro
- * 2. Current time is within 3 days (72 hours) of account creation.
+ * 3-day / 20-scan window from account creation (for `scanEntitlements` only).
+ * Results “full body” analysis (systemic, organ, longevity, glucose) is gated by Pro / RevenueCat
+ * entitlement — including active subscription introductory offers — not by this flag.
+ *
+ * Considered active when not Pro and within 72h of `accountCreatedAt` (auth or profile).
  */
 export async function isTrialActive(): Promise<boolean> {
-  const isPro = (await SecureStore.getItemAsync('isPro')) === 'true';
-  if (isPro) return true; // Pro users always have "active" access
+  if ((await SecureStore.getItemAsync('isPro')) === 'true') return true;
 
-  const createdAtStr = await SecureStore.getItemAsync('accountCreatedAt');
-  if (!createdAtStr) return true; // Assume trial active if we don't know yet
+  try {
+    const profile = await loadUserProfile();
+    if (profile?.is_pro) return true;
+  } catch {
+    /* use date-based trial below */
+  }
+
+  let createdAtStr = await SecureStore.getItemAsync('accountCreatedAt');
+
+  if (!createdAtStr) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const authCreated = session?.user?.created_at;
+    if (authCreated) {
+      createdAtStr = authCreated;
+      void SecureStore.setItemAsync('accountCreatedAt', authCreated).catch(() => {});
+    }
+  }
+
+  if (!createdAtStr) return false;
 
   const createdAt = new Date(createdAtStr).getTime();
+  if (!Number.isFinite(createdAt)) return false;
   const now = new Date().getTime();
   const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
 
-  return (now - createdAt) < threeDaysInMs;
+  return now - createdAt < threeDaysInMs;
 }

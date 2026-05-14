@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRoute } from '@react-navigation/native';
 import { XIcon as X, CheckIcon as Check } from 'phosphor-react-native';
 import * as Haptics from 'expo-haptics';
 import { useColors, AppColors } from '../theme';
@@ -23,8 +24,9 @@ import { saveUserProfile } from '../utils/userProfile';
 
 /** Shapes we read from RevenueCat at runtime; avoids importing native IAP modules at screen load. */
 type PlanProduct = {
-  displayPrice: string;
-  billedText: string;
+  displayPrice: string;   // monthly equivalent for annual; full price for monthly
+  billedText: string;     // e.g. "$59.99 billed yearly" / "Billed monthly"
+  yearlyDisplayPrice?: string; // full billed yearly price shown as primary for annual card
   id?: string;
   currentPlanId?: string;
 } | null;
@@ -46,10 +48,22 @@ const FEATURE_LINES = [
 const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL || 'https://productverse.in/terms';
 const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL || 'https://productverse.in/privacy';
 
+export type UpgradePaywallContext = 'trial_scan_limit' | 'daily_scan_limit';
+
 export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenProps) {
+  const route = useRoute<any>();
+  const paywallContext = route.params?.paywallContext as UpgradePaywallContext | undefined;
+
   const C = useColors();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => makeStyles(C), [C]);
+
+  const limitBannerText =
+    paywallContext === 'trial_scan_limit'
+      ? "You've used all 20 trial scans. Unlock unlimited analysis with Pro."
+      : paywallContext === 'daily_scan_limit'
+        ? 'After your trial, free accounts get 1 scan per day. Pro is unlimited.'
+        : null;
   const [selectedPlan, setSelectedPlan] = useState<Plan>('annual');
   const [storeProducts, setStoreProducts] = useState<{
     annual: PlanProduct;
@@ -149,8 +163,10 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
   const isAnnual = selectedPlan === 'annual';
   const annualProduct = storeProducts.annual;
   const monthlyProduct = storeProducts.monthly;
-  const annualPrice = annualProduct?.displayPrice ?? '$4.99';
-  const annualSub = annualProduct?.billedText ?? '$59.99 billed yearly';
+  // yearlyDisplayPrice = the actual billed amount (e.g. "$59.99") — Apple requires this to be most prominent
+  const annualYearlyPrice = annualProduct?.yearlyDisplayPrice ?? '$59.99';
+  // displayPrice = monthly equivalent — shown subordinate below the billed amount
+  const annualMonthlyEquiv = annualProduct?.displayPrice ?? '$4.99';
   const monthlyPrice = monthlyProduct?.displayPrice ?? '$12.99';
 
   return (
@@ -167,6 +183,12 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
           <Text style={styles.heroTitle}>Nouriva AI Pro</Text>
           <Text style={styles.heroSub}>Everything in one place for your meals.</Text>
         </View>
+
+        {limitBannerText ? (
+          <View style={[styles.limitBanner, { backgroundColor: C.primaryMuted, borderColor: C.primary + '35' }]}>
+            <Text style={[styles.limitBannerText, { color: C.textPrimary }]}>{limitBannerText}</Text>
+          </View>
+        ) : null}
 
         {/* Minimal bullets */}
         <View style={styles.bulletBlock}>
@@ -200,13 +222,18 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
               <Text style={styles.bestValueText}>SAVE</Text>
             </View>
             <Text style={[styles.planPeriod, isAnnual && styles.planPeriodActive]}>Yearly</Text>
+
+            {/* Billed amount — most prominent per Apple guideline 3.1.2(c) */}
             <View style={styles.planPriceRow}>
-              <Text style={[styles.planPrice, isAnnual && styles.planPriceActive]}>{annualPrice}</Text>
-              <Text style={[styles.planPer, isAnnual && styles.planPerActive]}>/mo</Text>
+              <Text style={[styles.planPrice, isAnnual && styles.planPriceActive]}>{annualYearlyPrice}</Text>
+              <Text style={[styles.planPer, isAnnual && styles.planPerActive]}>/yr</Text>
             </View>
-            <Text style={[styles.planBilled, isAnnual && styles.planBilledActive]} numberOfLines={1}>
-              {annualSub}
+
+            {/* Monthly equivalent — subordinate size & color */}
+            <Text style={[styles.planMonthlyEquiv, isAnnual && styles.planMonthlyEquivActive]} numberOfLines={1}>
+              {annualMonthlyEquiv}/mo
             </Text>
+
             <View style={styles.trialBadge}>
               <Text style={styles.trialBadgeText}>3-day free trial</Text>
             </View>
@@ -239,7 +266,7 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
             <ActivityIndicator color="#FFF" />
           ) : (
             <Text style={styles.ctaText}>
-              {isAnnual ? 'Continue' : 'Subscribe'}
+              {isAnnual ? 'Start free trial' : 'Subscribe'}
             </Text>
           )}
         </TouchableOpacity>
@@ -338,13 +365,17 @@ function buildPlanProduct(pkg: any, plan: Plan): PlanProduct {
   const currencyCode = product.currencyCode;
 
   if (plan === 'annual') {
+    const monthlyEquiv =
+      yearlyPrice != null && currencyCode
+        ? formatCurrency(yearlyPrice / 12, currencyCode)
+        : null;
     return {
       id: product.identifier,
       currentPlanId: pkg.identifier,
-      displayPrice:
-        yearlyPrice != null && currencyCode
-          ? formatCurrency(yearlyPrice / 12, currencyCode)
-          : localizedPrice ?? '$4.99',
+      // yearlyDisplayPrice = full billed amount — shown prominently (Apple 3.1.2c)
+      yearlyDisplayPrice: localizedPrice ?? '$59.99',
+      // displayPrice = monthly equivalent — shown subordinate
+      displayPrice: monthlyEquiv ?? '$4.99',
       billedText: `${localizedPrice ?? '$59.99'} billed yearly`,
     };
   }
@@ -398,6 +429,14 @@ function makeStyles(C: AppColors) {
       fontSize: 15, color: C.textSecondary, textAlign: 'center', lineHeight: 20,
       paddingHorizontal: 12,
     },
+    limitBanner: {
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      marginBottom: 18,
+    },
+    limitBannerText: { fontSize: 14, fontWeight: '600', lineHeight: 20, textAlign: 'center' },
 
     bulletBlock: { marginBottom: 22, paddingHorizontal: 4, gap: 10 },
     bulletRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -428,6 +467,9 @@ function makeStyles(C: AppColors) {
     planPerActive: { color: C.primaryDark },
     planBilled: { fontSize: 11, color: C.textTertiary, fontWeight: '500', marginBottom: 8 },
     planBilledActive: { color: C.textSecondary },
+    // Monthly equivalent shown under yearly price — smaller & muted (subordinate per Apple 3.1.2c)
+    planMonthlyEquiv: { fontSize: 11, color: C.textTertiary, fontWeight: '500', marginBottom: 8 },
+    planMonthlyEquivActive: { color: C.textSecondary },
     trialBadge: {
       backgroundColor: C.vitalityLight, paddingHorizontal: 8, paddingVertical: 4,
       borderRadius: 8,

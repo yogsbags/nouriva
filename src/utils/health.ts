@@ -1,4 +1,6 @@
-import { Platform } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+import * as Device from 'expo-device';
+import { isIosSimulator } from './iosSimulator';
 
 type IosHealthNative = {
   initHealthKit: (
@@ -35,12 +37,24 @@ type IosHealthNative = {
 /**
  * `react-native-health` only works when the native iOS module is in the binary (EAS / `expo run:ios`).
  * Expo Go does not include it; we return null and use default stats with no console noise.
+ *
+ * New Architecture: the package's `index.js` does `Object.assign({}, NativeModules.AppleHealthKit)`.
+ * HostObject / legacy interop modules often expose methods that are not copied by `assign`, so
+ * `require('react-native-health').initHealthKit` is undefined even though the native module works.
+ * Prefer `NativeModules.AppleHealthKit` first, then fall back to the package for old bridge behavior.
  */
 function getIosHealthNativeOrNull(): IosHealthNative | null {
   if (Platform.OS !== 'ios') return null;
 
-  // Only use the public JS wrapper. Calling NativeModules.AppleHealthKit directly
-  // can throw native exceptions under the New Architecture/TurboModule bridge.
+  try {
+    const kit = NativeModules.AppleHealthKit as Partial<IosHealthNative> | undefined;
+    if (kit != null && typeof kit.initHealthKit === 'function') {
+      return kit as IosHealthNative;
+    }
+  } catch {
+    /* ignore */
+  }
+
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const m = require('react-native-health') as Partial<IosHealthNative>;
@@ -62,12 +76,12 @@ export async function getHealthDebugInfo(): Promise<string> {
   if (Platform.OS !== 'ios') return 'Platform: ' + Platform.OS + ' (not iOS)';
 
   const lines: string[] = [];
+  lines.push('Expo Device.isDevice: ' + String(Device.isDevice));
+  lines.push('isIosSimulator(): ' + String(isIosSimulator()));
 
-  // 1. Check NativeModules
+  // 1. Check NativeModules (keys may be empty on New Arch proxy; use `'in'` / direct access too)
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { NativeModules } = require('react-native') as { NativeModules: Record<string, unknown> };
-    const allKeys = Object.keys(NativeModules);
+    const allKeys = Object.keys(NativeModules as object);
     const healthKeys = allKeys.filter(k =>
       k.toLowerCase().includes('health') ||
       k.toLowerCase().includes('rnfb') ||
@@ -80,7 +94,7 @@ export async function getHealthDebugInfo(): Promise<string> {
     lines.push('NativeModules error: ' + String(e));
   }
 
-  // 2. Check react-native-health module
+  // 2. Check react-native-health re-export (often broken on New Arch — compare to direct NM)
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const m = require('react-native-health') as Record<string, unknown>;
@@ -93,8 +107,6 @@ export async function getHealthDebugInfo(): Promise<string> {
 
   // 2b. Check NativeModules.AppleHealthKit directly (New Arch path)
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { NativeModules } = require('react-native') as { NativeModules: Record<string, unknown> };
     const kit = NativeModules['AppleHealthKit'] as Record<string, unknown> | undefined;
     if (kit) {
       const kitKeys = Object.keys(kit);
@@ -105,6 +117,13 @@ export async function getHealthDebugInfo(): Promise<string> {
     }
   } catch (e) {
     lines.push('NM direct access error: ' + String(e));
+  }
+
+  lines.push('getIosHealthNativeOrNull: ' + (getIosHealthNativeOrNull() ? 'YES ✓' : 'NO ✗'));
+
+  if (isIosSimulator()) {
+    lines.push('initHealthKit call: SKIPPED (Simulator — unstable HealthKit; device uses full API).');
+    return lines.join('\n');
   }
 
   // 3. Try calling initHealthKit and capture the exact error
@@ -185,6 +204,8 @@ function lastDaysRange(days: number) {
 let iosHealthKitInitialized = false;
 
 async function initIosHealthKit(): Promise<boolean> {
+  if (isIosSimulator()) return false;
+
   const native = getIosHealthNativeOrNull();
   if (!native) {
     console.warn('[Health] react-native-health native module not available (null). Check HealthKit entitlement and App ID capability in Apple Developer Portal.');
@@ -462,30 +483,39 @@ export interface NutritionEntry {
  */
 export async function writeNutritionToAppleHealth(entry: NutritionEntry): Promise<void> {
   if (Platform.OS !== 'ios') return;
+
+  // Keys MUST match react-native-health native saveFood (RCTAppleHealthKit+Methods_Dietary.m).
+  // Wrong keys leave foodName nil; @{ HKMetadataKeyFoodType: nil } raises NSException → app crash.
+  const foodName = String(entry.name ?? 'Meal').trim() || 'Meal';
+  const calories = Math.max(0, entry.calories);
+  const carbs = Math.max(0, entry.carbs);
+  const protein = Math.max(0, entry.protein);
+  const fat = Math.max(0, entry.fat);
+  if (calories <= 0 && carbs <= 0 && protein <= 0 && fat <= 0) return;
+
   const ok = await initIosHealthKit();
   if (!ok) return;
   const native = getIosHealthNativeOrNull();
   if (!native || typeof native.saveFood !== 'function') return;
 
+  const opts: Record<string, string | number> = {
+    foodName,
+    mealType: 'Snack',
+    energy: calories,
+    carbohydrates: carbs,
+    protein,
+    fatTotal: fat,
+  };
+  if (entry.saturatedFat != null && entry.saturatedFat > 0) opts.fatSaturated = entry.saturatedFat;
+  if (entry.fiber != null && entry.fiber > 0) opts.fiber = entry.fiber;
+  if (entry.sodium != null && entry.sodium > 0) opts.sodium = entry.sodium / 1000;
+  if (entry.sugar != null && entry.sugar > 0) opts.sugar = entry.sugar;
+
   await new Promise<void>((resolve) => {
-    native.saveFood(
-      {
-        name: entry.name,
-        calories: entry.calories,
-        carbohydrates: entry.carbs,
-        protein: entry.protein,
-        totalFat: entry.fat,
-        saturatedFat: entry.saturatedFat,
-        dietaryFiber: entry.fiber,
-        sodium: entry.sodium ? entry.sodium / 1000 : undefined, // mg → g for HealthKit
-        sugar: entry.sugar,
-        water: entry.water ? entry.water / 1000 : undefined, // ml → L for HealthKit
-      },
-      (err) => {
-        if (err) console.warn('[Health] saveFood error:', err);
-        resolve();
-      }
-    );
+    native.saveFood(opts as Parameters<IosHealthNative['saveFood']>[0], (err) => {
+      if (err) console.warn('[Health] saveFood error:', err);
+      resolve();
+    });
   });
 }
 

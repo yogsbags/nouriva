@@ -4,7 +4,7 @@ import {
   FlaskIcon as Flask,
   FireSimpleIcon as FireSimple,
   LeafIcon as Leaf,
-  SparkleIcon as Sparkle,
+  DnaIcon as Dna,
   ShareNetworkIcon as ShareNetwork,
 } from 'phosphor-react-native';
 import { useColors, AppColors } from '../theme';
@@ -42,7 +42,7 @@ export default function DietaryAgeCard({ result, onSharePress }: Props) {
       <View style={styles.headerRow}>
         <View style={styles.headerLeft}>
           <View style={styles.titleWrap}>
-            <Sparkle size={14} color={C.primary} weight="fill" />
+            <Dna size={14} color={C.primary} weight="duotone" />
             <Text style={styles.title}>Dietary Biological Age</Text>
           </View>
           <View style={[styles.ratingBadge, { backgroundColor: meta.color + '20', borderColor: meta.color + '40', alignSelf: 'flex-start', marginTop: 10 }]}>
@@ -172,15 +172,16 @@ function PathwayStat({
 function makeStyles(C: AppColors) {
   return StyleSheet.create({
     card: {
-      backgroundColor: C.surface,
+      backgroundColor: C.dietaryFeatureBg,
       borderRadius: 24,
       padding: 20,
-      borderWidth: 1,
-      borderColor: C.border,
-      shadowColor: C.shadowColor,
+      borderWidth: 2,
+      borderColor: C.dietaryFeatureBorder,
+      shadowColor: C.dietaryFeatureBorder,
       shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.06,
-      shadowRadius: 16,
+      shadowOpacity: 0.22,
+      shadowRadius: 20,
+      elevation: 4,
     },
     headerRow: {
       flexDirection: 'row',
@@ -238,10 +239,12 @@ function makeStyles(C: AppColors) {
     // Pathway stats
     pathwayRow: {
       flexDirection: 'row',
-      backgroundColor: C.bgSecondary,
+      backgroundColor: C.surface,
       borderRadius: 16,
       padding: 16,
       marginBottom: 12,
+      borderWidth: 1,
+      borderColor: C.borderSubtle,
     },
     pathwayDivider: { width: 1, backgroundColor: C.border, marginHorizontal: 8 },
     // Footer

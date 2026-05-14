@@ -19,6 +19,9 @@ export const lightColors = {
   vitality: '#10B981',
   vitalityLight: '#ECFDF5',
   vitalityMuted: 'rgba(16,185,129,0.12)',
+  dietaryFeatureBg: '#FFFFFF',
+  /** Dietary / longevity card — gold frame (distinct from primary indigo) */
+  dietaryFeatureBorder: '#C6A035',
   energy: '#F59E0B',
   energyLight: '#FFFBEB',
   energyMuted: 'rgba(245,158,11,0.12)',
@@ -41,7 +44,7 @@ export const lightColors = {
   scoreLow: '#EF4444',
   scannerBg: '#F7F9FC', // matches bg
   scannerSurface: '#FFFFFF', // matches surface
-  scannerCard: '#FFFFFF', 
+  scannerCard: '#FFFFFF',
   scannerBorder: '#E2E8F0', // matches border
   scannerText: '#0F172A', // matches textPrimary
   scannerTextMuted: '#94A3B8', // matches textTertiary
@@ -69,6 +72,8 @@ export const darkColors: typeof lightColors = {
   vitality: '#34D399',
   vitalityLight: '#032918',
   vitalityMuted: 'rgba(52,211,153,0.18)',
+  dietaryFeatureBg: '#101A2E',
+  dietaryFeatureBorder: '#E6C229',
   energy: '#FCD34D',
   energyLight: '#1C1402',
   energyMuted: 'rgba(252,211,77,0.15)',

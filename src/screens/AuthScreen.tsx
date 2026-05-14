@@ -25,7 +25,14 @@ import * as Linking from 'expo-linking';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import Svg, { Path } from 'react-native-svg';
-import { EnvelopeIcon as Envelope, LockSimpleIcon as LockSimple, ArrowRightIcon as ArrowRight, SparkleIcon as Sparkle, ShieldIcon as Shield } from 'phosphor-react-native';
+import {
+  EnvelopeIcon as Envelope,
+  LockSimpleIcon as LockSimple,
+  ArrowRightIcon as ArrowRight,
+  SparkleIcon as Sparkle,
+  ShieldIcon as Shield,
+  AppleLogoIcon as AppleLogoIcon,
+} from 'phosphor-react-native';
 
 function GoogleLogo({ size = 20 }: { size?: number }) {
   return (
@@ -153,6 +160,10 @@ export default function AuthScreen() {
   }
 
   async function handleAppleSignIn() {
+    if (!(await AppleAuthentication.isAvailableAsync())) {
+      Alert.alert('Apple Sign-In Unavailable', 'Sign in with Apple is not available on this device.');
+      return;
+    }
     setAppleLoading(true);
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -364,15 +375,23 @@ export default function AuthScreen() {
             )}
           </TouchableOpacity>
 
-          {Platform.OS === 'ios' && (
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-              cornerRadius={16}
-              style={styles.appleButton}
+          {Platform.OS === 'ios' ? (
+            <TouchableOpacity
+              style={[styles.appleSignInButton, appleLoading && styles.authButtonLoading]}
               onPress={handleAppleSignIn}
-            />
-          )}
+              disabled={loading || biometricBusy || googleLoading || appleLoading}
+              activeOpacity={0.85}
+            >
+              {appleLoading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <AppleLogoIcon size={20} color="#FFFFFF" weight="fill" />
+                  <Text style={styles.appleSignInButtonText}>Sign in with Apple</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : null}
 
           {!isSignUp && biometricLoginAvailable ? (
             <TouchableOpacity
@@ -634,10 +653,21 @@ function makeStyles(C: AppColors) {
       fontSize: 15,
       fontWeight: '600',
     },
-    appleButton: {
+    /** Matches Google row layout; label uses same typography as `googleButtonText` (Apple system button does not allow font sizing). */
+    appleSignInButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
       height: 52,
+      borderRadius: 16,
       marginTop: 14,
-      width: '100%',
+      gap: 10,
+      backgroundColor: '#000000',
+    },
+    appleSignInButtonText: {
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '600',
     },
     forgotBtn: { alignItems: 'flex-end', marginTop: 10, paddingVertical: 4 },
     forgotText: { fontSize: 13, color: C.primary, fontWeight: '600' },

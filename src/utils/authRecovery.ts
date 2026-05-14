@@ -1,3 +1,4 @@
+import * as SecureStore from 'expo-secure-store';
 import { supabase } from './supabase';
 import { clearBiometricLoginSnapshot } from './biometricLogin';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
@@ -9,6 +10,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 export async function signOutCompletely(): Promise<void> {
   try {
     await clearBiometricLoginSnapshot();
+    await SecureStore.deleteItemAsync('healthSyncEnabled').catch(() => {});
     await GoogleSignin.signOut().catch(() => {
       // The user may not have used Google Sign-In in this install.
     });
