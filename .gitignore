@@ -30,7 +30,8 @@ mcp-server.log
 .DS_Store
 *.pem
 
-# IDE
+# IDE / local tooling
+.mcp.json
 .idea/
 .vscode/
 *.swp
@@ -54,6 +55,8 @@ credentials.json
 *.apk
 *.aab
 *.ipa
+simulator_build/
+build_direct_log.txt
 scratch/
 app_store_screenshots/
 app_store_screenshot.png

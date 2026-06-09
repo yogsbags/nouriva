@@ -45,16 +45,16 @@ function GoogleLogo({ size = 20 }: { size?: number }) {
 }
 import { useColors, AppColors } from '../theme';
 
-// Public OAuth client IDs from GoogleService-Info.plist / google-services.json.
-// Keep these in source so EAS environment drift cannot ship a stale Google project ID.
-const GOOGLE_WEB_CLIENT_ID = '311592013058-fuf3p7ss0iti06vtvr93lihf98tbo0np.apps.googleusercontent.com';
-const GOOGLE_IOS_CLIENT_ID = '311592013058-135dku8t8d5s5d4ku5riojkbvi2k9dtf.apps.googleusercontent.com';
+const GOOGLE_WEB_CLIENT_ID = (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '').trim();
+const GOOGLE_IOS_CLIENT_ID = (process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '').trim();
 
-GoogleSignin.configure({
-  webClientId: GOOGLE_WEB_CLIENT_ID,
-  iosClientId: GOOGLE_IOS_CLIENT_ID,
-  scopes: ['email', 'profile'],
-});
+if (GOOGLE_WEB_CLIENT_ID && GOOGLE_IOS_CLIENT_ID) {
+  GoogleSignin.configure({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    scopes: ['email', 'profile'],
+  });
+}
 
 const PRIVACY_POLICY_URL = 'https://productverse.in/privacy';
 const TERMS_URL = 'https://productverse.in/terms';

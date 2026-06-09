@@ -1,20 +1,21 @@
 import PostHog from 'posthog-react-native';
 
-export const posthog = new PostHog(
-  'phc_xVNB2r0uOdndPxMn2jAIJ3WdKhcCQeFWiG9UzMKVxwb',
-  {
-    host: 'https://us.i.posthog.com',
-    // Flush events in batches every 30s or when 20 events accumulate
-    flushAt: 20,
-    flushInterval: 30000,
-  }
-);
+const posthogKey = (process.env.EXPO_PUBLIC_POSTHOG_KEY ?? '').trim();
+const posthogHost = (process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com').trim();
+
+export const posthog = new PostHog(posthogKey || 'disabled', {
+  host: posthogHost,
+  // Flush events in batches every 30s or when 20 events accumulate
+  flushAt: 20,
+  flushInterval: 30000,
+});
 
 /**
  * Capture a product event in PostHog.
  * All events are also mirrored to Firebase Analytics via analytics.ts.
  */
 export function capture(event: string, properties: Record<string, any> = {}) {
+  if (!posthogKey) return;
   try {
     posthog.capture(event, properties);
   } catch (e) {
@@ -26,6 +27,7 @@ export function capture(event: string, properties: Record<string, any> = {}) {
  * Identify a logged-in user so events are attributed correctly.
  */
 export function identifyPostHogUser(userId: string, properties?: Record<string, any>) {
+  if (!posthogKey) return;
   try {
     posthog.identify(userId, properties);
   } catch (e) {
@@ -37,6 +39,7 @@ export function identifyPostHogUser(userId: string, properties?: Record<string, 
  * Reset identity on sign-out.
  */
 export function resetPostHogUser() {
+  if (!posthogKey) return;
   try {
     posthog.reset();
   } catch (e) {

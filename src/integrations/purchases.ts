@@ -5,9 +5,14 @@ import * as SecureStore from 'expo-secure-store';
 import { saveUserProfile, loadUserProfile } from '../utils/userProfile';
 import { isIosSimulator } from '../utils/iosSimulator';
 
-const IOS_API_KEY = 'appl_uXWKxIPvlyFfCQBmXbXOwONFlBQ';
-const ANDROID_API_KEY = 'goog_HBLkBgTamZlEzkgFQVuVXuIErtZ';
 const ENTITLEMENT_ID = 'Nouriva AI Pro';
+
+function getRevenueCatApiKey(): string {
+  if (Platform.OS === 'ios') {
+    return (process.env.EXPO_PUBLIC_REVENUECAT_IOS_PUBLIC_KEY ?? '').trim();
+  }
+  return (process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_PUBLIC_KEY ?? '').trim();
+}
 
 /**
  * iOS Simulator + StoreKit often throws native NSExceptions; RN's Turbo path can then
@@ -89,7 +94,11 @@ async function ensureConfigured(userId?: string): Promise<boolean> {
   }
   try {
     Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.WARN : LOG_LEVEL.ERROR);
-    const apiKey = Platform.OS === 'ios' ? IOS_API_KEY : ANDROID_API_KEY;
+    const apiKey = getRevenueCatApiKey();
+    if (!apiKey) {
+      console.warn('[RevenueCat] Missing EXPO_PUBLIC_REVENUECAT_*_PUBLIC_KEY — skipping configure.');
+      return false;
+    }
     Purchases.configure({ apiKey, appUserID: userId });
     return true;
   } catch (e) {
