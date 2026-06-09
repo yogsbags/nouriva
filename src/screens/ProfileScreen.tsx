@@ -159,6 +159,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const [tdeeGoal, setTdeeGoal] = useState<CalorieGoalMode>('mild_loss');
   const [dietaryAgeResult, setDietaryAgeResult] = useState<DietaryAgeResult | null>(null);
   const [longevityShareVisible, setLongevityShareVisible] = useState(false);
+  const [scienceModalVisible, setScienceModalVisible] = useState(false);
 
   const tdeeWeightKgNumber = useMemo(() => {
     const w = parseFloat(String(tdeeWeightKg).replace(',', '.'));
@@ -526,13 +527,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     }
   };
 
-  const handleHowWeAnalyze = () => {
-    Alert.alert(
-      'How we analyze',
-      'Nouriva AI analyses your meals using Google Gemini, a large-language-model AI service. Your meal photo or description — and any health context you've added — is sent to Gemini for multi-system analysis across metabolic, inflammatory, neurological, hepatic, renal, and cardiovascular pathways.\n\nCitations in the Sources section are retrieved via Google Search Grounding, providing real, verifiable links from sources like PubMed, NIH, and Harvard Health instead of generated references.\n\nNo data is stored by Google beyond processing your request. All analysis is for informational purposes only and does not constitute medical advice.',
-      [{ text: 'Understood' }]
-    );
-  };
+  const handleHowWeAnalyze = () => setScienceModalVisible(true);
 
   const applyTdeeTargets = async () => {
     const age = parseInt(tdeeAge, 10);
@@ -1386,6 +1381,110 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         </SafeAreaView>
       </KeyboardAvoidingView>
     </Modal>
+
+    {/* ── Our Science / How We Analyze modal ── */}
+    <Modal
+      visible={scienceModalVisible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={() => setScienceModalVisible(false)}
+    >
+      <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }}>
+        {/* Header */}
+        <View style={styles.scienceModalHeader}>
+          <TouchableOpacity onPress={() => setScienceModalVisible(false)} style={styles.tdeeModalClose} hitSlop={12}>
+            <XIcon size={22} weight="bold" color={C.textSecondary} />
+          </TouchableOpacity>
+          <Text style={styles.tdeeModalTitle}>Our Science</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        <ScrollView
+          style={styles.tdeeModalScroll}
+          contentContainerStyle={[styles.tdeeModalScrollContent, { paddingBottom: 60 }]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Intro */}
+          <View style={styles.scienceSection}>
+            <Text style={styles.scienceSectionTitle}>AI-Powered Nutritional Analysis</Text>
+            <Text style={styles.scienceBody}>
+              Nouriva AI uses Google Gemini — a state-of-the-art large-language model — to analyse every meal across six physiological systems simultaneously. When you scan food or log a meal, your input (photo, description, or manual entry) is sent to Gemini along with any personalised health context you've added.
+            </Text>
+          </View>
+
+          {/* Vitality Score */}
+          <View style={styles.scienceSection}>
+            <Text style={styles.scienceSectionTitle}>Vitality Score (0–10)</Text>
+            <Text style={styles.scienceBody}>
+              The Vitality Score is a composite rating of how the meal supports overall physiological function:
+            </Text>
+            {[
+              { range: '8–10', label: 'Excellent', desc: 'Dense micronutrients, balanced macros, minimal pro-inflammatory load. Supports long-term metabolic health.' },
+              { range: '5–7', label: 'Good', desc: 'Reasonable nutritional profile with some trade-offs. Fine for regular consumption in a balanced diet.' },
+              { range: '3–4', label: 'Moderate', desc: 'Notable nutritional gaps or elevations in sugar, sodium, or saturated fat. Worth moderating.' },
+              { range: '0–2', label: 'Poor', desc: 'High in ultra-processed ingredients, additives, or lacking significant nutritional value.' },
+            ].map((row) => (
+              <View key={row.range} style={styles.scienceScoreRow}>
+                <View style={styles.scienceScoreBadge}>
+                  <Text style={styles.scienceScoreBadgeText}>{row.range}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.scienceScoreLabel}>{row.label}</Text>
+                  <Text style={styles.scienceScoreDesc}>{row.desc}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Six Systems */}
+          <View style={styles.scienceSection}>
+            <Text style={styles.scienceSectionTitle}>Six Physiological Systems</Text>
+            <Text style={styles.scienceBody}>
+              Every meal is analysed across six pathways. Each system receives its own 0–10 score reflecting how the meal's composition interacts with that body system:
+            </Text>
+            {[
+              { icon: '⚡', name: 'Metabolic', desc: 'Blood sugar regulation, insulin sensitivity, glycaemic impact, and energy metabolism including mitochondrial substrate use.' },
+              { icon: '🔥', name: 'Inflammatory', desc: 'Pro- and anti-inflammatory compounds — omega-3 to omega-6 ratios, antioxidant density, polyphenols, and cytokine modulation potential.' },
+              { icon: '🫀', name: 'Cardiovascular', desc: 'Impact on LDL/HDL balance, arterial stiffness markers, blood pressure-relevant minerals (potassium, magnesium, sodium), and endothelial health.' },
+              { icon: '🫁', name: 'Hepatic', desc: 'Liver enzyme load, fructose and ethanol metabolism, fatty acid processing, and detoxification pathway support.' },
+              { icon: '🧠', name: 'Neurological', desc: 'Precursors to neurotransmitters (tryptophan, tyrosine, choline), B-vitamins for cognitive function, and blood–brain barrier-relevant compounds.' },
+              { icon: '🔬', name: 'Renal', desc: 'Dietary load on kidney filtration — phosphorus, potassium, oxalates, purines, and protein clearance demands.' },
+            ].map((sys) => (
+              <View key={sys.name} style={styles.scienceSystemRow}>
+                <Text style={styles.scienceSystemIcon}>{sys.icon}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.scienceSystemName}>{sys.name}</Text>
+                  <Text style={styles.scienceSystemDesc}>{sys.desc}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* Citations */}
+          <View style={styles.scienceSection}>
+            <Text style={styles.scienceSectionTitle}>Real Citations via Google Search</Text>
+            <Text style={styles.scienceBody}>
+              The Citations & Sources section in each result is powered by Gemini's Google Search Grounding. Rather than generating plausible-sounding references, Nouriva AI makes separate calls to the Gemini API with live Google Search enabled — each call retrieves a real, verifiable URL from sources such as PubMed, NIH, Harvard T.H. Chan School of Public Health, and the WHO.{'\n\n'}Multiple parallel searches are fired per analysis so you receive up to six distinct, topic-specific citations covering nutrition, macronutrients, micronutrients, and any specific health alerts flagged for your meal.
+            </Text>
+          </View>
+
+          {/* Privacy */}
+          <View style={styles.scienceSection}>
+            <Text style={styles.scienceSectionTitle}>Privacy & Data</Text>
+            <Text style={styles.scienceBody}>
+              Your meal photos and health context are sent to Google Gemini solely for the purpose of generating your analysis. Google's API data usage policies apply — data is not used to train Google's models when sent via the API. Nouriva AI does not store your raw images on its servers; only the structured analysis result and food name are saved to your history in Supabase.{'\n\n'}Your health context (medical conditions, biometrics, lab insights) is stored locally on your device using iOS Secure Enclave–backed SecureStore and is only transmitted when you initiate a scan.
+            </Text>
+          </View>
+
+          {/* Disclaimer */}
+          <View style={[styles.scienceSection, styles.scienceDisclaimerBox]}>
+            <Text style={styles.scienceDisclaimerText}>
+              ⚕️ Medical Disclaimer — Nouriva AI is for informational and educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider before making dietary changes based on any health condition.
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
     </>
   );
 }
@@ -1641,5 +1740,101 @@ function makeStyles(C: AppColors) {
       alignItems: 'center',
     },
     tdeeApplyBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+
+    // ── Science Modal ──
+    scienceModalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: C.border,
+    },
+    scienceSection: {
+      marginBottom: 28,
+    },
+    scienceSectionTitle: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: C.primary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+      marginBottom: 10,
+    },
+    scienceBody: {
+      fontSize: 14,
+      color: C.textSecondary,
+      lineHeight: 22,
+    },
+    scienceScoreRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      marginTop: 10,
+    },
+    scienceScoreBadge: {
+      minWidth: 44,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      backgroundColor: C.primaryLight,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    scienceScoreBadgeText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: C.primary,
+    },
+    scienceScoreLabel: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: C.textPrimary,
+      marginBottom: 2,
+    },
+    scienceScoreDesc: {
+      fontSize: 13,
+      color: C.textSecondary,
+      lineHeight: 19,
+    },
+    scienceSystemRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      marginTop: 12,
+      backgroundColor: C.surface,
+      borderRadius: 14,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: C.border,
+    },
+    scienceSystemIcon: {
+      fontSize: 22,
+      marginTop: 1,
+    },
+    scienceSystemName: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: C.textPrimary,
+      marginBottom: 3,
+    },
+    scienceSystemDesc: {
+      fontSize: 13,
+      color: C.textSecondary,
+      lineHeight: 19,
+    },
+    scienceDisclaimerBox: {
+      backgroundColor: C.bgSecondary,
+      borderRadius: 14,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: C.border,
+    },
+    scienceDisclaimerText: {
+      fontSize: 12,
+      color: C.textTertiary,
+      lineHeight: 19,
+      fontStyle: 'italic',
+    },
   });
 }

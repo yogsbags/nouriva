@@ -312,7 +312,8 @@ export default function App() {
       client={posthog}
       autocapture={{
         captureScreens: false,
-        captureTouches: true,
+        // Touch autocapture adds a root overlay that can swallow TextInput taps / keyboard on iOS.
+        captureTouches: false,
       }}
     >
       <SafeAreaProvider>

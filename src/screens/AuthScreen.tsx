@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Pressable,
   ActivityIndicator,
   Alert,
   Platform,
@@ -45,7 +44,6 @@ function GoogleLogo({ size = 20 }: { size?: number }) {
   );
 }
 import { useColors, AppColors } from '../theme';
-import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
 
 // Public OAuth client IDs from GoogleService-Info.plist / google-services.json.
 // Keep these in source so EAS environment drift cannot ship a stale Google project ID.
@@ -76,8 +74,35 @@ export default function AuthScreen() {
   const [biometricLoginAvailable, setBiometricLoginAvailable] = useState(false);
   const [biometricMethodLabel, setBiometricMethodLabel] = useState('Biometric');
 
-  const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  /** iOS Fabric: updating parent layout (focus ring) in the same tick as onFocus can drop TextInput focus. */
+  const focusHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleFocusHighlight = useCallback((field: 'email' | 'password') => {
+    if (focusHighlightTimerRef.current) {
+      clearTimeout(focusHighlightTimerRef.current);
+      focusHighlightTimerRef.current = null;
+    }
+    const delay = Platform.OS === 'ios' ? 50 : 0;
+    focusHighlightTimerRef.current = setTimeout(() => {
+      focusHighlightTimerRef.current = null;
+      setFocusedField(field);
+    }, delay);
+  }, []);
+
+  const clearFocusHighlight = useCallback(() => {
+    if (focusHighlightTimerRef.current) {
+      clearTimeout(focusHighlightTimerRef.current);
+      focusHighlightTimerRef.current = null;
+    }
+    setFocusedField(null);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (focusHighlightTimerRef.current) clearTimeout(focusHighlightTimerRef.current);
+    },
+    []
+  );
 
   const refreshBiometricLoginAvailability = useCallback(async () => {
     const [snapshot, hasHardware, enrolled] = await Promise.all([
@@ -250,16 +275,15 @@ export default function AuthScreen() {
   };
 
   return (
-    <ScreenEnterAnimation>
     <SafeAreaView style={styles.container}>
       <ScrollView
         style={styles.kav}
         contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'none' : 'on-drag'}
         showsVerticalScrollIndicator={false}
         bounces={Platform.OS === 'ios'}
-        automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+        automaticallyAdjustKeyboardInsets={false}
       >
         <View style={styles.header}>
           <View style={styles.logoWrapper}>
@@ -277,63 +301,53 @@ export default function AuthScreen() {
           <View style={styles.fieldLabel}>
             <Text style={styles.fieldLabelText}>Email</Text>
           </View>
-          <Pressable
-            onPress={() => emailRef.current?.focus()}
-            style={[
-              styles.inputContainer,
-              focusedField === 'email' && styles.inputContainerFocused,
-            ]}
-          >
+          <View style={[styles.inputContainer, focusedField === 'email' && styles.inputContainerFocused]}>
             <View style={styles.inputIcon} pointerEvents="none">
               <Envelope size={18} color={focusedField === 'email' ? C.primary : C.textTertiary} weight="bold" />
             </View>
             <TextInput
-              ref={emailRef}
               style={styles.input}
               placeholder="your@email.com"
               placeholderTextColor={C.textTertiary}
               value={email}
               onChangeText={setEmail}
+              editable
+              rejectResponderTermination
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
               textContentType="emailAddress"
               showSoftInputOnFocus
               {...(Platform.OS === 'android' ? { importantForAutofill: 'yes' as const } : {})}
-              onFocus={() => setFocusedField('email')}
-              onBlur={() => setFocusedField(null)}
+              onFocus={() => scheduleFocusHighlight('email')}
+              onBlur={() => clearFocusHighlight()}
             />
-          </Pressable>
+          </View>
 
           <View style={[styles.fieldLabel, { marginTop: 16 }]}>
             <Text style={styles.fieldLabelText}>Password</Text>
           </View>
-          <Pressable
-            onPress={() => passwordRef.current?.focus()}
-            style={[
-              styles.inputContainer,
-              focusedField === 'password' && styles.inputContainerFocused,
-            ]}
-          >
+          <View style={[styles.inputContainer, focusedField === 'password' && styles.inputContainerFocused]}>
             <View style={styles.inputIcon} pointerEvents="none">
               <LockSimple size={18} color={focusedField === 'password' ? C.primary : C.textTertiary} weight="bold" />
             </View>
             <TextInput
-              ref={passwordRef}
               style={styles.input}
               placeholder="••••••••"
               placeholderTextColor={C.textTertiary}
               value={password}
               onChangeText={setPassword}
+              editable
+              rejectResponderTermination
               secureTextEntry
               autoComplete="password"
               textContentType={isSignUp ? 'newPassword' : 'password'}
               showSoftInputOnFocus
               {...(Platform.OS === 'android' ? { importantForAutofill: 'yes' as const } : {})}
-              onFocus={() => setFocusedField('password')}
-              onBlur={() => setFocusedField(null)}
+              onFocus={() => scheduleFocusHighlight('password')}
+              onBlur={() => clearFocusHighlight()}
             />
-          </Pressable>
+          </View>
 
           <TouchableOpacity
             style={[styles.authButton, loading && styles.authButtonLoading]}
@@ -448,7 +462,6 @@ export default function AuthScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
-    </ScreenEnterAnimation>
   );
 }
 
@@ -538,11 +551,15 @@ function makeStyles(C: AppColors) {
     inputContainerFocused: {
       borderColor: C.primary,
       backgroundColor: C.surface,
-      shadowColor: C.primary,
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 2,
+      ...(Platform.OS === 'android'
+        ? {
+            shadowColor: C.primary,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+            elevation: 2,
+          }
+        : {}),
     },
     input: {
       flex: 1,

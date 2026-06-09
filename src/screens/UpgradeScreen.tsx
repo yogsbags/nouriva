@@ -70,6 +70,7 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
     monthly: PlanProduct;
   }>({ annual: null, monthly: null });
   const [storeLoading, setStoreLoading] = useState(true);
+  const [storeError, setStoreError] = useState(false);
   const [purchaseBusy, setPurchaseBusy] = useState(false);
 
   const handleClose = useCallback(() => {
@@ -94,40 +95,54 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
 
 
 
-  useEffect(() => {
+  const loadStoreProducts = useCallback(async () => {
     if (isExpoGo()) {
       setStoreLoading(false);
       return;
     }
 
-    let alive = true;
-    void (async () => {
-      try {
-        const { getOfferings } = await import('../integrations/purchases');
-        const offerings = await getOfferings();
-        const current = offerings?.current;
-        if (!current || !alive) return;
+    setStoreLoading(true);
+    setStoreError(false);
 
-        const annualPackage = current.annual
-          ?? current.availablePackages?.find((p: any) => p.packageType === 'ANNUAL' || p.identifier === '$rc_annual');
-        const monthlyPackage = current.monthly
-          ?? current.availablePackages?.find((p: any) => p.packageType === 'MONTHLY' || p.identifier === '$rc_monthly');
+    // Timeout guard: if RevenueCat takes > 12 s (common in sandbox on iPad), show error + retry
+    const timeoutId = setTimeout(() => {
+      setStoreLoading(false);
+      setStoreError(true);
+    }, 12_000);
 
-        setStoreProducts({
-          annual: buildPlanProduct(annualPackage, 'annual'),
-          monthly: buildPlanProduct(monthlyPackage, 'monthly'),
-        });
-      } catch (e) {
-        console.warn('[RevenueCat] Failed to load localized products:', e);
-      } finally {
-        if (alive) setStoreLoading(false);
+    try {
+      const { getOfferings } = await import('../integrations/purchases');
+      const offerings = await getOfferings();
+      const current = offerings?.current;
+
+      clearTimeout(timeoutId);
+
+      if (!current) {
+        setStoreError(true);
+        return;
       }
-    })();
 
-    return () => {
-      alive = false;
-    };
+      const annualPackage = current.annual
+        ?? current.availablePackages?.find((p: any) => p.packageType === 'ANNUAL' || p.identifier === '$rc_annual');
+      const monthlyPackage = current.monthly
+        ?? current.availablePackages?.find((p: any) => p.packageType === 'MONTHLY' || p.identifier === '$rc_monthly');
+
+      setStoreProducts({
+        annual: buildPlanProduct(annualPackage, 'annual'),
+        monthly: buildPlanProduct(monthlyPackage, 'monthly'),
+      });
+    } catch (e) {
+      clearTimeout(timeoutId);
+      console.warn('[RevenueCat] Failed to load localized products:', e);
+      setStoreError(true);
+    } finally {
+      setStoreLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    void loadStoreProducts();
+  }, [loadStoreProducts]);
 
   const handleSubscribe = async () => {
     if (isExpoGo()) {
@@ -255,21 +270,36 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
           </TouchableOpacity>
         </View>
 
-        {/* CTA */}
-        <TouchableOpacity
-          style={styles.cta}
-          onPress={handleSubscribe}
-          activeOpacity={0.88}
-          disabled={purchaseBusy || storeLoading}
-        >
-          {purchaseBusy || storeLoading ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.ctaText}>
-              {isAnnual ? 'Start free trial' : 'Subscribe'}
+        {/* CTA — or retry banner if store failed to load */}
+        {storeError ? (
+          <View style={styles.storeErrorBanner}>
+            <Text style={styles.storeErrorText}>
+              Could not load subscription options. Please check your connection and try again.
             </Text>
-          )}
-        </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.retryBtn}
+              onPress={() => void loadStoreProducts()}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.retryBtnText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.cta}
+            onPress={handleSubscribe}
+            activeOpacity={0.88}
+            disabled={purchaseBusy || storeLoading}
+          >
+            {purchaseBusy || storeLoading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.ctaText}>
+                {isAnnual ? 'Start free trial' : 'Subscribe'}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.ctaSub}>
           {isAnnual
@@ -476,6 +506,21 @@ function makeStyles(C: AppColors) {
     },
     trialBadgeText: { color: C.vitality, fontSize: 11, fontWeight: '700' },
     trialBadgeSpacer: { height: 28, marginBottom: 0 },
+
+    // Store error / retry
+    storeErrorBanner: {
+      borderRadius: 14, borderWidth: 1, borderColor: C.border,
+      backgroundColor: C.cardBg, padding: 16, alignItems: 'center',
+      marginBottom: 8, gap: 12,
+    },
+    storeErrorText: {
+      fontSize: 14, color: C.textSecondary, textAlign: 'center', lineHeight: 20,
+    },
+    retryBtn: {
+      backgroundColor: C.primary, borderRadius: 10,
+      paddingVertical: 10, paddingHorizontal: 28,
+    },
+    retryBtnText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
 
     // CTA
     cta: {
