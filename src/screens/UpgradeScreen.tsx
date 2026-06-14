@@ -45,8 +45,7 @@ const FEATURE_LINES = [
   'Lab uploads & profile-aware scans',
 ];
 
-const TERMS_URL = process.env.EXPO_PUBLIC_TERMS_URL || 'https://productverse.in/terms';
-const PRIVACY_URL = process.env.EXPO_PUBLIC_PRIVACY_URL || 'https://productverse.in/privacy';
+import { TERMS_URL, PRIVACY_URL } from '../constants/legal';
 
 export type UpgradePaywallContext = 'trial_scan_limit' | 'daily_scan_limit';
 
@@ -104,18 +103,20 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
     setStoreLoading(true);
     setStoreError(false);
 
-    // Timeout guard: if RevenueCat takes > 12 s (common in sandbox on iPad), show error + retry
+    // Timeout guard: if RevenueCat takes > 12 s (common in sandbox on iPad), show error + retry.
+    // The fetch keeps running underneath (getOfferingsCached retries with backoff) and clears
+    // the error banner if it eventually succeeds.
+    let finished = false;
     const timeoutId = setTimeout(() => {
+      if (finished) return;
       setStoreLoading(false);
       setStoreError(true);
     }, 12_000);
 
     try {
-      const { getOfferings } = await import('../integrations/purchases');
-      const offerings = await getOfferings();
+      const { getOfferingsCached } = await import('../integrations/purchases');
+      const offerings = await getOfferingsCached();
       const current = offerings?.current;
-
-      clearTimeout(timeoutId);
 
       if (!current) {
         setStoreError(true);
@@ -131,11 +132,14 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
         annual: buildPlanProduct(annualPackage, 'annual'),
         monthly: buildPlanProduct(monthlyPackage, 'monthly'),
       });
+      // Success after the 12 s timeout already fired: clear the stale error banner.
+      setStoreError(false);
     } catch (e) {
-      clearTimeout(timeoutId);
       console.warn('[RevenueCat] Failed to load localized products:', e);
       setStoreError(true);
     } finally {
+      finished = true;
+      clearTimeout(timeoutId);
       setStoreLoading(false);
     }
   }, []);
@@ -510,7 +514,7 @@ function makeStyles(C: AppColors) {
     // Store error / retry
     storeErrorBanner: {
       borderRadius: 14, borderWidth: 1, borderColor: C.border,
-      backgroundColor: C.cardBg, padding: 16, alignItems: 'center',
+      backgroundColor: C.surface, padding: 16, alignItems: 'center',
       marginBottom: 8, gap: 12,
     },
     storeErrorText: {

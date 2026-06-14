@@ -48,6 +48,8 @@ import { Svg, Path, Defs, LinearGradient as SvgGradient, Stop, Circle as SvgCirc
 import { getFoodLogs, FoodLog, deleteFoodLog, saveFoodLog } from '../utils/history';
 import { sumMacroTotalsFromLogs } from '../utils/macroTotals';
 import { analyzeFoodText } from '../utils/llm';
+import AIConsentSheet from '../components/AIConsentSheet';
+import { getAiConsent, setAiConsent } from '../utils/aiConsent';
 import { checkFreeTierScanAllowed } from '../utils/scanEntitlements';
 import { getAnalysisFailureMessage, isAnalysisIncomplete } from '../utils/analysisResult';
 import { getDailyGoals, DailyGoals } from '../utils/goals';
@@ -95,6 +97,36 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
   const [manualModalVisible, setManualModalVisible] = useState(false);
   const [manualFoodName, setManualFoodName] = useState('');
   const [manualQuantity, setManualQuantity] = useState('1 serving');
+  // AI data-sharing consent (Apple 5.1.1(i)): manual add sends the food description
+  // and medical conditions to Gemini — gate it before the modal opens.
+  const [consentSheetVisible, setConsentSheetVisible] = useState(false);
+  const consentResolverRef = useRef<((granted: boolean) => void) | null>(null);
+
+  const requireAiConsent = useCallback(async (): Promise<boolean> => {
+    if ((await getAiConsent()) === true) return true;
+    return new Promise<boolean>((resolve) => {
+      consentResolverRef.current = resolve;
+      setConsentSheetVisible(true);
+    });
+  }, []);
+
+  const resolveAiConsent = useCallback((granted: boolean) => {
+    void setAiConsent(granted);
+    setConsentSheetVisible(false);
+    consentResolverRef.current?.(granted);
+    consentResolverRef.current = null;
+    if (!granted) {
+      Alert.alert(
+        'AI Analysis Off',
+        'Nouriva AI needs your consent to analyse meals with Google Gemini. You can enable data sharing anytime in Profile → How we analyze.'
+      );
+    }
+  }, []);
+
+  const handleOpenManualAdd = useCallback(async () => {
+    Haptics.selectionAsync();
+    if (await requireAiConsent()) setManualModalVisible(true);
+  }, [requireAiConsent]);
 
   const fetchLogs = useCallback(async () => {
     const [data, g] = await Promise.all([getFoodLogs(), getDailyGoals()]);
@@ -1115,7 +1147,7 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
           <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
           <TouchableOpacity
             style={[styles.headerActionBtn, { marginLeft: 20 }]}
-            onPress={() => { Haptics.selectionAsync(); setManualModalVisible(true); }}
+            onPress={() => void handleOpenManualAdd()}
           >
             <Plus size={20} weight="bold" color={C.primary} />
           </TouchableOpacity>
@@ -1391,6 +1423,11 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
         </View>
       </Modal>
 
+      <AIConsentSheet
+        visible={consentSheetVisible}
+        onAgree={() => resolveAiConsent(true)}
+        onDecline={() => resolveAiConsent(false)}
+      />
     </SafeAreaView>
     </ScreenEnterAnimation>
   );

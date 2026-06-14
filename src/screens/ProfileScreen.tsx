@@ -51,6 +51,9 @@ import * as SecureStore from 'expo-secure-store';
 import ClinicalSelector from '../components/ClinicalSelector';
 import * as DocumentPicker from 'expo-document-picker';
 import { analyzeMedicalReport } from '../utils/reports';
+import AIConsentSheet from '../components/AIConsentSheet';
+import { getAiConsent, setAiConsent } from '../utils/aiConsent';
+import { LAB_REFERENCE_SOURCES } from '../constants/medicalSources';
 import { useColors, useTheme, AppColors } from '../theme';
 import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
@@ -160,6 +163,42 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const [dietaryAgeResult, setDietaryAgeResult] = useState<DietaryAgeResult | null>(null);
   const [longevityShareVisible, setLongevityShareVisible] = useState(false);
   const [scienceModalVisible, setScienceModalVisible] = useState(false);
+  // AI data-sharing consent (Apple 5.1.1(i)): status shown + revocable in "How we analyze";
+  // the sheet gates lab-report uploads, which send report contents to Gemini.
+  const [aiConsentGranted, setAiConsentGranted] = useState<boolean | null>(null);
+  const [reportConsentVisible, setReportConsentVisible] = useState(false);
+  const reportConsentResolverRef = useRef<((granted: boolean) => void) | null>(null);
+
+  useEffect(() => {
+    void getAiConsent().then(setAiConsentGranted);
+  }, [scienceModalVisible]);
+
+  const requireReportConsent = useCallback(async (): Promise<boolean> => {
+    if ((await getAiConsent()) === true) return true;
+    return new Promise<boolean>((resolve) => {
+      reportConsentResolverRef.current = resolve;
+      setReportConsentVisible(true);
+    });
+  }, []);
+
+  const resolveReportConsent = useCallback((granted: boolean) => {
+    void setAiConsent(granted);
+    setAiConsentGranted(granted);
+    setReportConsentVisible(false);
+    reportConsentResolverRef.current?.(granted);
+    reportConsentResolverRef.current = null;
+    if (!granted) {
+      Alert.alert(
+        'AI Analysis Off',
+        'Nouriva AI needs your consent to analyse lab reports with Google Gemini. You can enable data sharing anytime in Profile → How we analyze.'
+      );
+    }
+  }, []);
+
+  const handleAiConsentToggle = useCallback(async (value: boolean) => {
+    await setAiConsent(value);
+    setAiConsentGranted(value);
+  }, []);
 
   const tdeeWeightKgNumber = useMemo(() => {
     const w = parseFloat(String(tdeeWeightKg).replace(',', '.'));
@@ -402,6 +441,8 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   };
 
   const handleUploadReport = async () => {
+    // Apple 5.1.1(i): explicit consent before lab-report contents are sent to Gemini.
+    if (!(await requireReportConsent())) return;
     try {
       const result = await DocumentPicker.getDocumentAsync({ type: ['application/pdf', 'image/*'], copyToCacheDirectory: true });
       if (!result.canceled && result.assets[0].uri) {
@@ -978,6 +1019,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
               {reportInsights ? (
                 <View style={styles.insightsBox}>
                   <Text style={styles.insightsText}>{reportInsights}</Text>
+                  {/* Apple 1.4.1: cite the reference-range source for extracted lab markers */}
+                  <TouchableOpacity onPress={() => Linking.openURL(LAB_REFERENCE_SOURCES[0].url)}>
+                    <Text style={styles.insightsSourceText}>
+                      Marker reference ranges: {LAB_REFERENCE_SOURCES[0].title} ↗
+                    </Text>
+                  </TouchableOpacity>
                   <View style={styles.syncStatus}>
                     <Pulse size={10} weight="bold" color={C.vitality} />
                     <Text style={styles.syncText}>BIOMETRIC FEED SYNCED</Text>
@@ -1474,6 +1521,23 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
             <Text style={styles.scienceBody}>
               Your meal photos and health context are sent to Google Gemini solely for the purpose of generating your analysis. Google's API data usage policies apply — data is not used to train Google's models when sent via the API. Nouriva AI does not store your raw images on its servers; only the structured analysis result and food name are saved to your history in Supabase.{'\n\n'}Your health context (medical conditions, biometrics, lab insights) is stored locally on your device using iOS Secure Enclave–backed SecureStore and is only transmitted when you initiate a scan.
             </Text>
+            {/* Consent control (Apple 5.1.1(i)): grant or withdraw AI data sharing */}
+            <View style={styles.consentToggleRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.consentToggleLabel}>Share data with Google Gemini</Text>
+                <Text style={styles.consentToggleStatus}>
+                  {aiConsentGranted === true
+                    ? 'Consent given — AI analysis is enabled.'
+                    : 'Consent off — meal scans and report analysis are disabled.'}
+                </Text>
+              </View>
+              <Switch
+                value={aiConsentGranted === true}
+                onValueChange={(v) => void handleAiConsentToggle(v)}
+                trackColor={{ false: C.border, true: C.primary }}
+                thumbColor="#FFF"
+              />
+            </View>
           </View>
 
           {/* Disclaimer */}
@@ -1485,6 +1549,12 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
         </ScrollView>
       </SafeAreaView>
     </Modal>
+    <AIConsentSheet
+      visible={reportConsentVisible}
+      context="report"
+      onAgree={() => resolveReportConsent(true)}
+      onDecline={() => resolveReportConsent(false)}
+    />
     </>
   );
 }
@@ -1600,6 +1670,7 @@ function makeStyles(C: AppColors) {
     reportSubtitle: { fontSize: 12, color: C.textSecondary, marginTop: 2 },
     insightsBox: { marginTop: 14, backgroundColor: C.surface, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: C.border },
     insightsText: { fontSize: 13, color: C.textSecondary, lineHeight: 19, fontStyle: 'italic' },
+    insightsSourceText: { fontSize: 11, color: C.primary, fontWeight: '600', marginTop: 8, textDecorationLine: 'underline' },
     syncStatus: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 6 },
     syncText: { fontSize: 10, fontWeight: '800', color: C.vitality, letterSpacing: 0.5 },
     // Condition chips
@@ -1835,6 +1906,26 @@ function makeStyles(C: AppColors) {
       color: C.textTertiary,
       lineHeight: 19,
       fontStyle: 'italic',
+    },
+    consentToggleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginTop: 14,
+      paddingTop: 14,
+      borderTopWidth: 1,
+      borderTopColor: C.border,
+    },
+    consentToggleLabel: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: C.textPrimary,
+      marginBottom: 2,
+    },
+    consentToggleStatus: {
+      fontSize: 12,
+      color: C.textTertiary,
+      lineHeight: 17,
     },
   });
 }

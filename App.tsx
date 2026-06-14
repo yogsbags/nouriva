@@ -24,7 +24,7 @@ import { supabase } from './src/utils/supabase';
 import { warmProfileHeaderCache } from './src/utils/profileHeaderCache';
 import { clearBiometricLoginSnapshot } from './src/utils/biometricLogin';
 import { signOutCompletely } from './src/utils/authRecovery';
-import { initializeRevenueCat } from './src/integrations/purchases';
+import { initializeRevenueCat, prefetchOfferings } from './src/integrations/purchases';
 import { identifyUser, logScreenView, resetUser } from './src/utils/analytics';
 import { capture, Events } from './src/utils/posthog';
 import { saveUserProfile } from './src/utils/userProfile';
@@ -94,6 +94,8 @@ function AppInner() {
           await initializeRevenueCat(session.user.id).catch((e) =>
             console.warn('[RC] init failed, using cached isPro', e)
           );
+          // Warm the offerings cache so the paywall renders instantly (Apple 2.1b).
+          prefetchOfferings();
           void identifyUser(session.user.id, session.user.email);
           // Register for push notifications and schedule daily nudge
           void registerForPushNotifications();
@@ -162,6 +164,7 @@ function AppInner() {
       await initializeRevenueCat(session.user.id).catch((e) =>
         console.warn('[RC] auth-change init failed, using cached isPro', e)
       );
+      prefetchOfferings();
       const [flags, bioPref, hasHardware, isEnrolled] = await Promise.all([
         loadOnboardingFlagsForUserId(session.user.id),
         SecureStore.getItemAsync('biometricsEnabled'),

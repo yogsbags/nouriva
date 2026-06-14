@@ -1,6 +1,7 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { FoodLog } from './history';
+import { GENERAL_NUTRITION_SOURCES, LAB_REFERENCE_SOURCES } from '../constants/medicalSources';
 
 function scoreColor(score: number): string {
   if (score >= 7.5) return '#10B981';
@@ -185,6 +186,22 @@ function buildHTML(logs: FoodLog[], userName: string, weekLabel: string): string
       </thead>
       <tbody>${mealRows}</tbody>
     </table>
+  </div>
+
+  <!-- Sources & citations (Apple 1.4.1: medical information must cite sources) -->
+  <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid #e2e8f0;margin-bottom:32px;">
+    <div style="font-size:11px;font-weight:800;color:#64748b;letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">Sources &amp; Citations</div>
+    <div style="font-size:11px;color:#64748b;line-height:17px;margin-bottom:10px;">
+      Vitality scores, organ-system scores, and alerts in this report are heuristic estimates derived from the
+      nutrient composition of your logged meals, informed by the following authoritative references:
+    </div>
+    ${[...GENERAL_NUTRITION_SOURCES, ...LAB_REFERENCE_SOURCES].map(s => `
+    <div style="margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:700;color:#1e293b;">${s.title}</div>
+      <div style="font-size:10px;color:#64748b;line-height:15px;">${s.desc}<br/>
+        <a href="${s.url}" style="color:#4F46E5;">${s.url}</a>
+      </div>
+    </div>`).join('')}
   </div>
 
   <!-- Footer -->

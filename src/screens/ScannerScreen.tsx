@@ -24,6 +24,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import { CameraIcon as Camera, ScanIcon as Scan, LightningIcon as Lightning, ImageIcon as PhosphorImage, PlusIcon as Plus, SparkleIcon as Sparkle } from 'phosphor-react-native';
 import { analyzeFoodImage, analyzeFoodText } from '../utils/llm';
+import AIConsentSheet from '../components/AIConsentSheet';
+import { getAiConsent, setAiConsent } from '../utils/aiConsent';
 import { isTrialActive } from '../utils/trialStatus';
 import { isAnalysisIncomplete, getAnalysisFailureMessage, isAnalysisResultActionable } from '../utils/analysisResult';
 import { useColors, AppColors } from '../theme';
@@ -137,6 +139,44 @@ export default function ScannerScreen({ navigation }: any) {
 
     return () => clearInterval(id);
   }, [isAnalyzingManual]);
+
+  // ── AI data-sharing consent (Apple 5.1.1(i)/5.1.2(i)) ──
+  // Every path that sends data to Gemini must resolve consent first. The sheet is
+  // shown whenever consent has not been recorded as granted (covers existing
+  // accounts and reinstalls that never see the onboarding consent slide).
+  const [consentSheetVisible, setConsentSheetVisible] = useState(false);
+  const consentResolverRef = useRef<((granted: boolean) => void) | null>(null);
+
+  const requireAiConsent = useCallback(async (): Promise<boolean> => {
+    if ((await getAiConsent()) === true) return true;
+    return new Promise<boolean>((resolve) => {
+      consentResolverRef.current = resolve;
+      setConsentSheetVisible(true);
+    });
+  }, []);
+
+  const handleConsentAgree = useCallback(() => {
+    void setAiConsent(true);
+    setConsentSheetVisible(false);
+    consentResolverRef.current?.(true);
+    consentResolverRef.current = null;
+  }, []);
+
+  const handleConsentDecline = useCallback(() => {
+    void setAiConsent(false);
+    setConsentSheetVisible(false);
+    consentResolverRef.current?.(false);
+    consentResolverRef.current = null;
+    Alert.alert(
+      'AI Analysis Off',
+      'Nouriva AI needs your consent to analyse meals with Google Gemini. You can enable data sharing anytime in Profile → How we analyze.'
+    );
+  }, []);
+
+  const handleOpenManualLog = useCallback(async () => {
+    Haptics.selectionAsync();
+    if (await requireAiConsent()) setManualModalVisible(true);
+  }, [requireAiConsent]);
 
   const handleManualLog = async () => {
     if (!manualFoodName.trim() || isAnalyzingManual) return;
@@ -371,6 +411,11 @@ export default function ScannerScreen({ navigation }: any) {
   };
 
   const processImage = async (uri: string) => {
+    // Apple 5.1.1(i): explicit consent before the photo is sent to Gemini.
+    if ((await getAiConsent()) !== true) {
+      setIsScanning(false); // hide the progress overlay while the consent sheet is up
+      if (!(await requireAiConsent())) return;
+    }
     setIsScanning(true);
     let navigatedAway = false;
     try {
@@ -532,7 +577,7 @@ export default function ScannerScreen({ navigation }: any) {
             </>
           )}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.galleryButton} onPress={() => { Haptics.selectionAsync(); setManualModalVisible(true); }} disabled={isScanning}>
+        <TouchableOpacity style={styles.galleryButton} onPress={() => void handleOpenManualLog()} disabled={isScanning}>
           <Plus color={C.scannerText} size={22} weight="bold" />
         </TouchableOpacity>
       </View>
@@ -624,6 +669,11 @@ export default function ScannerScreen({ navigation }: any) {
           </KeyboardAvoidingView>
         </View>
       </Modal>
+      <AIConsentSheet
+        visible={consentSheetVisible}
+        onAgree={handleConsentAgree}
+        onDecline={handleConsentDecline}
+      />
     </SafeAreaView>
     </ScreenEnterAnimation>
   );

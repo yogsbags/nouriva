@@ -15,12 +15,14 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "in.productverse.nourivaai",
-      "buildNumber": "24",
+      "buildNumber": "27",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSFaceIDUsageDescription": "Allow Nouriva AI to use Face ID to protect your account on this device.",
         "NSHealthShareUsageDescription": "Nouriva AI reads steps, heart rate, sleep, and weight from Apple Health to contextualize how meals fit your day.",
-        "NSHealthUpdateUsageDescription": "Nouriva AI does not write data to Apple Health."
+        "NSHealthUpdateUsageDescription": "Nouriva AI saves the nutrition data of meals you log (calories, macros, water) to Apple Health when you choose to sync.",
+        "NSCameraUsageDescription": "Allow Nouriva AI to use your camera to scan meals and food labels, and to take a profile photo.",
+        "NSPhotoLibraryUsageDescription": "Allow Nouriva AI to access your photos to analyse meal pictures, upload lab reports, and set a profile picture."
       },
       "googleServicesFile": "./GoogleService-Info.plist"
     },
@@ -48,7 +50,7 @@
         "react-native-health",
         {
           "healthSharePermission": "Nouriva AI reads steps, heart rate, sleep, and weight from Apple Health to contextualize how meals fit your day.",
-          "healthUpdatePermission": "Nouriva AI does not write data to Apple Health."
+          "healthUpdatePermission": "Nouriva AI saves the nutrition data of meals you log (calories, macros, water) to Apple Health when you choose to sync."
         }
       ],
       "@react-native-firebase/app",
@@ -58,8 +60,16 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Nouriva AI to access your photos for your profile picture.",
-          "cameraPermission": "Allow Nouriva AI to use your camera for a profile photo."
+          "photosPermission": "Allow Nouriva AI to access your photos to analyse meal pictures, upload lab reports, and set a profile picture.",
+          "cameraPermission": "Allow Nouriva AI to use your camera to scan meals and food labels, and to take a profile photo.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Nouriva AI to use your camera to scan meals and food labels, and to take a profile photo.",
+          "microphonePermission": false
         }
       ],
       [

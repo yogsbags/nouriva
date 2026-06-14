@@ -44,6 +44,7 @@ function GoogleLogo({ size = 20 }: { size?: number }) {
   );
 }
 import { useColors, AppColors } from '../theme';
+import { TERMS_URL, PRIVACY_URL as PRIVACY_POLICY_URL } from '../constants/legal';
 
 const GOOGLE_WEB_CLIENT_ID = (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '').trim();
 const GOOGLE_IOS_CLIENT_ID = (process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? '').trim();
@@ -55,9 +56,6 @@ if (GOOGLE_WEB_CLIENT_ID && GOOGLE_IOS_CLIENT_ID) {
     scopes: ['email', 'profile'],
   });
 }
-
-const PRIVACY_POLICY_URL = 'https://productverse.in/privacy';
-const TERMS_URL = 'https://productverse.in/terms';
 
 export default function AuthScreen() {
   const C = useColors();

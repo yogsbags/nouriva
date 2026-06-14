@@ -80,3 +80,7 @@ logo-*.jpeg
 logo.jpeg
 nouriva_paywall_review_screenshot.png
 !HolisticAI_Store_Checklist.html # Keep if needed, but usually these are docs
+
+/app_submissions
+CHANGES.md
+SUBMISSIONS.md

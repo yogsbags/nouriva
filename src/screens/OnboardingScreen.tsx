@@ -64,6 +64,7 @@ import {
 } from '../utils/tdee';
 import { fetchLatestWeightKg, requestHealthPermissions } from '../utils/health';
 import { useColors, AppColors } from '../theme';
+import { TERMS_URL, PRIVACY_URL } from '../constants/legal';
 import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -1098,14 +1099,14 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                   By tapping "I Agree", you consent to this data sharing.{' '}
                   <Text
                     style={styles.consentLink}
-                    onPress={() => Linking.openURL('https://productverse.in/nouriva/privacy')}
+                    onPress={() => Linking.openURL(PRIVACY_URL)}
                   >
                     Privacy Policy
                   </Text>
                   {' · '}
                   <Text
                     style={styles.consentLink}
-                    onPress={() => Linking.openURL('https://productverse.in/nouriva/terms')}
+                    onPress={() => Linking.openURL(TERMS_URL)}
                   >
                     Terms of Use
                   </Text>

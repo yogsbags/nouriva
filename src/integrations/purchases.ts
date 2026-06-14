@@ -225,8 +225,10 @@ export async function presentPaywall(): Promise<boolean> {
 export async function purchasePlan(plan: 'annual' | 'monthly'): Promise<boolean> {
   const configured = await ensureConfigured();
   if (!configured) throw new Error('RevenueCat could not be initialized. Please try again.');
-  const offerings = await Purchases.getOfferings();
-  const current = offerings.current;
+  // Cached + retried fetch — a single slow sandbox response here was enough to
+  // surface "error when we attempt to make a purchase" to App Review (2.1b).
+  const offerings = await getOfferingsCached();
+  const current = offerings?.current;
   if (!current) {
     throw new Error('No current offering found. Please check your internet connection and try again.');
   }
@@ -316,4 +318,56 @@ export async function getOfferings() {
     console.error('[RevenueCat] Get offerings error:', e);
     return null;
   }
+}
+
+type Offerings = Awaited<ReturnType<typeof Purchases.getOfferings>>;
+
+let cachedOfferings: Offerings | null = null;
+
+/**
+ * Offerings with retry + cache for the paywall (Apple 2.1(b): "subscription page did not load").
+ * Retries transient sandbox failures with backoff, keeps the last good result so the
+ * paywall renders instantly on subsequent opens, and records terminal failures to
+ * Crashlytics so a reviewer-side failure can be correlated with a real cause.
+ */
+export async function getOfferingsCached(): Promise<Offerings | null> {
+  if (cachedOfferings?.current) return cachedOfferings;
+
+  const configured = await ensureConfigured();
+  if (!configured) return null;
+
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const offerings = await Purchases.getOfferings();
+      if (offerings?.current) {
+        cachedOfferings = offerings;
+        return offerings;
+      }
+      lastError = new Error('RevenueCat returned no current offering');
+    } catch (e) {
+      lastError = e;
+    }
+    if (attempt < 3) {
+      await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+    }
+  }
+
+  console.error('[RevenueCat] Get offerings failed after retries:', lastError);
+  try {
+    const { logError } = await import('../utils/analytics');
+    logError(
+      lastError instanceof Error ? lastError : new Error(String(lastError)),
+      'RevenueCat getOfferings (paywall)'
+    );
+  } catch {
+    // analytics unavailable (e.g. Expo Go) — already logged to console
+  }
+  return null;
+}
+
+/** Warm the offerings cache at app start so the paywall opens instantly. */
+export function prefetchOfferings(): void {
+  if (shouldSkipRevenueCatNative()) return;
+  void getOfferingsCached().catch(() => {});
 }
