@@ -1,13 +1,18 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Image, Animated, Dimensions, Text } from 'react-native';
+import { View, StyleSheet, Image, Animated, Dimensions, Text, Easing } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ExpoSplashScreen from 'expo-splash-screen';
 
 const { width } = Dimensions.get('window');
 
-/** Matches `app.json` expo.splash.backgroundColor and Auth chrome. */
-const SPLASH_BG = '#0B3022';
-const TEXT_MUTED = 'rgba(248, 250, 252, 0.72)';
+/** Matches `app.json` splash poster background (`splash-icon.png`) so the
+ *  native → JS handoff has no visible seam. */
+const SPLASH_BG = '#0E3B26';
+const GOLD = '#E3B23C';
+const TEXT_LIGHT = '#F8FAFC';
+const TEXT_MUTED = 'rgba(248, 250, 252, 0.62)';
+
+const MARK_SIZE = Math.min(176, width * 0.46);
 
 const ROTATING_LINES = [
   'Calibrating your vitality graph…',
@@ -16,13 +21,16 @@ const ROTATING_LINES = [
 ];
 
 /**
- * Native cold start uses `app.json` splash (`icon.png`, no baked-in tagline).
- * JS splash matches Auth branding: mark + “Nouriva AI” (avoid raster copy drift).
+ * JS splash mirrors the native poster (`assets/splash-icon.png`): ringed flame
+ * mark, “Nouriva” wordmark with gold AI badge, and the “Know what you eat”
+ * tagline. The flame mark (`splash-mark.png`) is cropped from the same poster,
+ * so it composites seamlessly onto the matching background.
  */
 export default function SplashScreen() {
   const insets = useSafeAreaInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.97)).current;
+  const scaleAnim = useRef(new Animated.Value(0.94)).current;
+  const haloAnim = useRef(new Animated.Value(0.85)).current;
   const lineFade = useRef(new Animated.Value(1)).current;
   const [lineIndex, setLineIndex] = useState(0);
 
@@ -34,17 +42,36 @@ export default function SplashScreen() {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 650,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
         friction: 7,
-        tension: 80,
+        tension: 70,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fadeAnim, scaleAnim]);
+
+    // Slow, gentle breathing halo behind the mark.
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(haloAnim, {
+          toValue: 1.12,
+          duration: 1600,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(haloAnim, {
+          toValue: 0.85,
+          duration: 1600,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [fadeAnim, scaleAnim, haloAnim]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -68,12 +95,25 @@ export default function SplashScreen() {
           },
         ]}
       >
-        <Image
-          source={require('../../assets/icon.png')}
-          style={styles.markImage}
-          resizeMode="contain"
-        />
-        <Text style={styles.brandTitle}>Nouriva AI</Text>
+        <View style={styles.markStack}>
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.halo, { opacity: fadeAnim, transform: [{ scale: haloAnim }] }]}
+          />
+          <Image
+            source={require('../../assets/splash-mark.png')}
+            style={styles.markImage}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View style={styles.brandRow}>
+          <Text style={styles.brandTitle}>Nouriva</Text>
+          <View style={styles.aiBadge}>
+            <Text style={styles.aiBadgeText}>AI</Text>
+          </View>
+        </View>
+        <Text style={styles.tagline}>Know what you eat</Text>
       </Animated.View>
 
       <Animated.View
@@ -139,17 +179,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
   },
+  markStack: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 26,
+  },
+  halo: {
+    position: 'absolute',
+    width: MARK_SIZE * 1.4,
+    height: MARK_SIZE * 1.4,
+    borderRadius: (MARK_SIZE * 1.4) / 2,
+    backgroundColor: 'rgba(227, 178, 60, 0.10)',
+  },
   markImage: {
-    width: Math.min(132, width * 0.34),
-    height: Math.min(132, width * 0.34),
-    borderRadius: 28,
-    marginBottom: 20,
+    width: MARK_SIZE,
+    height: MARK_SIZE,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   brandTitle: {
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: '800',
-    color: '#F8FAFC',
-    letterSpacing: -0.6,
+    color: TEXT_LIGHT,
+    letterSpacing: -0.8,
+    textAlign: 'center',
+  },
+  aiBadge: {
+    marginLeft: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(227, 178, 60, 0.55)',
+  },
+  aiBadgeText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: GOLD,
+    letterSpacing: 1.5,
+  },
+  tagline: {
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: '500',
+    color: TEXT_MUTED,
+    letterSpacing: 0.6,
     textAlign: 'center',
   },
   footer: {

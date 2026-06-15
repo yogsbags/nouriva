@@ -9,9 +9,9 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/splash-native.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0B3022"
+      "backgroundColor": "#0E3B26"
     },
     "ios": {
       "supportsTablet": true,
@@ -47,6 +47,20 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0E3B26",
+          "image": "./assets/splash-native.png",
+          "imageWidth": 300,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#0E3B26",
+            "image": "./assets/splash-native.png",
+            "resizeMode": "contain"
+          }
+        }
+      ],
       [
         "react-native-health",
         {
