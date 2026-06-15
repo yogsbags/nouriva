@@ -1,9 +1,29 @@
 import analytics from '@react-native-firebase/analytics';
 import crashlytics from '@react-native-firebase/crashlytics';
-import { capture, identifyPostHogUser, resetPostHogUser } from './posthog';
+import { capture, identifyPostHogUser, resetPostHogUser, Events } from './posthog';
 import { isIosSimulator } from './iosSimulator';
 
+export { Events };
+
 const skipFirebaseNative = isIosSimulator();
+
+/** Preferred entry point — mirrors to Firebase Analytics and PostHog. */
+export function trackEvent(name: string, params: Record<string, any> = {}) {
+  void logEvent(name, params);
+}
+
+/** After a successful RevenueCat purchase or trial enrollment. */
+export function trackSubscriptionSuccess(
+  plan: 'annual' | 'monthly',
+  source: string,
+  periodType?: string | null,
+) {
+  const props = { plan, source, period_type: periodType ?? 'unknown' };
+  if (periodType === 'TRIAL') {
+    trackEvent(Events.TRIAL_STARTED, props);
+  }
+  trackEvent(Events.UPGRADE_COMPLETED, props);
+}
 
 /**
  * Log a custom event to both Firebase Analytics and PostHog.

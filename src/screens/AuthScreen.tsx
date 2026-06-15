@@ -23,6 +23,8 @@ import * as Haptics from 'expo-haptics';
 import * as Linking from 'expo-linking';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { trackEvent, Events } from '../utils/analytics';
+import { requestPasswordResetEmail } from '../utils/passwordReset';
 import Svg, { Path } from 'react-native-svg';
 import {
   EnvelopeIcon as Envelope,
@@ -137,9 +139,11 @@ export default function AuthScreen() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-      Alert.alert('Reset Email Sent', 'Check your inbox for a password reset link.');
+      await requestPasswordResetEmail(email);
+      Alert.alert(
+        'Reset email sent',
+        'Open the link in your email on this device. It will bring you back to Nouriva AI to set a new password.',
+      );
     } catch (error: any) {
       Alert.alert('Error', error.message);
     } finally {
@@ -165,6 +169,7 @@ export default function AuthScreen() {
         await saveBiometricLoginSnapshot(data.session);
         await refreshBiometricLoginAvailability();
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        trackEvent(Events.SIGN_IN, { method: 'google' });
       }
     } catch (error: any) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) return;
@@ -205,6 +210,7 @@ export default function AuthScreen() {
         await saveBiometricLoginSnapshot(data.session);
         await refreshBiometricLoginAvailability();
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        trackEvent(Events.SIGN_IN, { method: 'apple' });
       }
     } catch (error: any) {
       if (error.code === 'ERR_REQUEST_CANCELED') return;
@@ -229,6 +235,7 @@ export default function AuthScreen() {
           await saveBiometricLoginSnapshot(data.session);
           await refreshBiometricLoginAvailability();
           await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          trackEvent(Events.SIGN_IN, { method: 'email_signup' });
         } else {
           Alert.alert('Check your email', 'We sent a confirmation link to activate your account.');
         }
@@ -238,6 +245,7 @@ export default function AuthScreen() {
         if (data.session) {
           await saveBiometricLoginSnapshot(data.session);
           await refreshBiometricLoginAvailability();
+          trackEvent(Events.SIGN_IN, { method: 'email_signin' });
         }
       }
     } catch (error: any) {
@@ -253,6 +261,7 @@ export default function AuthScreen() {
       const res = await signInWithBiometric();
       if (res.ok) {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        trackEvent(Events.SIGN_IN, { method: 'biometric' });
         return;
       }
       if (res.error === 'cancelled') return;

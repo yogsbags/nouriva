@@ -61,6 +61,7 @@ import { supabase } from '../utils/supabase';
 import { getFoodLogs } from '../utils/history';
 import { getDailyGoals, saveDailyGoals, DailyGoals } from '../utils/goals';
 import { loadUserProfile, saveUserProfile } from '../utils/userProfile';
+import { trackEvent, Events } from '../utils/analytics';
 import {
   readProfileHeaderCache,
   writeProfileHeaderCache,
@@ -229,6 +230,23 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
     const stats = computeStatsFromLogs(logs);
     await writeProfileHeaderCache({ userName: name, userEmail: email, ...stats });
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      trackEvent(Events.PROFILE_VIEWED);
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!dietaryAgeResult) return;
+      trackEvent(Events.DIETARY_AGE_SEEN, {
+        actual_age: dietaryAgeResult.actualAge,
+        dietary_age: dietaryAgeResult.dietaryAge,
+        delta: dietaryAgeResult.ageDelta,
+      });
+    }, [dietaryAgeResult]),
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -674,6 +692,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   const handleShareLongevity = useCallback(() => {
     if (!dietaryAgeResult) return;
     void Haptics.selectionAsync();
+    trackEvent(Events.SHARE_TAPPED, { type: 'longevity' });
     setLongevityShareVisible(true);
   }, [dietaryAgeResult]);
 

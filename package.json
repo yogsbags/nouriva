@@ -16,7 +16,9 @@
     "eas:build:android:aab": "bash scripts/eas-with-env.sh build --platform android --profile android-aab --no-wait",
     "eas:build:android:aab:local": "bash scripts/eas-with-env.sh build --platform android --profile android-aab --local",
     "eas:build:ios:local": "bash scripts/eas-with-env.sh build --platform ios --profile production --non-interactive --local",
-    "eas:submit:android:internal": "bash scripts/eas-with-env.sh submit --platform android --profile internal"
+    "eas:submit:android:internal": "bash scripts/eas-with-env.sh submit --platform android --profile internal",
+    "eas:submit:android:closed": "bash scripts/eas-with-env.sh submit --platform android --profile closed",
+    "eas:submit:android:production": "bash scripts/eas-with-env.sh submit --platform android --profile production"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

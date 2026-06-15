@@ -11,8 +11,8 @@ export const posthog = new PostHog(posthogKey || 'disabled', {
 });
 
 /**
- * Capture a product event in PostHog.
- * All events are also mirrored to Firebase Analytics via analytics.ts.
+ * Capture a product event in PostHog only.
+ * Prefer trackEvent() from analytics.ts so Firebase receives the same event.
  */
 export function capture(event: string, properties: Record<string, any> = {}) {
   if (!posthogKey) return;
@@ -71,9 +71,10 @@ export const Events = {
   PROFILE_VIEWED:       'profile_viewed',
   DIETARY_AGE_SEEN:     'dietary_age_seen',      // props: actual_age, dietary_age, delta
 
-  // Upgrade
+  // Upgrade / subscriptions
   UPGRADE_VIEWED:       'upgrade_viewed',        // props: source
-  UPGRADE_COMPLETED:    'upgrade_completed',     // props: plan
+  TRIAL_STARTED:        'trial_started',         // props: plan, source, period_type
+  UPGRADE_COMPLETED:    'upgrade_completed',     // props: plan, source, period_type
 
   // Nudges
   NOTIFICATION_RECEIVED: 'notification_received', // props: type

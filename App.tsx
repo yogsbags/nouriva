@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StyleSheet, InteractionManager, View, Platform } from 'react-native';
+import { StyleSheet, InteractionManager, View, Platform, Alert } from 'react-native';
+import * as Linking from 'expo-linking';
 import * as ExpoSplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold, Inter_900Black } from '@expo-google-fonts/inter';
 import { PostHogProvider } from 'posthog-react-native';
@@ -12,6 +13,7 @@ import * as SecureStore from 'expo-secure-store';
 
 import ResultsScreen from './src/screens/ResultsScreen';
 import AuthScreen from './src/screens/AuthScreen';
+import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import SplashScreen from './src/screens/SplashScreen';
 import BiometricGateScreen from './src/screens/BiometricGateScreen';
@@ -25,8 +27,7 @@ import { warmProfileHeaderCache } from './src/utils/profileHeaderCache';
 import { clearBiometricLoginSnapshot } from './src/utils/biometricLogin';
 import { signOutCompletely } from './src/utils/authRecovery';
 import { initializeRevenueCat, prefetchOfferings } from './src/integrations/purchases';
-import { identifyUser, logScreenView, resetUser } from './src/utils/analytics';
-import { capture, Events } from './src/utils/posthog';
+import { identifyUser, logScreenView, resetUser, trackEvent, Events } from './src/utils/analytics';
 import { saveUserProfile } from './src/utils/userProfile';
 import { Session, type AuthChangeEvent } from '@supabase/supabase-js';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -37,6 +38,10 @@ import {
   setInitialPaywallSeenForUserId,
   setOnboardingCompleteForUserId,
 } from './src/utils/onboardingFlags';
+import {
+  establishRecoverySessionFromUrl,
+  isPasswordRecoveryUrl,
+} from './src/utils/passwordReset';
 
 void ExpoSplashScreen.preventAutoHideAsync().catch(() => {
   /* Expo Go / web — splash API may noop */
@@ -56,6 +61,7 @@ function AppInner() {
   const [biometricRequired, setBiometricRequired] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [hasSeenInitialPaywall, setHasSeenInitialPaywall] = useState(true);
+  const [pendingPasswordReset, setPendingPasswordReset] = useState(false);
 
   // Prevent the auth-state-change listener from racing with initialize()
   const initializedRef = useRef(false);
@@ -103,7 +109,7 @@ function AppInner() {
           // Register for push notifications and schedule daily nudge
           void registerForPushNotifications();
           void scheduleDailyNudge();
-          capture(Events.SIGN_IN, { method: 'session_restore' });
+          trackEvent(Events.SIGN_IN, { method: 'session_restore' });
           const flags = await loadOnboardingFlagsForUserId(session.user.id);
           if (!alive) return;
           setHasCompletedOnboarding(flags.completed);
@@ -142,6 +148,7 @@ function AppInner() {
       if (!initializedRef.current || !alive) return;
       if (!session) {
         setSession(null);
+        setPendingPasswordReset(false);
         biometricPassedThisSessionRef.current = false;
         setIsBiometricVerified(false);
         setBiometricRequired(false);
@@ -151,7 +158,7 @@ function AppInner() {
         void SecureStore.deleteItemAsync('proplan');
         void SecureStore.deleteItemAsync('accountCreatedAt');
         void clearBiometricLoginSnapshot();
-        capture(Events.SIGN_OUT);
+        trackEvent(Events.SIGN_OUT);
         resetUser();
         return;
       }
@@ -162,6 +169,14 @@ function AppInner() {
         if (session.user?.created_at) {
           void SecureStore.setItemAsync('accountCreatedAt', session.user.created_at).catch(() => {});
         }
+        setSession(session);
+        return;
+      }
+      if (event === 'PASSWORD_RECOVERY') {
+        setPendingPasswordReset(true);
+        biometricPassedThisSessionRef.current = true;
+        setIsBiometricVerified(true);
+        setBiometricRequired(false);
         setSession(session);
         return;
       }
@@ -193,6 +208,35 @@ function AppInner() {
       alive = false;
       subscription.unsubscribe();
     };
+  }, []);
+
+  // Password-reset deep links from Supabase email (cold start + background).
+  useEffect(() => {
+    const handleRecoveryUrl = async (url: string) => {
+      if (!isPasswordRecoveryUrl(url)) return;
+      try {
+        const isRecovery = await establishRecoverySessionFromUrl(url);
+        if (isRecovery) {
+          setPendingPasswordReset(true);
+          biometricPassedThisSessionRef.current = true;
+          setIsBiometricVerified(true);
+          setBiometricRequired(false);
+        }
+      } catch (e: any) {
+        Alert.alert(
+          'Reset link expired',
+          e?.message ?? 'Request a new reset email from Sign In.',
+        );
+      }
+    };
+
+    void Linking.getInitialURL().then((url) => {
+      if (url) void handleRecoveryUrl(url);
+    });
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      void handleRecoveryUrl(url);
+    });
+    return () => sub.remove();
   }, []);
 
   // Warm profile cache AFTER all startup animations settle — not competing with render
@@ -249,8 +293,24 @@ function AppInner() {
     })();
   }, []);
 
+  const handlePasswordResetCancel = useCallback(() => {
+    void (async () => {
+      await signOutCompletely();
+      setPendingPasswordReset(false);
+    })();
+  }, []);
+
   if (loading) {
     return <SplashScreen />;
+  }
+
+  if (pendingPasswordReset && session) {
+    return (
+      <ResetPasswordScreen
+        onComplete={() => setPendingPasswordReset(false)}
+        onCancel={handlePasswordResetCancel}
+      />
+    );
   }
 
   /**

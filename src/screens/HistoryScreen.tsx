@@ -58,6 +58,7 @@ import * as Haptics from 'expo-haptics';
 import { useColors, AppColors } from '../theme';
 import { ScreenEnterAnimation } from '../components/ScreenEnterAnimation';
 import { navigateFromTabs } from '../navigation/rootNavigation';
+import { trackEvent, Events } from '../utils/analytics';
 
 const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -809,6 +810,9 @@ export default function HistoryScreen({ navigation }: HistoryScreenProps) {
 
   const handleMealPress = (item: FoodLog) => {
     Haptics.selectionAsync();
+    const date = new Date(item.created_at);
+    const daysAgo = Math.max(0, Math.floor((Date.now() - date.getTime()) / 86_400_000));
+    trackEvent(Events.HISTORY_MEAL_OPENED, { food_name: item.food_name, days_ago: daysAgo });
     const imageUri = item.image_url || (item.image_base64 ? `data:image/jpeg;base64,${item.image_base64}` : undefined);
     // Reconstruct FoodScanResult from stored FoodLog fields
     const result = {

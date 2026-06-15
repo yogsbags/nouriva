@@ -45,20 +45,21 @@
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
         "track": "internal",
-        "releaseStatus": "draft"
+        "releaseStatus": "completed"
       }
     },
     "closed": {
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
         "track": "alpha",
-        "releaseStatus": "draft"
+        "releaseStatus": "completed"
       }
     },
     "production": {
       "android": {
         "serviceAccountKeyPath": "./google-service-account.json",
-        "track": "production"
+        "track": "production",
+        "releaseStatus": "draft"
       },
       "ios": {
         "appleId": "yogesh@productverse.co.in",

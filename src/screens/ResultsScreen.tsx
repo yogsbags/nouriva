@@ -61,7 +61,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ViewShot from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import { saveFoodLog, LongevityData } from '../utils/history';
-import { capture, Events } from '../utils/posthog';
+import { trackEvent, Events } from '../utils/analytics';
 import { onScanCompleted, sendImmediateNotification, Nudges } from '../utils/notifications';
 import { uploadFoodImage, uploadFoodImageFromUri } from '../utils/imageUpload';
 import { fetchHealthStats, getHealthImpactAnalysis, HealthStats, writeNutritionToAppleHealth } from '../utils/health';
@@ -543,7 +543,7 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
 
         // Track scan completion in PostHog + reset daily nudge timer
         const longevityScore = result.longevityData?.longevityScore ?? null;
-        capture(Events.SCAN_COMPLETED, {
+        trackEvent(Events.SCAN_COMPLETED, {
           food_name: result.foodName,
           vitality_score: scoreNum,
           longevity_score: longevityScore,
@@ -589,7 +589,7 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
   const handleTabChange = (tab: Tab) => {
     Haptics.selectionAsync();
     setActiveTab(tab);
-    capture(Events.TAB_VIEWED, { tab, food_name: result?.foodName });
+    trackEvent(Events.TAB_VIEWED, { tab, food_name: result?.foodName });
   };
 
   const getScoreColor = (scoreText: string) => {
@@ -630,6 +630,7 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
       } else {
         await Share.share({ message: `My meal "${foodNameValue || 'Scanned Food'}" scored ${avgScore}/10 on Nouriva AI — see how it hits each organ.` });
       }
+      trackEvent(Events.SHARE_TAPPED, { type: 'food_image', food_name: foodNameValue });
     } catch (e) {
       console.error(e);
     }
@@ -2213,6 +2214,7 @@ export default function ResultsScreen({ navigation, route }: ResultsScreenProps)
               style={styles.shareTextBtn}
               onPress={async () => {
                 await Share.share({ message: `I just scanned "${foodNameValue || 'a meal'}" with Nouriva AI — Vitality Score: ${avgScore}/10.\n\nOrgan breakdown:\n${displayOrganData.slice(0,4).map(o => `• ${o.organ}: ${o.score}`).join('\n')}\n\nGet Nouriva AI: ${process.env.EXPO_PUBLIC_APP_SHARE_URL || 'https://productverse.in'}` });
+                trackEvent(Events.SHARE_TAPPED, { type: 'food_text', food_name: foodNameValue });
                 setShareModalVisible(false);
               }}
               activeOpacity={0.75}

@@ -21,6 +21,7 @@ import * as Linking from 'expo-linking';
 import { hasConfiguredIapProducts } from '../integrations/purchasesConfig';
 import { isExpoGo } from '../utils/expoRuntime';
 import { saveUserProfile } from '../utils/userProfile';
+import { trackEvent, Events, trackSubscriptionSuccess } from '../utils/analytics';
 
 /** Shapes we read from RevenueCat at runtime; avoids importing native IAP modules at screen load. */
 type PlanProduct = {
@@ -148,12 +149,17 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
     void loadStoreProducts();
   }, [loadStoreProducts]);
 
+  useEffect(() => {
+    trackEvent(Events.UPGRADE_VIEWED, { source: paywallContext ?? 'organic' });
+  }, [paywallContext]);
+
   const handleSubscribe = async () => {
     if (isExpoGo()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await SecureStore.setItemAsync('isPro', 'true');
       await SecureStore.setItemAsync('proplan', selectedPlan);
       void saveUserProfile({ is_pro: true, pro_plan: selectedPlan }).catch(() => {});
+      trackSubscriptionSuccess(selectedPlan, 'expo_go', selectedPlan === 'annual' ? 'TRIAL' : 'NORMAL');
       handleClose();
       return;
     }
@@ -161,7 +167,7 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
     setPurchaseBusy(true);
     try {
       const { purchasePlan } = await import('../integrations/purchases');
-      const success = await purchasePlan(selectedPlan);
+      const success = await purchasePlan(selectedPlan, paywallContext ?? 'organic');
       if (success) {
         completeAfterPurchase();
       }

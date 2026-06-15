@@ -38,6 +38,7 @@ import {
   checkFreeTierScanAllowed,
   type ScanPaywallContext,
 } from '../utils/scanEntitlements';
+import { trackEvent, Events } from '../utils/analytics';
 
 /** Opens in-app Nouriva paywall (UpgradeScreen). Never use RevenueCat `presentPaywall` here. */
 function openNourivaPaywall(
@@ -223,6 +224,7 @@ export default function ScannerScreen({ navigation }: any) {
         if (insights) profileContext.push(`AUTO_EXTRACTED_FROM_MEDICAL_REPORTS: ${insights}`);
       }
       const fullText = `${manualQuantity} of ${manualFoodName}`;
+      trackEvent(Events.SCAN_STARTED, { source: 'manual' });
       // Always fetch from Gemini for Quick Log (cache would feel instant and can hold stale / huge payloads).
       const analysis = await analyzeFoodText(fullText, profileContext, { bypassCache: true });
       if (__DEV__) {
@@ -234,6 +236,7 @@ export default function ScannerScreen({ navigation }: any) {
           isActionable: isAnalysisResultActionable(analysis)
         });
         Alert.alert('Could not analyse', getAnalysisFailureMessage(analysis));
+        trackEvent(Events.SCAN_FAILED, { source: 'manual', reason: 'analysis_incomplete' });
         setManualLogHandoffVisible(false);
         setIsAnalyzingManual(false);
         return;
@@ -282,6 +285,7 @@ export default function ScannerScreen({ navigation }: any) {
       navigatedAway = true;
     } catch (error: any) {
       setManualLogHandoffVisible(false);
+      trackEvent(Events.SCAN_FAILED, { source: 'manual', reason: error?.message ?? 'unknown' });
       Alert.alert('Error', error.message || 'Failed to analyse. Please try again.');
     } finally {
       // Only reset local state if we did NOT navigate away. After navigation
@@ -388,7 +392,7 @@ export default function ScannerScreen({ navigation }: any) {
         : {}),
     });
     if (!result.canceled && result.assets[0]?.uri) {
-      processImage(result.assets[0].uri);
+      processImage(result.assets[0].uri, 'gallery');
     }
   };
 
@@ -405,12 +409,13 @@ export default function ScannerScreen({ navigation }: any) {
       const photo = await cameraRef.current.takePictureAsync({ base64: false, quality: 0.8 });
       if (photo?.uri) processImage(photo.uri);
     } catch (error: any) {
+      trackEvent(Events.SCAN_FAILED, { source: 'camera', reason: error?.message ?? 'camera_capture_failed' });
       Alert.alert('Analysis Failed', error.message || 'Something went wrong during analysis');
       setIsScanning(false);
     }
   };
 
-  const processImage = async (uri: string) => {
+  const processImage = async (uri: string, source: 'camera' | 'gallery' = 'camera') => {
     // Apple 5.1.1(i): explicit consent before the photo is sent to Gemini.
     if ((await getAiConsent()) !== true) {
       setIsScanning(false); // hide the progress overlay while the consent sheet is up
@@ -453,6 +458,7 @@ export default function ScannerScreen({ navigation }: any) {
           }
         } catch (e) { console.error('Profile Context Error:', e); }
 
+        trackEvent(Events.SCAN_STARTED, { source });
         const analysisResult = await analyzeFoodImage([manipResult.base64], profileContext);
         setScanProgress(100);
         setScanStage('Ready');
@@ -475,6 +481,7 @@ export default function ScannerScreen({ navigation }: any) {
         navigatedAway = true;
       }
     } catch (error: any) {
+      trackEvent(Events.SCAN_FAILED, { source, reason: error?.message ?? 'unknown' });
       Alert.alert('Processing Failed', error.message || 'Could not analyse the provided image');
     } finally {
       if (!navigatedAway) {

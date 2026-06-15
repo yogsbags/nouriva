@@ -2,7 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { supabase } from './supabase';
-import { capture, Events } from './posthog';
+import { trackEvent, Events } from './analytics';
 
 // How the notification appears when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -77,12 +77,12 @@ export async function registerForPushNotifications(): Promise<string | null> {
 export function setupNotificationListeners() {
   const foregroundSub = Notifications.addNotificationReceivedListener((notification) => {
     const type = notification.request.content.data?.type as string ?? 'general';
-    capture(Events.NOTIFICATION_RECEIVED, { type });
+    trackEvent(Events.NOTIFICATION_RECEIVED, { type });
   });
 
   const tapSub = Notifications.addNotificationResponseReceivedListener((response) => {
     const type = response.notification.request.content.data?.type as string ?? 'general';
-    capture(Events.NOTIFICATION_TAPPED, { type });
+    trackEvent(Events.NOTIFICATION_TAPPED, { type });
     // Future: navigate to a specific screen based on `type`
   });
 

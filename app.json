@@ -2,7 +2,8 @@
   "expo": {
     "name": "Nouriva AI",
     "slug": "NourivaAI",
-    "version": "1.0.0",
+    "scheme": "nourivaai",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "in.productverse.nourivaai",
-      "buildNumber": "30",
+      "buildNumber": "33",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSFaceIDUsageDescription": "Allow Nouriva AI to use Face ID to protect your account on this device.",
@@ -28,7 +29,7 @@
     },
     "android": {
       "package": "in.productverse.nourivaai",
-      "versionCode": 32,
+      "versionCode": 34,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0D3B26"

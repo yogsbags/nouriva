@@ -220,7 +220,10 @@ export async function presentPaywall(): Promise<boolean> {
  * Purchase a specific plan ('annual' | 'monthly') by finding the matching package
  * from the default offering. This bypasses RevenueCat's paywall UI entirely.
  */
-export async function purchasePlan(plan: 'annual' | 'monthly'): Promise<boolean> {
+export async function purchasePlan(
+  plan: 'annual' | 'monthly',
+  source = 'upgrade_screen',
+): Promise<boolean> {
   const configured = await ensureConfigured();
   if (!configured) throw new Error('RevenueCat could not be initialized. Please try again.');
   // Cached + retried fetch — a single slow sandbox response here was enough to
@@ -241,7 +244,13 @@ export async function purchasePlan(plan: 'annual' | 'monthly'): Promise<boolean>
 
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
-    return await syncProStatus(customerInfo);
+    const success = await syncProStatus(customerInfo);
+    if (success) {
+      const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
+      const { trackSubscriptionSuccess } = await import('../utils/analytics');
+      trackSubscriptionSuccess(plan, source, entitlement?.periodType);
+    }
+    return success;
   } catch (e: any) {
     if (e.userCancelled) {
       return false; // User tapped Cancel — silent
