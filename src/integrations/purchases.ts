@@ -15,18 +15,16 @@ function getRevenueCatApiKey(): string {
 }
 
 /**
- * iOS Simulator + StoreKit often throws native NSExceptions; RN's Turbo path can then
- * crash inside Hermes while converting that exception to JS. Skip all Purchases native calls
- * on simulator unless explicitly overridden (e.g. Xcode StoreKit Configuration testing).
+ * RevenueCat works on current iOS simulators. Keep an escape hatch for simulator
+ * runtimes with known StoreKit issues without disabling subscriptions for every simulator.
  */
-const forceRevenueCatOnIosSimulator =
-  process.env.EXPO_PUBLIC_REVENUECAT_ON_IOS_SIMULATOR === '1';
+const disableRevenueCatOnIosSimulator =
+  process.env.EXPO_PUBLIC_REVENUECAT_ON_IOS_SIMULATOR === '0';
 
 function shouldSkipRevenueCatNative(): boolean {
   if (Platform.OS === 'web') return true;
   if (!isIosSimulator()) return false;
-  if (forceRevenueCatOnIosSimulator) return false;
-  return true;
+  return disableRevenueCatOnIosSimulator;
 }
 
 let revenueCatLogHandlerInstalled = false;
@@ -80,7 +78,7 @@ async function ensureConfigured(userId?: string): Promise<boolean> {
     if (__DEV__ && !iosSimulatorRevenueCatNoticeLogged) {
       iosSimulatorRevenueCatNoticeLogged = true;
       console.warn(
-        '[RevenueCat] Skipping native SDK on iOS Simulator (unstable StoreKit). Pro state uses SecureStore / Supabase. Physical device or EXPO_PUBLIC_REVENUECAT_ON_IOS_SIMULATOR=1 to force.'
+        '[RevenueCat] Skipping native SDK on iOS Simulator because EXPO_PUBLIC_REVENUECAT_ON_IOS_SIMULATOR=0.'
       );
     }
     return false;

@@ -33,6 +33,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './src/theme';
 import {
   loadOnboardingFlagsForUserId,
+  setInitialPaywallPendingForUserId,
+  setInitialPaywallSeenForUserId,
   setOnboardingCompleteForUserId,
 } from './src/utils/onboardingFlags';
 
@@ -53,6 +55,7 @@ function AppInner() {
   const [isBiometricVerified, setIsBiometricVerified] = useState(false);
   const [biometricRequired, setBiometricRequired] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [hasSeenInitialPaywall, setHasSeenInitialPaywall] = useState(true);
 
   // Prevent the auth-state-change listener from racing with initialize()
   const initializedRef = useRef(false);
@@ -104,8 +107,10 @@ function AppInner() {
           const flags = await loadOnboardingFlagsForUserId(session.user.id);
           if (!alive) return;
           setHasCompletedOnboarding(flags.completed);
+          setHasSeenInitialPaywall(flags.paywallSeen);
         } else {
           setHasCompletedOnboarding(false);
+          setHasSeenInitialPaywall(true);
         }
 
         if (session) {
@@ -141,6 +146,7 @@ function AppInner() {
         setIsBiometricVerified(false);
         setBiometricRequired(false);
         setHasCompletedOnboarding(false);
+        setHasSeenInitialPaywall(true);
         void SecureStore.deleteItemAsync('isPro');
         void SecureStore.deleteItemAsync('proplan');
         void SecureStore.deleteItemAsync('accountCreatedAt');
@@ -173,6 +179,7 @@ function AppInner() {
       ]);
       if (!alive) return;
       setHasCompletedOnboarding(flags.completed);
+      setHasSeenInitialPaywall(flags.paywallSeen);
       const needsBio = bioPref === 'true' && hasHardware && isEnrolled;
       setBiometricRequired(needsBio);
       setIsBiometricVerified(!needsBio || biometricPassedThisSessionRef.current);
@@ -209,14 +216,26 @@ function AppInner() {
     const id = s?.user?.id;
     if (id) {
       await setOnboardingCompleteForUserId(id);
+      await setInitialPaywallPendingForUserId(id);
       try {
         await saveUserProfile({ onboarding_completed: true });
       } catch (e) {
         console.warn('Failed to save onboarding flag to profile:', e);
       }
     }
+    setHasSeenInitialPaywall(false);
     setHasCompletedOnboarding(true);
   }
+
+  const completeInitialPaywall = useCallback(() => {
+    setHasSeenInitialPaywall(true);
+    const id = session?.user?.id;
+    if (id) {
+      void setInitialPaywallSeenForUserId(id).catch((e) => {
+        console.warn('Failed to save initial paywall flag:', e);
+      });
+    }
+  }, [session?.user?.id]);
 
   const handleBiometricUnlocked = useCallback(() => {
     biometricPassedThisSessionRef.current = true;
@@ -272,6 +291,10 @@ function AppInner() {
             ) : !hasCompletedOnboarding ? (
               <Stack.Screen name="Onboarding">
                 {(props) => <OnboardingScreen onComplete={completeOnboarding} {...props} />}
+              </Stack.Screen>
+            ) : !hasSeenInitialPaywall ? (
+              <Stack.Screen name="InitialUpgrade">
+                {(props) => <UpgradeScreen onComplete={completeInitialPaywall} {...props} />}
               </Stack.Screen>
             ) : (
               <>

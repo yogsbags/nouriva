@@ -148,16 +148,16 @@ const SLIDES = [
     subtitle: 'Used to compute your personal calorie & macro targets. Edit anytime in Profile.',
   },
   {
-    id: 'personalizing',
-    type: 'personalizing' as const,
-  },
-  {
     id: 'ai_consent',
     type: 'consent' as const,
   },
   {
     id: 'demo_scan',
     type: 'demo_scan' as const,
+  },
+  {
+    id: 'personalizing',
+    type: 'personalizing' as const,
   },
 ];
 
@@ -541,9 +541,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     if (slide.type === 'welcome') return 'See what my food is doing';
     if (slide.type === 'reframe' || slide.type === 'authority') return 'Continue';
     if (slide.type === 'body_stats') return 'Build My Plan';
-    if (slide.type === 'personalizing') return 'Continue';
+    if (slide.type === 'personalizing') return 'View subscription options';
     if (slide.type === 'consent') return 'I Agree — Continue';
-    if (slide.type === 'demo_scan') return 'Unlock full body analysis';
+    if (slide.type === 'demo_scan') return 'Finish my profile';
     if (currentSlide === SLIDES.length - 1) return 'Start Scanning';
     return 'Continue';
   }, [slide.type, currentSlide]);

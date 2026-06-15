@@ -9,6 +9,7 @@ const LAST_ONBOARDING_USER = 'lastOnboardingUserId';
 
 const kOnb = (userId: string) => `onboardingDone__${userId}`;
 const kPay = (userId: string) => `initialPaywallSeen__${userId}`;
+const kPayPending = (userId: string) => `initialPaywallPending__${userId}`;
 
 export type OnboardingFlags = { completed: boolean; paywallSeen: boolean };
 
@@ -31,6 +32,7 @@ export async function loadOnboardingFlagsForUserId(userId: string): Promise<Onbo
 
   let completed = (await SecureStore.getItemAsync(kOnb(userId))) === 'true';
   let paywallSeen = (await SecureStore.getItemAsync(kPay(userId))) === 'true';
+  const paywallPending = (await SecureStore.getItemAsync(kPayPending(userId))) === 'true';
 
   // Fallback check to database if local flag is false
   if (!completed) {
@@ -69,6 +71,13 @@ export async function loadOnboardingFlagsForUserId(userId: string): Promise<Onbo
     }
   }
 
+  // Accounts that completed onboarding before this flow was introduced should
+  // enter the app normally. Only an explicit pending marker gates a new user.
+  if (completed && !paywallSeen && !paywallPending) {
+    await SecureStore.setItemAsync(kPay(userId), 'true');
+    paywallSeen = true;
+  }
+
   await SecureStore.setItemAsync(LAST_ONBOARDING_USER, userId);
   return { completed, paywallSeen };
 }
@@ -78,8 +87,13 @@ export async function setOnboardingCompleteForUserId(userId: string) {
   await SecureStore.deleteItemAsync(LEGACY_ONBOARDING).catch(() => undefined);
 }
 
+export async function setInitialPaywallPendingForUserId(userId: string) {
+  await SecureStore.setItemAsync(kPayPending(userId), 'true');
+}
+
 export async function setInitialPaywallSeenForUserId(userId: string) {
   await SecureStore.setItemAsync(kPay(userId), 'true');
+  await SecureStore.deleteItemAsync(kPayPending(userId)).catch(() => undefined);
   await SecureStore.deleteItemAsync(LEGACY_PAYWALL).catch(() => undefined);
 }
 

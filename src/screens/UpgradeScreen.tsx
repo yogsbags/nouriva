@@ -76,9 +76,9 @@ export default function UpgradeScreen({ navigation, onComplete }: UpgradeScreenP
     Haptics.selectionAsync();
     if (onComplete) {
       onComplete();
+      return;
     }
-    
-    // Always attempt to go back if we haven't been unmounted by onComplete
+
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
