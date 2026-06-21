@@ -1,0 +1,8 @@
+node_modules/
+package.json
+package-lock.json
+wrangler.toml
+.gitignore
+spec.md
+DEPLOY.md
+.DS_Store

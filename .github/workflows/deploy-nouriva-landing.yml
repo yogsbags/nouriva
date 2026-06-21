@@ -16,7 +16,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy nouriva.tech to Cloudflare Pages
+    name: Deploy nouriva.tech to Cloudflare
     permissions:
       contents: read
       deployments: write
@@ -24,21 +24,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify Cloudflare Pages access
+      - name: Verify Cloudflare Worker access
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "Pages projects visible to this token:"
-          curl -fsS "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/pages/projects" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            | jq -r '.result[]?.name // empty, (.success | tostring), (.errors[]?.message // "no errors")'
+          response="$(curl -fsS "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts" \
+            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
+          echo "Workers visible to this token/account:"
+          echo "${response}" | jq -r '.result[]?.id // empty'
+          if echo "${response}" | jq -e '.result[] | select(.id=="odd-sun-d4b3")' >/dev/null; then
+            echo "Found worker odd-sun-d4b3"
+          else
+            echo "Worker odd-sun-d4b3 not listed yet (wrangler deploy will create or update it)"
+          fi
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+      - name: Deploy to Cloudflare Worker
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: odd-sun-d4b3
-          directory: nouriva-landing
+          wranglerVersion: "4"
+          workingDirectory: nouriva-landing
+          command: deploy
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
