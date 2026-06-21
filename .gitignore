@@ -40,6 +40,8 @@ mcp-server.log
 # local env files
 .env
 .env*
+!.env.example
+!doctor-portal/.env.example
 .env*.local
 
 # typescript
@@ -76,6 +78,7 @@ test-*.mjs
 test_logs.js
 *.html
 !nouriva-landing/index.html
+!doctor-portal/index.html
 logo-*.png
 logo-*.jpeg
 logo.jpeg

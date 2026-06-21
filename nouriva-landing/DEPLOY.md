@@ -136,6 +136,8 @@ After all 6 steps, verify:
 
 Push changes to `main` and GitHub Actions deploys to Cloudflare Pages automatically.
 
+**Cloudflare project name:** `odd-sun-d4b3` (shown in Workers & Pages dashboard; custom domain `nouriva.tech` is attached to this project).
+
 **One-time setup**
 
 1. **Commit the landing site** (if not already in git):
@@ -146,21 +148,36 @@ Push changes to `main` and GitHub Actions deploys to Cloudflare Pages automatica
    git push origin main
    ```
 
-2. **Create a Cloudflare API token** (if you don't have one):
+2. **Create a Cloudflare API token** (must include **Pages**, not R2-only):
    - Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) → **Create Token**
    - Use template **Edit Cloudflare Workers** (includes Pages edit), or create custom with:
      - **Account** → **Cloudflare Pages** → **Edit**
      - **Account** → **Account Settings** → **Read**
+   - Do **not** use the R2 / S3 token template — that token cannot deploy Pages.
    - Copy the token — you won't see it again.
 
 3. **Get your Account ID**:
-   - Cloudflare dashboard → any domain or Workers & Pages → right sidebar → **Account ID**
+   - Cloudflare dashboard → Workers & Pages → right sidebar → **Account ID**
+   - Must match the account where project `odd-sun-d4b3` lives.
 
 4. **Add GitHub secrets** at `https://github.com/yogsbags/nouriva/settings/secrets/actions`:
-   - `CLOUDFLARE_API_TOKEN` — the token from step 2
+   - `CLOUDFLARE_API_TOKEN` — Pages-capable token from step 2
    - `CLOUDFLARE_ACCOUNT_ID` — from step 3
 
 5. **Trigger a deploy**: push any change under `nouriva-landing/`, or run the workflow manually from **Actions → Deploy Nouriva Landing → Run workflow**.
+
+**If Cloudflare Git integration also runs builds (project `odd-sun-d4b3`):**
+
+In Cloudflare → **odd-sun-d4b3** → **Settings** → **Builds**:
+
+| Setting | Value |
+|---------|-------|
+| Root directory | `nouriva-landing` |
+| Framework preset | None |
+| Build command | *(leave blank)* |
+| Build output directory | `/` |
+
+Without the root directory, Cloudflare tries to build the Expo app at repo root and fails.
 
 **Day-to-day workflow**
 
