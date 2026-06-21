@@ -5,5 +5,4 @@ main = "worker.js"
 [assets]
 directory = "."
 binding = "ASSETS"
-html_handling = "none"
-run_worker_first = ["/care", "/care/*"]
+run_worker_first = true
