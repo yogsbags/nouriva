@@ -12,8 +12,15 @@ export async function signIn(email: string, password: string) {
   return data.session;
 }
 
-export async function signUp(email: string, password: string) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+export async function signUp(email: string, password: string, fullName?: string) {
+  const trimmedName = fullName?.trim();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: trimmedName
+      ? { data: { full_name: trimmedName, name: trimmedName } }
+      : undefined,
+  });
   if (error) throw error;
   return data.session;
 }

@@ -10,6 +10,7 @@ export default function AuthPage({ onSuccess }: Props) {
     searchParams.get('mode') === 'signup' ? 'signup' : 'login',
   );
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,12 @@ export default function AuthPage({ onSuccess }: Props) {
       if (mode === 'login') {
         await signIn(email.trim(), password);
       } else {
-        await signUp(email.trim(), password);
+        if (!fullName.trim()) {
+          setError('Please enter your full name.');
+          setLoading(false);
+          return;
+        }
+        await signUp(email.trim(), password, fullName);
       }
       onSuccess();
     } catch (err) {
@@ -47,6 +53,20 @@ export default function AuthPage({ onSuccess }: Props) {
         {error ? <div className="alert alert-error">{error}</div> : null}
 
         <form onSubmit={handleSubmit}>
+          {mode === 'signup' ? (
+            <div className="field">
+              <label htmlFor="fullName">Full name</label>
+              <input
+                id="fullName"
+                type="text"
+                autoComplete="name"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Dr. Jane Smith / Priya Sharma, RD"
+              />
+            </div>
+          ) : null}
           <div className="field">
             <label htmlFor="email">Work email</label>
             <input

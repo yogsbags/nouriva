@@ -1,5 +1,6 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { upsertProviderProfile } from '../lib/api';
+import { supabase } from '../lib/supabase';
 import { PROVIDER_TYPES, type ProviderType } from '../lib/providerTypes';
 
 type Props = { onComplete: () => void };
@@ -11,6 +12,18 @@ export default function ProviderSetupPage({ onComplete }: Props) {
   const [credentialId, setCredentialId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      const metaName =
+        (user.user_metadata?.full_name as string | undefined) ??
+        (user.user_metadata?.name as string | undefined);
+      if (metaName?.trim()) {
+        setFullName((current) => current || metaName.trim());
+      }
+    });
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
