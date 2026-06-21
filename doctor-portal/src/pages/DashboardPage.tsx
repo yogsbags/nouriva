@@ -131,7 +131,6 @@ export default function DashboardPage({ onSignOut }: Props) {
                   type="button"
                   className={`patient-item${selectedId === p.patient_user_id ? ' selected' : ''}`}
                   onClick={() => setSelectedId(p.patient_user_id)}
-                  style={{ textAlign: 'left', cursor: 'pointer', background: 'transparent' }}
                 >
                   <strong>Patient ····{p.patient_code_suffix ?? '????'}</strong>
                   <div className="patient-meta">
@@ -165,7 +164,6 @@ export default function DashboardPage({ onSignOut }: Props) {
                   id="doc-kind"
                   value={documentKind}
                   onChange={(e) => setDocumentKind(e.target.value as DocumentKind)}
-                  style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', width: '100%' }}
                 >
                   <option value="prescription">Prescription</option>
                   <option value="diet_chart">Diet chart / meal plan</option>

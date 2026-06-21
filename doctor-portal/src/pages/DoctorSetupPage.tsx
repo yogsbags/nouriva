@@ -33,6 +33,10 @@ export default function ProviderSetupPage({ onComplete }: Props) {
 
   return (
     <div className="auth-page">
+      <a href="/" className="portal-home" aria-label="Back to Nouriva AI home">
+        <img src="/favicon.png" alt="" width="28" height="28" />
+        <span>Nouriva AI</span>
+      </a>
       <div className="auth-card card">
         <div className="auth-logo">
           <h1>Care provider profile</h1>
@@ -49,7 +53,6 @@ export default function ProviderSetupPage({ onComplete }: Props) {
               required
               value={providerType}
               onChange={(e) => setProviderType(e.target.value as ProviderType)}
-              style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}
             >
               {PROVIDER_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>

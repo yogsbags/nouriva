@@ -34,6 +34,10 @@ export default function AuthPage({ onSuccess }: Props) {
 
   return (
     <div className="auth-page">
+      <a href="/" className="portal-home" aria-label="Back to Nouriva AI home">
+        <img src="/favicon.png" alt="" width="28" height="28" />
+        <span>Nouriva AI</span>
+      </a>
       <div className="auth-card card">
         <div className="auth-logo">
           <h1>Nouriva AI</h1>
