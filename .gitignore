@@ -75,6 +75,7 @@ test-*.json
 test-*.mjs
 test_logs.js
 *.html
+!nouriva-landing/index.html
 logo-*.png
 logo-*.jpeg
 logo.jpeg

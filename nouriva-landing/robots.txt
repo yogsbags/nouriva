@@ -1,0 +1,32 @@
+# robots.txt for nouriva.tech
+# https://nouriva.tech/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://nouriva.tech/sitemap.xml
+
+# Crawl-delay for polite bots (Google/Bing don't honor but smaller bots do)
+Crawl-delay: 1
+
+# Generative AI training bots — block by default (Mamba/Common Crawl etc.)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /

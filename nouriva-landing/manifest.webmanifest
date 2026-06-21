@@ -1,0 +1,30 @@
+{
+  "name": "Nouriva AI",
+  "short_name": "Nouriva",
+  "description": "Clinical nutrition intelligence — reads your lab report and knows your medical conditions.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F3D2E",
+  "theme_color": "#0F3D2E",
+  "lang": "en-IN",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["health", "medical", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/imgs/phone_mockup.jpg",
+      "sizes": "1800x1003",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Nouriva AI meal scan with vitality score"
+    }
+  ]
+}

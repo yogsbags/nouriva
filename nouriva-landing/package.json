@@ -1,0 +1,12 @@
+{
+  "name": "nouriva-landing",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Nouriva AI marketing site (nouriva.tech)",
+  "scripts": {
+    "deploy": "wrangler pages deploy . --project-name=nouriva-tech"
+  },
+  "devDependencies": {
+    "wrangler": "^4.103.0"
+  }
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://nouriva.tech/</loc>
+    <lastmod>2026-06-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en-IN" href="https://nouriva.tech/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nouriva.tech/"/>
+    <image:image>
+      <image:loc>https://nouriva.tech/imgs/og-cover.jpg</image:loc>
+      <image:title>Nouriva AI — Clinical Nutrition Intelligence</image:title>
+      <image:caption>Nouriva AI app showing a meal scan with vitality score</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nouriva.tech/imgs/lab_report.jpg</image:loc>
+      <image:title>Lab report integration</image:title>
+      <image:caption>Lab report with reading glasses on a wooden desk</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nouriva.tech/imgs/thali_hero.jpg</image:loc>
+      <image:title>Built for Indian food</image:title>
+      <image:caption>Indian thali with dal, rice, sabzi, raita, salad</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://nouriva.tech/imgs/phone_mockup.jpg</image:loc>
+      <image:title>Nouriva AI app interface</image:title>
+      <image:caption>Nouriva AI mobile app showing meal scan and vitality score</image:caption>
+    </image:image>
+  </url>
+
+</urlset>
