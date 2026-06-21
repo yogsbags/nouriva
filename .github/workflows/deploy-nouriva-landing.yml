@@ -29,5 +29,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy nouriva-landing --project-name=nouriva-tech
+          wranglerVersion: "4"
+          command: pages deploy nouriva-landing --project-name=odd-sun-d4b3 --commit-dirty=true
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

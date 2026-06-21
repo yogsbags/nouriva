@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "Nouriva AI marketing site (nouriva.tech)",
   "scripts": {
-    "deploy": "wrangler pages deploy . --project-name=nouriva-tech"
+    "build": "echo 'Static site — no build step'",
+    "deploy": "wrangler pages deploy . --project-name=odd-sun-d4b3"
   },
   "devDependencies": {
     "wrangler": "^4.103.0"
