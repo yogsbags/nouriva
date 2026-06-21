@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  Platform,
-  Image,
-  ScrollView,
-} from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Alert, Platform, Image, ScrollView } from 'react-native'
+import { Text, TextInput, type TextInputType } from '../components/ThemedText';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../utils/supabase';
 import {
@@ -27,6 +17,7 @@ import { trackEvent, Events } from '../utils/analytics';
 import { requestPasswordResetEmail } from '../utils/passwordReset';
 import Svg, { Path } from 'react-native-svg';
 import {
+  UserIcon as User,
   EnvelopeIcon as Envelope,
   LockSimpleIcon as LockSimple,
   ArrowRightIcon as ArrowRight,
@@ -45,7 +36,7 @@ function GoogleLogo({ size = 20 }: { size?: number }) {
     </Svg>
   );
 }
-import { useColors, AppColors } from '../theme';
+import { useColors, AppColors, displayFont, uiFont } from '../theme';
 import { TERMS_URL, PRIVACY_URL as PRIVACY_POLICY_URL } from '../constants/legal';
 
 const GOOGLE_WEB_CLIENT_ID = (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? '').trim();
@@ -64,6 +55,7 @@ export default function AuthScreen() {
   const styles = useMemo(() => makeStyles(C), [C]);
 
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -74,32 +66,43 @@ export default function AuthScreen() {
   const [biometricLoginAvailable, setBiometricLoginAvailable] = useState(false);
   const [biometricMethodLabel, setBiometricMethodLabel] = useState('Biometric');
 
-  /** iOS Fabric: updating parent layout (focus ring) in the same tick as onFocus can drop TextInput focus. */
+  /** Updating parent layout (focus ring) in the same tick as onFocus can drop TextInput focus (iOS Fabric + Android elevation). */
   const focusHighlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blurClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const emailRef = useRef<TextInputType>(null);
+  const nameRef = useRef<TextInputType>(null);
+  const passwordRef = useRef<TextInputType>(null);
 
-  const scheduleFocusHighlight = useCallback((field: 'email' | 'password') => {
+  const scheduleFocusHighlight = useCallback((field: 'name' | 'email' | 'password') => {
+    if (blurClearTimerRef.current) {
+      clearTimeout(blurClearTimerRef.current);
+      blurClearTimerRef.current = null;
+    }
     if (focusHighlightTimerRef.current) {
       clearTimeout(focusHighlightTimerRef.current);
       focusHighlightTimerRef.current = null;
     }
-    const delay = Platform.OS === 'ios' ? 50 : 0;
     focusHighlightTimerRef.current = setTimeout(() => {
       focusHighlightTimerRef.current = null;
       setFocusedField(field);
-    }, delay);
+    }, 50);
   }, []);
 
-  const clearFocusHighlight = useCallback(() => {
-    if (focusHighlightTimerRef.current) {
-      clearTimeout(focusHighlightTimerRef.current);
-      focusHighlightTimerRef.current = null;
+  const scheduleFocusClear = useCallback(() => {
+    if (blurClearTimerRef.current) {
+      clearTimeout(blurClearTimerRef.current);
+      blurClearTimerRef.current = null;
     }
-    setFocusedField(null);
+    blurClearTimerRef.current = setTimeout(() => {
+      blurClearTimerRef.current = null;
+      setFocusedField(null);
+    }, 100);
   }, []);
 
   useEffect(
     () => () => {
       if (focusHighlightTimerRef.current) clearTimeout(focusHighlightTimerRef.current);
+      if (blurClearTimerRef.current) clearTimeout(blurClearTimerRef.current);
     },
     []
   );
@@ -228,7 +231,14 @@ export default function AuthScreen() {
     setLoading(true);
     try {
       if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const trimmedName = fullName.trim();
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: trimmedName
+            ? { data: { full_name: trimmedName, name: trimmedName } }
+            : undefined,
+        });
         if (error) throw error;
         // If email confirmation is off, Supabase returns a session and the app proceeds via onAuthStateChange.
         if (data.session) {
@@ -305,7 +315,41 @@ export default function AuthScreen() {
         </View>
 
         <View style={styles.form}>
-          <View style={styles.fieldLabel}>
+          {isSignUp ? (
+            <>
+              <View style={styles.fieldLabel}>
+                <Text style={styles.fieldLabelText}>Your name</Text>
+              </View>
+              <View style={[styles.inputContainer, focusedField === 'name' && styles.inputContainerFocused]}>
+                <View style={styles.inputIcon} pointerEvents="none">
+                  <User size={18} color={focusedField === 'name' ? C.primary : C.textTertiary} weight="bold" />
+                </View>
+                <TextInput
+                  ref={nameRef}
+                  style={styles.input}
+                  placeholder="How should we address you?"
+                  placeholderTextColor={C.textTertiary}
+                  value={fullName}
+                  onChangeText={setFullName}
+                  editable
+                  rejectResponderTermination
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  autoComplete="name"
+                  textContentType="name"
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmitEditing={() => emailRef.current?.focus()}
+                  showSoftInputOnFocus
+                  {...(Platform.OS === 'android' ? { importantForAutofill: 'yes' as const } : {})}
+                  onFocus={() => scheduleFocusHighlight('name')}
+                  onBlur={scheduleFocusClear}
+                />
+              </View>
+            </>
+          ) : null}
+
+          <View style={[styles.fieldLabel, isSignUp ? { marginTop: 16 } : undefined]}>
             <Text style={styles.fieldLabelText}>Email</Text>
           </View>
           <View style={[styles.inputContainer, focusedField === 'email' && styles.inputContainerFocused]}>
@@ -313,6 +357,7 @@ export default function AuthScreen() {
               <Envelope size={18} color={focusedField === 'email' ? C.primary : C.textTertiary} weight="bold" />
             </View>
             <TextInput
+              ref={emailRef}
               style={styles.input}
               placeholder="your@email.com"
               placeholderTextColor={C.textTertiary}
@@ -321,13 +366,17 @@ export default function AuthScreen() {
               editable
               rejectResponderTermination
               autoCapitalize="none"
+              autoCorrect={false}
               keyboardType="email-address"
-              autoComplete="email"
-              textContentType="emailAddress"
+              autoComplete={Platform.OS === 'android' ? 'username' : 'email'}
+              textContentType="username"
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => passwordRef.current?.focus()}
               showSoftInputOnFocus
               {...(Platform.OS === 'android' ? { importantForAutofill: 'yes' as const } : {})}
               onFocus={() => scheduleFocusHighlight('email')}
-              onBlur={() => clearFocusHighlight()}
+              onBlur={scheduleFocusClear}
             />
           </View>
 
@@ -339,6 +388,7 @@ export default function AuthScreen() {
               <LockSimple size={18} color={focusedField === 'password' ? C.primary : C.textTertiary} weight="bold" />
             </View>
             <TextInput
+              ref={passwordRef}
               style={styles.input}
               placeholder="••••••••"
               placeholderTextColor={C.textTertiary}
@@ -347,12 +397,16 @@ export default function AuthScreen() {
               editable
               rejectResponderTermination
               secureTextEntry
-              autoComplete="password"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete={isSignUp ? 'password-new' : 'password'}
               textContentType={isSignUp ? 'newPassword' : 'password'}
+              returnKeyType="done"
+              onSubmitEditing={handleAuth}
               showSoftInputOnFocus
               {...(Platform.OS === 'android' ? { importantForAutofill: 'yes' as const } : {})}
               onFocus={() => scheduleFocusHighlight('password')}
-              onBlur={() => clearFocusHighlight()}
+              onBlur={scheduleFocusClear}
             />
           </View>
 
@@ -440,7 +494,10 @@ export default function AuthScreen() {
 
           <TouchableOpacity
             style={styles.toggleButton}
-            onPress={() => setIsSignUp(!isSignUp)}
+            onPress={() => {
+              if (isSignUp) setFullName('');
+              setIsSignUp(!isSignUp);
+            }}
             activeOpacity={0.7}
           >
             <Text style={styles.toggleText}>
@@ -513,12 +570,14 @@ function makeStyles(C: AppColors) {
     title: {
       fontSize: 30,
       fontWeight: '800',
+      ...displayFont('800'),
       color: C.textPrimary,
       letterSpacing: -0.5,
       marginBottom: 8,
     },
     tagline: {
       fontSize: 15,
+      ...uiFont('400'),
       color: C.textSecondary,
       textAlign: 'center',
       lineHeight: 22,
@@ -534,6 +593,7 @@ function makeStyles(C: AppColors) {
     fieldLabelText: {
       fontSize: 13,
       fontWeight: '700',
+      ...uiFont('700'),
       color: C.textSecondary,
       letterSpacing: 0.2,
     },
@@ -558,21 +618,13 @@ function makeStyles(C: AppColors) {
     inputContainerFocused: {
       borderColor: C.primary,
       backgroundColor: C.surface,
-      ...(Platform.OS === 'android'
-        ? {
-            shadowColor: C.primary,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.15,
-            shadowRadius: 8,
-            elevation: 2,
-          }
-        : {}),
     },
     input: {
       flex: 1,
       minHeight: 54,
       paddingVertical: Platform.OS === 'android' ? 10 : 12,
       fontSize: 16,
+      ...uiFont('400'),
       color: C.textPrimary,
     },
     authButton: {
@@ -597,6 +649,7 @@ function makeStyles(C: AppColors) {
       color: C.textOnPrimary,
       fontSize: 17,
       fontWeight: '700',
+      ...uiFont('700'),
       letterSpacing: 0.2,
     },
     biometricButton: {
