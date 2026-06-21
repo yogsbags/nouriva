@@ -79,6 +79,7 @@ test_logs.js
 *.html
 !nouriva-landing/index.html
 !doctor-portal/index.html
+nouriva-landing/care/
 logo-*.png
 logo-*.jpeg
 logo.jpeg

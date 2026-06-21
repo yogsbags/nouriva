@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "nouriva-landing/**"
+      - "doctor-portal/**"
       - ".github/workflows/deploy-nouriva-landing.yml"
   workflow_dispatch:
 
@@ -24,20 +25,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify Cloudflare Worker access
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: doctor-portal/package-lock.json
+
+      - name: Build care provider portal
+        working-directory: doctor-portal
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          response="$(curl -fsS "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts" \
-            -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}")"
-          echo "Workers visible to this token/account:"
-          echo "${response}" | jq -r '.result[]?.id // empty'
-          if echo "${response}" | jq -e '.result[] | select(.id=="odd-sun-d4b3")' >/dev/null; then
-            echo "Found worker odd-sun-d4b3"
-          else
-            echo "Worker odd-sun-d4b3 not listed yet (wrangler deploy will create or update it)"
-          fi
+          npm ci
+          npm run build
 
       - name: Deploy to Cloudflare Worker
         uses: cloudflare/wrangler-action@v3
