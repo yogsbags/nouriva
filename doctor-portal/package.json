@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && cp ../nouriva-landing/care/index.html ../nouriva-landing/care/_entry.html",
+    "build": "tsc -b && vite build && cp ../nouriva-landing/care/index.html ../nouriva-landing/care/_entry",
     "preview": "vite preview"
   },
   "dependencies": {

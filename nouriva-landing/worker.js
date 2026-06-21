@@ -30,7 +30,7 @@ export default {
     }
 
     if (path === '/care' || path === '/care/') {
-      const care = await serveHtmlAsset(env, url.origin, '/care/_entry.html', request);
+      const care = await serveHtmlAsset(env, url.origin, '/care/_entry', request);
       if (care) {
         return care;
       }
@@ -42,7 +42,7 @@ export default {
         return asset;
       }
       if (!path.includes('.')) {
-        const care = await serveHtmlAsset(env, url.origin, '/care/_entry.html', request);
+        const care = await serveHtmlAsset(env, url.origin, '/care/_entry', request);
         if (care) {
           return care;
         }
