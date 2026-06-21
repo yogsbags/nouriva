@@ -228,6 +228,10 @@ export default function AuthScreen() {
       Alert.alert('Missing fields', 'Please fill in your email and password.');
       return;
     }
+    if (isSignUp && !fullName.trim()) {
+      Alert.alert('Missing name', 'Please enter your name to create an account.');
+      return;
+    }
     setLoading(true);
     try {
       if (isSignUp) {
@@ -235,9 +239,7 @@ export default function AuthScreen() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: trimmedName
-            ? { data: { full_name: trimmedName, name: trimmedName } }
-            : undefined,
+          options: { data: { full_name: trimmedName, name: trimmedName } },
         });
         if (error) throw error;
         // If email confirmation is off, Supabase returns a session and the app proceeds via onAuthStateChange.
@@ -318,7 +320,7 @@ export default function AuthScreen() {
           {isSignUp ? (
             <>
               <View style={styles.fieldLabel}>
-                <Text style={styles.fieldLabelText}>Your name</Text>
+                <Text style={styles.fieldLabelText}>Your name *</Text>
               </View>
               <View style={[styles.inputContainer, focusedField === 'name' && styles.inputContainerFocused]}>
                 <View style={styles.inputIcon} pointerEvents="none">
@@ -327,7 +329,7 @@ export default function AuthScreen() {
                 <TextInput
                   ref={nameRef}
                   style={styles.input}
-                  placeholder="How should we address you?"
+                  placeholder="Your full name"
                   placeholderTextColor={C.textTertiary}
                   value={fullName}
                   onChangeText={setFullName}
