@@ -22,6 +22,22 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    if (path === '/.well-known/assetlinks.json') {
+      const asset = await env.ASSETS.fetch(
+        new Request(`${url.origin}/.well-known/assetlinks.json`, request),
+      );
+      if (asset.status === 200) {
+        const body = await asset.text();
+        return new Response(body, {
+          status: 200,
+          headers: {
+            'content-type': 'application/json; charset=utf-8',
+            'cache-control': 'public, max-age=300',
+          },
+        });
+      }
+    }
+
     if (path === '/' || path === '') {
       const home = await serveHtmlAsset(env, url.origin, '/index.html', request);
       if (home) {
