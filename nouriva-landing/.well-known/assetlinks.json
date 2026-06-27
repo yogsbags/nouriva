@@ -1,12 +1,14 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "in.productverse.nourivaai",
       "sha256_cert_fingerprints": [
-        "2D:9E:CF:45:F2:C8:B0:29:B1:89:0E:04:46:8B:CA:C6:B1:69:45:BD:D7:F1:8E:A2:9B:71:7E:40:81:87:05:9F",
-        "76:03:72:FB:AB:C1:18:8F:BF:92:E4:4E:85:B0:28:BF:CD:91:0A:1F:E0:E4:BC:58:2A:83:8C:4A:3B:06:E4:C4"
+        "2D:9E:CF:45:F2:C8:B0:29:B1:89:0E:04:46:8B:CA:C6:B1:69:45:BD:D7:F1:8E:A2:9B:71:7E:40:81:87:05:9F"
       ]
     }
   }
