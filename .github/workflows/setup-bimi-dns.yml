@@ -1,0 +1,73 @@
+name: Setup BIMI DNS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bimi-dns:
+    runs-on: ubuntu-latest
+    name: Add BIMI + update DMARC for nouriva.tech
+    steps:
+      - name: Configure BIMI and DMARC records
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ZONE_NAME: nouriva.tech
+          BIMI_CONTENT: "v=BIMI1; l=https://nouriva.tech/bimi/logo.svg;"
+          DMARC_CONTENT: "v=DMARC1; p=quarantine; pct=100; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;"
+        run: |
+          set -euo pipefail
+
+          zone_id=$(curl -fsS "https://api.cloudflare.com/client/v4/zones?name=${ZONE_NAME}" \
+            -H "Authorization: Bearer ${CF_TOKEN}" \
+            | jq -r '.result[0].id')
+
+          if [ -z "${zone_id}" ] || [ "${zone_id}" = "null" ]; then
+            echo "Could not resolve zone id for ${ZONE_NAME}"
+            exit 1
+          fi
+
+          echo "Zone ID: ${zone_id}"
+
+          bimi_id=$(curl -fsS "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records?type=TXT&name=default._bimi.${ZONE_NAME}" \
+            -H "Authorization: Bearer ${CF_TOKEN}" \
+            | jq -r '.result[0].id // empty')
+
+          if [ -n "${bimi_id}" ]; then
+            echo "Updating existing BIMI record ${bimi_id}"
+            curl -fsS -X PUT "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records/${bimi_id}" \
+              -H "Authorization: Bearer ${CF_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "{\"type\":\"TXT\",\"name\":\"default._bimi\",\"content\":\"${BIMI_CONTENT}\",\"ttl\":1}" \
+              | jq -e '.success'
+          else
+            echo "Creating BIMI record"
+            curl -fsS -X POST "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records" \
+              -H "Authorization: Bearer ${CF_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "{\"type\":\"TXT\",\"name\":\"default._bimi\",\"content\":\"${BIMI_CONTENT}\",\"ttl\":1}" \
+              | jq -e '.success'
+          fi
+
+          dmarc_id=$(curl -fsS "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records?type=TXT&name=_dmarc.${ZONE_NAME}" \
+            -H "Authorization: Bearer ${CF_TOKEN}" \
+            | jq -r '.result[0].id // empty')
+
+          if [ -n "${dmarc_id}" ]; then
+            echo "Updating DMARC record ${dmarc_id}"
+            curl -fsS -X PUT "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records/${dmarc_id}" \
+              -H "Authorization: Bearer ${CF_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "{\"type\":\"TXT\",\"name\":\"_dmarc\",\"content\":\"${DMARC_CONTENT}\",\"ttl\":1}" \
+              | jq -e '.success'
+          else
+            echo "Creating DMARC record"
+            curl -fsS -X POST "https://api.cloudflare.com/client/v4/zones/${zone_id}/dns_records" \
+              -H "Authorization: Bearer ${CF_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "{\"type\":\"TXT\",\"name\":\"_dmarc\",\"content\":\"${DMARC_CONTENT}\",\"ttl\":1}" \
+              | jq -e '.success'
+          fi
+
+          echo "Done. Verify with:"
+          echo "  dig TXT default._bimi.${ZONE_NAME} +short"
+          echo "  dig TXT _dmarc.${ZONE_NAME} +short"
