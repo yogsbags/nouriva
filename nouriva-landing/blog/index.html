@@ -945,7 +945,10 @@
     }
   
 .blog-shell{padding:9rem 0 6rem;background:var(--cream-50);min-height:70vh}.blog-wrap{max-width:900px;margin:0 auto}.blog-kicker{color:var(--green-700);font-size:.75rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase}.blog-card{background:#fff;border:1px solid var(--cream-200);border-radius:18px;padding:clamp(1.5rem,4vw,4rem);box-shadow:0 12px 34px rgba(31,74,54,.08)}.blog-card h1,.blog-card h2{font-family:var(--font-display);color:var(--ink-900);line-height:1.08}.blog-card h1{font-size:clamp(2.35rem,6vw,4.5rem);margin:1rem 0}.blog-card h2{font-size:clamp(1.8rem,4vw,2.6rem);margin:2rem 0 1rem}.blog-card p,.blog-card li{color:var(--ink-700)}.blog-card article>img,.blog-card article figure img{width:100%;border-radius:14px;margin:1.5rem 0}.blog-card article a{color:var(--green-700);font-weight:600}.blog-card article table{width:100%;border-collapse:collapse;margin:1.5rem 0;display:block;overflow-x:auto}.blog-card article th,.blog-card article td{border:1px solid var(--cream-200);padding:.7rem;text-align:left}.blog-back{display:inline-flex;margin-bottom:1.25rem;color:var(--green-700);font-weight:600}.blog-index-list{display:grid;gap:1rem;margin-top:2rem}.blog-index-item{padding:1.25rem 0;border-top:1px solid var(--cream-200)}.blog-index-item h2{margin:.35rem 0;font-size:1.65rem}.blog-index-item p{margin:.5rem 0 1rem}.blog-date{font-size:.8rem;color:var(--ink-500)}@media(max-width:768px){.blog-shell{padding-top:7.5rem}.blog-card{border-radius:14px;padding:1.25rem}}
-</style></head><body><nav class="nav" id="nav" aria-label="Primary">
+
+/* Blog pages use the readable scrolled navigation state from first paint. */
+body.blog-page .nav{background:rgba(250,247,240,.92);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);box-shadow:0 1px 0 rgba(31,74,54,.08);padding:.75rem 0}body.blog-page .nav__logo{color:var(--green-900)}body.blog-page .nav__link{color:var(--ink-700)}body.blog-page .nav__cta{background:var(--green-900);color:var(--cream-50)}
+</style></head><body class="blog-page"><nav class="nav" id="nav" aria-label="Primary">
   <div class="container nav__inner">
     <a href="/" class="nav__logo" aria-label="Nouriva AI home">
       <img src="/favicon.png" alt="Nouriva AI logo" width="32" height="32" />
