@@ -45,6 +45,17 @@ export default {
       }
     }
 
+    if (path === '/blog' || path === '/blog/') {
+      const blog = await serveHtmlAsset(env, url.origin, '/blog/index.html', request);
+      if (blog) return blog;
+    }
+
+    if (path.startsWith('/blog/') && !path.includes('.', 6)) {
+      const slug = path.replace(/\/$/, '');
+      const article = await serveHtmlAsset(env, url.origin, `${slug}/index.html`, request);
+      if (article) return article;
+    }
+
     if (path === '/care' || path === '/care/') {
       const care = await serveHtmlAsset(env, url.origin, '/care/_entry', request);
       if (care) {
