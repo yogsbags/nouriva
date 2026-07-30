@@ -948,7 +948,10 @@
 
 /* Editorial rhythm for article sections, FAQ, and conclusion */
 .blog-card article{max-width:760px;margin:0 auto}.blog-card article h1{margin:0 0 1.75rem}.blog-card article h2{margin:3.25rem 0 1rem}.blog-card article p{margin:0 0 1.25rem}.blog-card article ul,.blog-card article ol{margin:0 0 1.75rem;padding-left:1.5rem}.blog-card article li{margin:.45rem 0}.blog-card article #key-takeaway{margin:2rem 0 2.75rem;padding:1.25rem 1.5rem;border-left:3px solid var(--amber-500);background:var(--cream-100);border-radius:0 12px 12px 0}.blog-card article #key-takeaway p{margin:0;color:var(--green-900);font-weight:500}.blog-card article figure{margin:2.75rem 0 0}.blog-card article figure img{margin:0}.blog-card article figure figcaption{margin-top:.7rem;color:var(--ink-500);font-size:.85rem;text-align:center}.blog-card article #faq{margin-top:3.5rem;padding-top:2.5rem;border-top:1px solid var(--cream-200)}.blog-card article #faq h2{margin:0 0 1rem}.blog-card article #faq details{border-bottom:1px solid var(--cream-200)}.blog-card article #faq summary{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 0;cursor:pointer;color:var(--green-900);font-weight:600;list-style:none}.blog-card article #faq summary::-webkit-details-marker{display:none}.blog-card article #faq summary::after{content:'+';color:var(--amber-500);font-size:1.35rem;font-weight:400}.blog-card article #faq details[open] summary::after{content:'−'}.blog-card article #faq details p{padding:0 2rem 1.15rem 0;margin:0;color:var(--ink-700)}.blog-card article #faq + h2{margin-top:3.5rem}.blog-card article #faq + p{margin-top:3.5rem;padding-top:2rem;border-top:1px solid var(--cream-200)}
-</style></head><body><nav class="nav" id="nav" aria-label="Primary">
+
+/* Blog pages use the readable scrolled navigation state from first paint. */
+body.blog-page .nav{background:rgba(250,247,240,.92);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);box-shadow:0 1px 0 rgba(31,74,54,.08);padding:.75rem 0}body.blog-page .nav__logo{color:var(--green-900)}body.blog-page .nav__link{color:var(--ink-700)}body.blog-page .nav__cta{background:var(--green-900);color:var(--cream-50)}
+</style></head><body class="blog-page"><nav class="nav" id="nav" aria-label="Primary">
   <div class="container nav__inner">
     <a href="/" class="nav__logo" aria-label="Nouriva AI home">
       <img src="/favicon.png" alt="Nouriva AI logo" width="32" height="32" />
@@ -1062,7 +1065,7 @@
 </section>
 <h2>Conclusion</h2>
 <p>A meal planner app can be a great tool to help you achieve your health goals. By choosing an app that meets your needs and providing personalized nutrition tracking, recipe suggestions, and meal planning features, you can make healthy eating easier and more convenient. Try out a meal planner app today and start seeing the benefits for yourself!</p>
-<p>Ready to get started with <strong>Nouriva AI</strong>? <a href="/#download">Explore Nouriva AI</a> and begin your journey to healthier eating with personalized meal planning.</p>
+<p>Ready to get started? <a href="/sign-up">Sign up for a meal planner app</a> and begin your journey to healthy eating.</p>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
